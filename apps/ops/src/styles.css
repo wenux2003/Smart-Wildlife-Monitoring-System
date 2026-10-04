@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: system-ui, sans-serif;
+  color: #17251d;
+  background: #f4f7f4;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+}
+
+.app-shell {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.app-header {
+  border-bottom: 1px solid #cbd8ce;
+}
+
+.app-header h1 {
+  color: #163a2a;
+  font-size: 1.25rem;
+}

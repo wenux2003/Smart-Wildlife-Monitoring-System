@@ -1,0 +1,26 @@
+{
+  "name": "@wr/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@fastify/type-provider-zod": "^5.0.2",
+    "@wr/shared": "workspace:*",
+    "drizzle-orm": "^0.44.2",
+    "fastify": "^5.4.0",
+    "postgres": "^3.4.7",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "tsx": "^4.20.3",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -2,8 +2,8 @@
 
 Covers both web apps and the backend they share:
 
-- **Ranger App**: mobile-first installable PWA, offline-first (`/ranger/*`)
-- **Ops Dashboard**: desktop web app for Park Manager, Liaison Officer and Researcher (`/ops/*`)
+- **Ranger App**: separate mobile-first installable PWA, offline-first app; routes start at `/`
+- **Ops Dashboard**: separate desktop web app for Park Manager, Liaison Officer and Researcher; routes start at `/`
 - **API + DB + simulators**: shared by both
 
 Everything below is free and open source. Auth is out of scope (mock "Acting as" user switcher).
@@ -16,10 +16,12 @@ Everything below is free and open source. Auth is out of scope (mock "Acting as"
 |---|---|
 | Language | TypeScript (strict) everywhere |
 | Monorepo | pnpm workspaces |
-| Web (both apps) | React 18 + Vite + React Router + Tailwind CSS |
+| Ranger app | React 18 + Vite + TypeScript + React Router + Tailwind CSS |
+| Ops app | React 18 + Vite + TypeScript + React Router + Tailwind CSS |
+| Shared UI | `packages/ui`: common React components, Leaflet map wrapper, layout primitives, theme tokens |
 | State/data fetching | TanStack Query (server state) + Zustand (small UI state) |
 | Forms/validation | React Hook Form + Zod (schemas shared with API) |
-| PWA/offline | vite-plugin-pwa (Workbox) + Dexie.js (IndexedDB) |
+| Ranger PWA/offline | Ranger-only vite-plugin-pwa (Workbox) + `packages/offline` (Dexie.js, IndexedDB, outbox sync) |
 | Maps | Leaflet + react-leaflet + OpenStreetMap tiles, leaflet.heat |
 | Charts | Recharts |
 | API | Node 20 + Fastify + Zod (fastify-type-provider-zod) |
@@ -30,61 +32,63 @@ Everything below is free and open source. Auth is out of scope (mock "Acting as"
 | Tests | Vitest, @vitest/coverage-v8, Testing Library, Supertest, fake-indexeddb |
 | Quality | ESLint, Prettier, Husky + lint-staged |
 | CI | GitHub Actions |
-| Dev env | Docker Compose (postgis, api, web) |
+| Dev env | Docker Compose (`db`, `api`, `ranger`, `ops`) |
 
 ---
 
 ## 2. Repository layout
 
 ```
-wildlife-guardian/
-├─ packages/
-│  └─ shared/                  # enums, Zod schemas, DTO types, geo helpers
-│     └─ src/{enums,schemas,geo,index}.ts
+wana-rakshaka/
 ├─ apps/
-│  ├─ api/
-│  │  ├─ src/
-│  │  │  ├─ core/              # config, db, errors, event-bus, sse-hub, clock
-│  │  │  ├─ modules/
-│  │  │  │  ├─ incidents/      # M1
-│  │  │  │  ├─ patrols/        # M2
-│  │  │  │  ├─ alerts/         # M3
-│  │  │  │  ├─ analytics/      # M4
-│  │  │  │  └─ reference/      # parks, zones, species, incident types, users (seeded)
-│  │  │  └─ server.ts
-│  │  └─ drizzle/              # migrations
-│  └─ web/
+│  ├─ api/                     # Node + Fastify + Zod + Drizzle
+│  ├─ ranger/                  # mobile-first PWA (port 5173)
+│  │  ├─ index.html
+│  │  ├─ vite.config.ts        # Ranger-only PWA plugin
+│  │  └─ src/
+│  └─ ops/                     # desktop dashboard (port 5174; no PWA/offline code)
+│     ├─ index.html
+│     ├─ vite.config.ts
 │     └─ src/
-│        ├─ app/               # router, providers, user switcher, theme
-│        ├─ lib/               # api client, sse client, offline/ (outbox, db, sync)
-│        ├─ components/        # Button, Card, Badge, SyncBadge, MapView, ...
-│        ├─ ranger/            # mobile screens (pages/, components/, hooks/)
-│        └─ ops/               # dashboard screens (pages/, components/, hooks/)
+├─ packages/
+│  ├─ shared/                  # enums, Zod schemas, DTO types, geo helpers
+│  │  └─ src/{enums,schemas,geo,index}.ts
+│  ├─ ui/                      # shared React components and theme
+│  │  └─ src/index.ts
+│  └─ offline/                 # Dexie, outbox sync, connectivity, ranger hooks
+│     └─ src/index.ts
 ├─ tools/
-│  ├─ seed/                    # seed reference data + 6+ months of history
+│  ├─ seed/
 │  ├─ collar-simulator/
 │  ├─ sms-gateway-mock/
 │  └─ camera-trap-feeder/
+├─ .github/workflows/ci.yml
 ├─ docker-compose.yml
-└─ .github/workflows/ci.yml
+├─ package.json                # workspace scripts and shared tooling
+└─ pnpm-workspace.yaml
 ```
 
-Module rule inside every API module: `routes.ts` → `service.ts` → `repository.ts`, with `schemas.ts` and `*.test.ts` alongside. Services receive repositories through constructor injection, so unit tests use in-memory fakes.
+The starter files establish the workspace, API health route, separate app
+shells, shared packages, local PostGIS service, and CI workflow. The domain
+modules and simulator folders are reserved for the implementation phases below.
+Inside each API module, use `routes.ts` → `service.ts` → `repository.ts`, with
+`schemas.ts` and `*.test.ts` alongside. Services receive repositories through
+constructor injection, so unit tests use in-memory fakes.
 
 ---
 
 ## 3. Phase 0: Foundation (Day 1, done once, then everyone branches)
 
-1. Init monorepo, TS configs, ESLint/Prettier, Husky, Vitest workspace.
-2. `docker-compose.yml`: `postgis/postgis:16`, api, web. Env via `.env.example`.
-3. `packages/shared`: enums and schemas (below).
+1. Init pnpm monorepo, TS configs/project paths, ESLint/Prettier, Husky, Vitest workspace.
+2. `docker-compose.yml`: `db` (`postgis/postgis:16`), api, ranger, ops. Env via `.env.example`.
+3. `packages/shared`: enums and schemas (below); `packages/ui`: shared component entry point.
 4. DB schema + first migration (section 4) and seed script.
 5. API core: Fastify bootstrap, error handler (typed `AppError`), request validation, health route, `EventBus` (typed pub/sub), `SseHub` (`GET /api/stream`), injectable `Clock`.
-6. Web shell: router with `/ranger` and `/ops`, layouts (mobile bottom-nav, desktop sidebar), "Acting as" switcher, theme tokens, `SyncBadge`, `MapView` wrapper, API client (adds `X-User-Id`).
-7. **Offline library** (`lib/offline`), built once and used by M1 and M2 (section 6).
+6. Two independent React/Vite shells: Ranger at port 5173 and Ops at port 5174; both use root-relative routes and retain the "Acting as" user switcher.
+7. **Offline package** (`packages/offline`), built once and used by the Ranger app for M1 and M2 (section 6); Ops does not depend on it.
 8. CI: lint, typecheck, test with coverage on every PR.
 
-**Exit criteria:** `docker compose up` shows both apps, seeded data loads, CI is green, the offline library has tests.
+**Exit criteria:** `docker compose up` shows both apps and the API, seeded data loads, CI is green, the offline package has tests.
 
 ### Shared enums (packages/shared)
 
@@ -198,9 +202,9 @@ GET  /reports/audit
 
 ---
 
-## 6. Shared offline library (lib/offline): both apps use it where relevant
+## 6. Offline package (`packages/offline`): Ranger app only
 
-Used by the Ranger App. The Ops Dashboard only needs network error states.
+Used by `apps/ranger` only. The Ops Dashboard has no offline package dependency or offline code.
 
 - **Dexie DB:** tables `incidents`, `media` (blobs), `sessions`, `trackPoints`, `waypoints`, `outbox`.
 - **Outbox item:** `{ id, kind, payloadRef, status, attempts, nextAttemptAt, lastError }`.
@@ -218,7 +222,7 @@ Tests: fake-indexeddb for enqueue/flush/backoff/idempotency/failure paths.
 
 ---
 
-## 7. Ranger App (mobile PWA, `/ranger/*`)
+## 7. Ranger App (mobile PWA; routes start at `/`)
 
 Design rules: single-hand use, ≥48 px touch targets, high-contrast "sunlight" theme (plus dark), icon plus text (never colour only), persistent sync badge in the header, confirmations on destructive actions, Sri Lankan sample data (Yala/Wilpattu/Udawalawe).
 
@@ -226,17 +230,17 @@ Design rules: single-hand use, ≥48 px touch targets, high-contrast "sunlight" 
 
 | Route | Screen | Owner |
 |---|---|---|
-| `/ranger` | Home: today's patrol card, "Report incident" FAB, alerts badge, sync badge | shared |
-| `/ranger/incidents` | My incidents list (status chips: Queued / Synced / Failed) | M1 |
-| `/ranger/incidents/new` | Step 1 type → Step 2 evidence (photo, species, GPS) → Step 3 details/severity → Step 4 review/submit | M1 |
-| `/ranger/incidents/:id` | Detail | M1 |
-| `/ranger/patrol` | Assigned routes/patrol home | M2 |
-| `/ranger/patrol/active` | Live map, elapsed/distance, Add waypoint, End patrol | M2 |
-| `/ranger/patrol/waypoint` | New waypoint sheet | M2 |
-| `/ranger/patrol/summary` | Summary + submit/sync status | M2 |
-| `/ranger/alerts/:dispatchId` | Urgent alert: Accept / Reject | M3 |
-| `/ranger/alerts/:dispatchId/active` | On the way → Arrived → Resolve form (action taken, notes, photo) | M3 |
-| `/ranger/community/new` | Basic community report form (also usable by villagers) | M1 |
+| `/` | Home: today's patrol card, "Report incident" FAB, alerts badge, sync badge | shared |
+| `/incidents` | My incidents list (status chips: Queued / Synced / Failed) | M1 |
+| `/incidents/new` | Step 1 type → Step 2 evidence (photo, species, GPS) → Step 3 details/severity → Step 4 review/submit | M1 |
+| `/incidents/:id` | Detail | M1 |
+| `/patrol` | Assigned routes/patrol home | M2 |
+| `/patrol/active` | Live map, elapsed/distance, Add waypoint, End patrol | M2 |
+| `/patrol/waypoint` | New waypoint sheet | M2 |
+| `/patrol/summary` | Summary + submit/sync status | M2 |
+| `/alerts/:dispatchId` | Urgent alert: Accept / Reject | M3 |
+| `/alerts/:dispatchId/active` | On the way → Arrived → Resolve form (action taken, notes, photo) | M3 |
+| `/community/new` | Basic community report form (also usable by villagers) | M1 |
 
 ### Key behaviours
 - **Geolocation hook** `useGps()`: `watchPosition`, accuracy, error state; "manual location" fallback (tap on map).
@@ -246,7 +250,7 @@ Design rules: single-hand use, ≥48 px touch targets, high-contrast "sunlight" 
 
 ---
 
-## 8. Ops Dashboard (desktop web app, `/ops/*`)
+## 8. Ops Dashboard (separate desktop web app; routes start at `/`)
 
 Design rules: left sidebar nav, KPI-first layouts, map plus list split views, accessible colour palette (colour-blind safe), empty/loading/error states on every panel, keyboard-friendly tables.
 
@@ -254,20 +258,20 @@ Design rules: left sidebar nav, KPI-first layouts, map plus list split views, ac
 
 | Route | Screen | Owner |
 |---|---|---|
-| `/ops` | Overview: live map (rangers, collars, alerts, incidents), KPI strip, recent activity (SSE) | shared |
-| `/ops/incidents` | Table + map filter by status/source/type/park | M1 |
-| `/ops/incidents/:id` | Detail, photo, change status, duplicate/nearby reports | M1 |
-| `/ops/camera-traps` | Image review queue (identify species / person) | M1 |
-| `/ops/conflicts` | Community/conflict inbox (liaison): assign response, close with outcome | M1 |
-| `/ops/patrols` | Assignments: assign route to ranger, status board | M2 |
-| `/ops/patrols/coverage` | Coverage map (covered / stale / neglected cells), filters | M2 |
-| `/ops/patrols/:id` | Session replay: track, waypoints, stats | M2 |
-| `/ops/alerts` | Alert feed (SSE) + live map | M3 |
-| `/ops/alerts/:id` | Detail: collar telemetry, camera images, nearest rangers, Dispatch / Cancel / Broadcast, timeline | M3 |
-| `/ops/collars` | Collar list: battery, last ping, signal lost | M3 |
-| `/ops/analytics` | Filters, KPI cards, trend chart, breakdown table, hotspot/heatmap toggle, patrol gaps | M4 |
-| `/ops/analytics/conflicts` | Conflict trends: monthly, top stretches, repeat sites, response time | M4 |
-| `/ops/reports` | Export (PDF/CSV) and audit history | M4 |
+| `/` | Overview: live map (rangers, collars, alerts, incidents), KPI strip, recent activity (SSE) | shared |
+| `/incidents` | Table + map filter by status/source/type/park | M1 |
+| `/incidents/:id` | Detail, photo, change status, duplicate/nearby reports | M1 |
+| `/camera-traps` | Image review queue (identify species / person) | M1 |
+| `/conflicts` | Community/conflict inbox (liaison): assign response, close with outcome | M1 |
+| `/patrols` | Assignments: assign route to ranger, status board | M2 |
+| `/patrols/coverage` | Coverage map (covered / stale / neglected cells), filters | M2 |
+| `/patrols/:id` | Session replay: track, waypoints, stats | M2 |
+| `/alerts` | Alert feed (SSE) + live map | M3 |
+| `/alerts/:id` | Detail: collar telemetry, camera images, nearest rangers, Dispatch / Cancel / Broadcast, timeline | M3 |
+| `/collars` | Collar list: battery, last ping, signal lost | M3 |
+| `/analytics` | Filters, KPI cards, trend chart, breakdown table, hotspot/heatmap toggle, patrol gaps | M4 |
+| `/analytics/conflicts` | Conflict trends: monthly, top stretches, repeat sites, response time | M4 |
+| `/reports` | Export (PDF/CSV) and audit history | M4 |
 
 Park selector in the top bar (Yala ↔ Sinharaja ↔ Wilpattu) switches config-driven content everywhere (incident types, species, zones). This is the "system flexibility" demo.
 
@@ -348,7 +352,7 @@ Park selector in the top bar (Yala ↔ Sinharaja ↔ Wilpattu) switches config-d
 
 | Day | Date | Work |
 |---|---|---|
-| 1 | Sun 4 Oct | Phase 0: monorepo, DB, shared types, API core, web shells, offline lib, seed, CI |
+| 1 | Sun 4 Oct | Phase 0: monorepo, DB, shared types/UI, API core, separate Ranger/Ops shells, Ranger offline package, seed, CI |
 | 2 | Mon 5 Oct | Each member: API endpoints + services for own module, ranger/ops screens (happy path) |
 | 3 | Tue 6 Oct | Alternate/exception flows, offline behaviours, simulators wired, tests to ≥ 60% |
 | 4 | Wed 7 Oct | Cross-module integration (live SSE, shared map, seed data), UI polish, tests ≥ 80%, **feature freeze** |
@@ -360,9 +364,9 @@ Park selector in the top bar (Yala ↔ Sinharaja ↔ Wilpattu) switches config-d
 ## 14. Demo script (use this to verify everything works end to end)
 
 1. Switch park to **Yala**, then **Sinharaja**: incident types and species change (flexibility).
-2. Manager assigns a route to Ranger → Ranger app shows the assignment.
+2. Manager assigns a route in Ops → Ranger app shows the assignment.
 3. Ranger starts patrol (GPS simulator), toggles **Offline**, adds a waypoint, reports a **snare incident** with a photo → sees "Saved on device".
-4. Ranger goes **Online** → outbox flushes → incident and patrol appear on the dashboard in real time.
+4. Ranger goes **Online** → outbox flushes → incident and patrol appear in Ops in real time.
 5. Run `sim:collar --scenario breach` → alert appears on the dashboard (SSE) with the camera images → manager dispatches the nearest ranger → ranger accepts, arrives, resolves.
 6. Villager SMS `ELEPHANT near Kelegama` through the mock gateway → conflict inbox → liaison closes with outcome notes.
 7. Analytics: filter Wilpattu / 6 months / Snares → KPIs, hotspots, patrol gaps, conflict trends → export PDF/CSV.

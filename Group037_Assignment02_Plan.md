@@ -103,9 +103,9 @@ Verified from their PDF. Use these as the backbone of the critique. Weights are 
 | Language | **TypeScript** everywhere | One language, shared types between API and UI |
 | Monorepo | **pnpm workspaces** | Fast, free |
 | Frontend | **React + Vite**, **React Router**, **Tailwind CSS** | Free, quick |
-| "Mobile" ranger app | Same React app as an **installable PWA** (mobile-first layout, `/ranger/*`) with a service worker via **Workbox / vite-plugin-pwa** | Real offline behaviour without a native toolchain. The spec only needs usable mobile UI plus offline sync. |
+| "Mobile" ranger app | Separate React app as an **installable PWA** (mobile-first layout, root-relative routes) with a service worker via **Workbox / vite-plugin-pwa**; offline support lives in `packages/offline` | Real offline behaviour without a native toolchain. The spec only needs usable mobile UI plus offline sync. |
 | Offline storage | **Dexie.js** (IndexedDB wrapper) plus an **outbox/sync queue** | Gives local store, pending sync and auto-sync on reconnect |
-| Dashboard | Same app, `/ops/*` desktop layout | One build |
+| Dashboard | Separate React app in `apps/ops` with root-relative routes | Independent desktop build, without PWA/offline dependencies |
 | Maps | **Leaflet** + **OpenStreetMap** tiles (**leaflet.heat** for heatmaps) | Free; for the demo, tile usage is light and attribution is shown |
 | Charts | **Recharts** | Free |
 | Backend | **Node.js + Fastify** (or NestJS if the team prefers structure) with **Zod** validation | Fast and simple; modular per use case |
