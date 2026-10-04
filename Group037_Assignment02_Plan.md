@@ -1,260 +1,156 @@
-# Group 037: Assignment 02 Plan
-**SE3070 | Reviewing Group_39 | Deadline: Fri 9 Oct 2026, 11:59 PM | Today: Sun 4 Oct (5 days left)**
+﻿# Group 037: Assignment 02 Plan
 
----
+**SE3070 | Reviewing Group 039 | Revised 5 October 2026 | Deadline: 9 October 2026, 11:59 PM (Asia/Colombo)**
 
-## 1. What we must deliver
+## 1. Requirements and sources
 
-| # | Deliverable | Who | Marks |
-|---|---|---|---|
-| 1 | One group PDF report: critique + improved design (use case diagram, class diagram, sequence diagrams, scenarios, UI) | Group | 30 |
-| 2 | One implemented use case per member (end-to-end, matches the improved design) | Each | 30 |
-| 3 | Code quality (SOLID, patterns, clean code, docs) | Each | 20 |
-| 4 | Unit tests, aiming for **>80% coverage** (positive, negative, edge, error) | Each | 20 |
-| 5 | Report extras: page 1 has Group ID, campus (Malabe) and all reg numbers; UI screenshots with short flow descriptions; GitHub URL; **AI prompts in an Appendix** | Group | n/a (compliance) |
+Use `CSSE/prompt.txt` and the Assignment 02 specification as the supplied assessment baseline, and `Case study 01.pdf` for domain requirements. Group 039's PDF is the received design to critique, not an authority on correct design. Group 037's earlier PDF is background, not a substitute review target. Page references below are physical PDF pages.
 
-Rules to remember:
-- Preserve the original use cases. Broaden them with justification. Do not replace them (G39's use cases are not too simple to modify).
-- Do **not** build login/logout/admin. A mock "switch user" is fine.
-- IoT/ML (collars, camera traps, SMS gateway) can be **mocked with dummy data**.
-- UI must stay consistent with the storyboards/wireframes in **our** report.
-- The repo must **not** change after the deadline, and the demo code must equal the repo code.
-
----
-
-## 2. G39's design: summary and our scope strategy
-
-G39 has **4 business use cases** (3 members, so one did two):
-
-| G39 use case | Original author |
-|---|---|
-| Report Wildlife Incidents | Wijesundara |
-| Manage Ranger Patrols | Wijesundara |
-| Monitor Wildlife & Collar Alerts | Rathnayaka |
-| Analyze Conservation Data & Generate Reports | Jayakodi |
-
-The spec says "covering the 4 substantial business use cases is sufficient", and we have exactly 4 members. **One use case each**. G39's design is thin, so we get a bigger scope by **broadening each use case** with well-justified additions that come from gaps against the case study. We do not invent new use cases for the sake of it.
-
-### Proposed assignment (swap names as you like)
-
-| Member | Use case (original name kept) | Broadened scope (justified by case study gaps) |
+| Deliverable | Responsibility | Marks |
 |---|---|---|
-| **M1** | **Report Wildlife Incident** | Ranger incident reporting (offline-first, sync queue, validation, configurable incident types/species per park, severity, photo). **Plus** community report intake (villager via SMS-simulator or basic app) and camera-trap image review, all stored as one `Incident` with `source = RANGER / COMMUNITY / CAMERA_TRAP`. Dashboard incident list with status workflow (New → Verified → Resolved). |
-| **M2** | **Manage Ranger Patrols** | Manager assigns routes (conflict check), ranger starts/tracks/ends patrol, GPS breadcrumbs plus manual waypoints, early end (partial), crash recovery, offline storage plus sync, coverage calculation per sector grid, neglected-sector view. |
-| **M3** | **Monitor Wildlife & Collar Alerts** | Collar feed simulator, geofence/high-risk-zone check (PostGIS), alert creation with severity, **full dispatch lifecycle** (Dispatch → Accept/Reject → On the way → On scene → Resolved), nearest-ranger suggestion, camera-trap verification, collar offline detection, false-positive cancel, escalation when no ranger is available. |
-| **M4** | **Analyze Conservation Data & Generate Reports** | Filters (park/time/category), KPIs, trend chart, hotspot heatmap, patrol-coverage gaps, **human-wildlife conflict trends**, export PDF/CSV, audit log of queries. Consumes data from M1/M2/M3 via a seeded dataset plus the live DB. |
+| One collaborative PDF: critique and justified improved diagrams, scenarios and UI | Group | 30 |
+| One substantial use case implemented end to end, aligned with the improved design | Each member | 30 |
+| Maintainable code and appropriate best practices/patterns | Each member | 20 |
+| Meaningful positive, negative, edge and error tests; target **>80% coverage** | Each member | 20 |
 
-Group-level work (shared by all): report critique, improved diagrams, shared foundation, integration, demo data.
+The cover must contain Group 037, campus and all four registration numbers. Use Malabe as currently recorded in the project, and verify cover details before submission. Include actual app screenshots with short flow descriptions, the GitHub URL and all AI prompts in the appendix. One group member submits.
 
----
+Preserve the four original substantial use cases and their relevant main, alternate and exception flows. Changes need reasons tied to real problems. Mock IoT/ML behavior and the SMS gateway while implementing surrounding business workflows. Login/logout and privilege administration are not graded use cases; use a seeded demo role switcher. Demo the submitted repository commit and do not modify the repository after the deadline; our stricter working rule is to freeze at submission.
 
-## 3. Critique of G39's design: findings to put in the report
+## 2. Scope and ownership
 
-Verified from their PDF. Use these as the backbone of the critique. Weights are 90% functional design, 10% interaction design.
+Group 039 presents four substantial use cases. Its cover lists three members, but the patrol section has no explicit author header; do not assume its author.
 
-### 3.1 Requirement coverage gaps (vs. the case study)
-1. **Community and conflict reporting is missing.** Villager is wired to "Report Wildlife Incidents" (a ranger use case). There is no SMS/short-code channel, no Community Liaison Officer actor, and no conflict case handling.
-2. **Camera traps are missing** from the use case diagram, class diagram and scenarios (the case study requires reviewing images to identify species or poachers).
-3. **Offline sync is never a first-class use case.** It is buried in alternates and has no sync-conflict or retry design in the class model (`syncStatus: Boolean` is too weak; use an enum such as `PENDING / SYNCING / SYNCED / FAILED`).
-4. **System flexibility (per-park configuration of hazard types, workflows, species) is absent.** Incident type is a free `String`.
-5. **High-risk zones are not modelled.** `AnimalCollar.checkZoneBreach(zone: HighRiskZone)` references a class that does not exist in the diagram. There is no `Park`, `Species` or `Zone` class either.
-6. **The alert lifecycle is incomplete.** Alerts are dispatched but there is no ranger accept/reject/arrive/resolve, so no closed loop.
-7. **Patrol coverage over time is only a number** (`computeCoverage(): Floa`). There is no sector or grid concept, so "neglected areas" cannot actually be derived.
-8. **Researcher** is an actor but has no class and no generalization with Park Manager. `Ministry` is an actor but never interacts; it only receives an exported file, so it should be an external stakeholder or removed as an actor.
-
-### 3.2 UML correctness issues
-- **Use case diagram:** `Park Manager` is linked to Monitor Alerts but Field Ranger (the one who responds) has no respond use case. No Community Liaison Officer. Include/extend are used loosely ("Record Wildlife Geolocation" is always done, so `<<include>>` is right, but "Attach Photo" being `<<extend>>` is fine while the scenario text treats it as optional only in an alternate flow; make them consistent). GPS sensor actor is the true trigger but sits as a plain association with no sensor-initiated flow.
-- **Class diagram:** `PatrolRoute.getRoutePath(): List<Waypoint>` while `Waypoint` is **composed by `PatrolSession`** (a part cannot belong to two wholes). `PatrolRoute`↔`PatrolSession` uses a hollow diamond with unclear multiplicities. Typos (`Floa`, `Date`/`DateTime` mix). `User.role: String` duplicates the subclass hierarchy. No `Researcher`. `ConservationReport` has no association to the data it reports on. `AnalyticsEngine` is a God-class style "engine" with both hotspot and trend logic (SRP). `SensorAlert -> AnimalCollar` is drawn as a dependency in the wrong direction semantically (the collar triggers; the alert should reference the collar).
-- **Sequence diagrams:**
-  - *Patrol:* no GPS service lifeline, no periodic loop, the Park Manager assignment step is missing even though the scenario's main flow starts with it, and "saveLocalBackup" is drawn as a return message to the app instead of a call to local storage.
-  - *Incident:* the network-availability check has no message, offline branch and online branch share lifelines inconsistently, and the manager's view step is absent.
-  - *Monitor alerts:* a `new SensorAlert` creation arrow is fine, but `dispatchRangerNotification` is sent from the HUD to the `SensorAlert` entity (entities should not receive UI-originated commands), and the ranger's response is missing.
-  - *Analytics:* numbering is inconsistent (`2.`, `3.`, `33.`) and controllers call entity classes directly.
-- **Use case scenarios:**
-  - Jayakodi's header shows another member's reg number (IT23684362 belongs to Rathnayaka).
-  - The patrol scenario names the Park Manager as primary actor but most steps are the ranger's.
-  - The monitor scenario's "Dispatch" broadcasts to *all* active units rather than a chosen nearest ranger.
-  - Immobility alerts appear in the main flow but nowhere in the class model.
-
-### 3.3 Interaction design / HCI issues
-- **Domain inconsistency (strong point):** Monitor wireframes use *Mara Sanctuary, lion, rhino, giraffe* and Kenyan coordinates (-2.3, 37.8). The patrol wireframe uses *Bear Notch Pass* with New Hampshire coordinates (44°N, 71°W). These are not Sri Lankan parks or species.
-- **Storyboard tone:** the patrol storyboard shows helmeted, militarised figures and a fortress, which does not match a conservation ranger context. The monitor storyboard is an African savanna.
-- **Incident flow:** the high-fidelity form puts *Crop Damage* in the ranger incident categories (a community conflict type), has no severity, no species and no "unsure" option. The final screen titled *Offline Cashed Confirmation* shows an **Offline Map Caching** dialog, which does not match the storyboard. Typos: "Dashbord", "Cashed", "Wirefram".
-- **Glanceability/field usability:** dense, small monospace text and many tiny chips are hard to read outdoors (small touch targets, low contrast in sunlight). Primary actions are not consistently placed. There is no sync status indicator beyond text.
-- **Feedback and error prevention:** nothing shows the GPS accuracy state or a retry path for the ranger; "End Session" is red and adjacent to "Add Waypoint", with no confirmation, so accidental taps are possible.
-- **Analytics UI:** the "Confidence 94.2%" is unexplained, the Spatial Heatmap tab is never designed, and there is no empty or error state.
-- **Strengths to acknowledge:** a clear offline banner on the patrol/incident screens, consistent navigation between the low- and high-fidelity versions, good KPI-first layout for the analytics dashboard, and sensible use of severity colours.
-
-(Keep a "Strengths" subsection in each area. The rubric asks for both strengths and weaknesses.)
-
-### 3.4 Improved design to draw (all diagrams must tie back to a critique point)
-1. **Use case diagram v2:** add Community Liaison Officer, Researcher (generalizing Park Manager's analytics access), Villager → Submit Community Report (SMS / app), Review Camera Trap Images (extends Report Incident), Respond to Alert (Ranger), Sync Offline Data (`<<include>>` from reporting/patrol). Ministry becomes a note/external recipient.
-2. **Class diagram v2:** add `Park`, `Zone`/`HighRiskZone`, `Species`, `IncidentType` (config), `Incident` (with `source`, `status`, `SyncStatus` enum), `CameraTrapImage`, `CommunityReport` (or Incident source), `Alert` + `Dispatch` with state, `SyncQueueItem`, `PatrolAssignment`, `GridCell` (coverage), `Researcher`. Fix the composition problem (`Waypoint` belongs to `PatrolSession` only; route points become `RoutePoint`). Split analytics into `HotspotService`, `TrendService`, `ReportExporter`.
-3. **Sequence diagrams v2** (4 diagrams, one per use case): add the missing lifelines (GPS service, local store, sync service, manager UI) and the missing alt/opt/loop fragments; consistent numbering.
-4. **Use case scenarios v2:** correct the actors, add the community/camera-trap and full alert lifecycle flows, and add sync-failure and duplicate handling.
-5. **UI v2:** Sri Lankan context (Yala, Wilpattu, Udawalawe; elephant, leopard; real coordinates around 6.3°N 81.5°E for Yala); larger touch targets; high-contrast "sunlight" theme; severity/type icons plus labels (not colour only); a persistent sync badge; confirmation on End Patrol; empty and error states.
-
----
-
-## 4. Technology stack (all free and open source)
-
-| Layer | Choice | Why |
+| Owner slot | Preserved use case | Required implementation |
 |---|---|---|
-| Language | **TypeScript** everywhere | One language, shared types between API and UI |
-| Monorepo | **pnpm workspaces** | Fast, free |
-| Frontend | **React + Vite**, **React Router**, **Tailwind CSS** | Free, quick |
-| "Mobile" ranger app | Separate React app as an **installable PWA** (mobile-first layout, root-relative routes) with a service worker via **Workbox / vite-plugin-pwa**; offline support lives in `packages/offline` | Real offline behaviour without a native toolchain. The spec only needs usable mobile UI plus offline sync. |
-| Offline storage | **Dexie.js** (IndexedDB wrapper) plus an **outbox/sync queue** | Gives local store, pending sync and auto-sync on reconnect |
-| Dashboard | Separate React app in `apps/ops` with root-relative routes | Independent desktop build, without PWA/offline dependencies |
-| Maps | **Leaflet** + **OpenStreetMap** tiles (**leaflet.heat** for heatmaps) | Free; for the demo, tile usage is light and attribution is shown |
-| Charts | **Recharts** | Free |
-| Backend | **Node.js + Fastify** (or NestJS if the team prefers structure) with **Zod** validation | Fast and simple; modular per use case |
-| Database | **PostgreSQL + PostGIS** | Real geofence and spatial queries (`ST_Contains`, `ST_DWithin`) |
-| ORM / migrations | **Drizzle ORM** (or Prisma) | Free; typed |
-| Real-time | **Server-Sent Events** (or Socket.IO) | Live alerts to the dashboard and ranger app |
-| Mocks | `collar-simulator`, `sms-gateway-mock`, `camera-trap-feeder` (small Node scripts / API endpoints) | IoT is allowed to be mocked |
-| PDF export | **pdfmake** (or PDFKit); CSV via a simple writer | Free |
-| Testing | **Vitest** (unit) + **@vitest/coverage-v8**, **Testing Library** (UI), **Supertest** (API) | Free; coverage reports for the 80% target |
-| Quality | **ESLint + Prettier + Husky/lint-staged** | Free |
-| CI | **GitHub Actions** (lint, test, coverage) | Free for public/student repos |
-| Dev infra | **Docker Compose** (Postgres+PostGIS, API, web) | One-command start for the demo |
-| Diagrams (report) | **draw.io (diagrams.net)** or **PlantUML** | Free |
-| UI mockups | **Figma free tier** or **Penpot** (open source) | Free |
+| M1 | Report Wildlife Incident | Ranger reporting, optional photo, location/error handling, offline save/sync; small community SMS/basic-form intake, liaison response and camera-review additions |
+| M2 | Manage Ranger Patrols | Assign/reassign and conflict checks; prepare offline route; start/track/manual waypoint/end; partial completion, GPS/battery/recovery paths, sync and time-based coverage |
+| M3 | Monitor Wildlife & Collar Alerts | Simulated telemetry; breach/immobility/diagnostic rules; signal-loss scan; alert details/acknowledgment; targeted dispatch/response, safe return, cancellation and broadcast escalation |
+| M4 | Analyze Conservation Data & Generate Reports | Filters, incident statistics, heatmap/hotspots, patrol gaps, community/collar conflict trends, PDF/CSV export, query audit and original error/skip-export paths |
 
-Auth: out of scope. Use a seeded **"Acting as" user switcher** (Ranger / Manager / Liaison / Researcher) to demo roles.
+Record actual names and registration numbers for M1-M4 before implementation. Do not infer allocation from Assignment 01. Proposed shared-work leads: M2 for offline/route preparation with M1 reviewing incident/media sync; M3 for events/integration; M4 for seed/analytics contracts. All members contribute critique, diagrams and report evidence. A report assembler and release coordinator remain to be selected.
 
----
+Prioritize complete original flows over breadth. Community intake, camera review and park configuration should be small but demonstrable. Duplicate suggestions, repeat-site/response-time analytics, animated patrol replay, dark theme and additional algorithms are optional after required flows pass. A static patrol trail and monthly/boundary conflict counts form the baseline. Retain PDF and CSV exports shown in Group 039. Optional features become report commitments only if implemented and tested.
 
-## 5. Architecture
+## 3. Evidence-based critique
 
-```
-/wildlife-guardian            (monorepo)
-├─ packages/
-│  └─ shared/                 types, Zod schemas, enums, constants (single source of truth)
-├─ apps/
-│  ├─ api/
-│  │  └─ src/
-│  │     ├─ core/             config, db, event-bus, error handling, SSE hub
-│  │     └─ modules/
-│  │        ├─ incidents/     (M1)  controller / service / repository / validators / tests
-│  │        ├─ patrols/       (M2)
-│  │        ├─ alerts/        (M3)  collars, zones, dispatch
-│  │        └─ analytics/     (M4)  hotspots, trends, exporters
-│  └─ web/
-│     └─ src/
-│        ├─ shared/           layout, API client, offline-sync lib, map components
-│        ├─ ranger/           mobile screens (M1, M2, M3 ranger side)
-│        └─ ops/              dashboard screens (all four)
-├─ tools/                     simulators + seed data
-├─ docs/                      diagrams, screenshots, report assets
-└─ docker-compose.yml
+The critique criterion weights functional design 90% and interaction design 10%. Include strengths and weaknesses. Separate observed defects from architecture preferences and usability concerns requiring measurement.
+
+| ID | Evidence in Group 039 | Assessment and justified improvement |
+|---|---|---|
+| C1 | Villager appears p. 2; p. 5 mentions villager reports; pp. 11-13 describe ranger intake | Community intake/response is under-specified, not entirely absent. Add SMS/basic-form intake, unresolved-landmark review and liaison response. |
+| C2 | Four scenarios lack dedicated camera-image review | Case study p. 2 requires staff review. Add a small image queue; person presence alone is not proof of poaching. |
+| C3 | Offline incident save/auto-sync p. 12 and patrol caching p. 19; Boolean sync status p. 3 versus named states p. 14 | Preserve offline strengths; define durable queue, acknowledgments, retries and conflict handling. A separate sync use-case oval is not required. |
+| C4 | Class diagram p. 3 references HighRiskZone without defining it; park configuration is not explicit | Add park/zone/type/species configuration and explain per-park workflow/threshold behavior. |
+| C5 | Ranger participates in monitoring p. 2; p. 26 describes broadcast, p. 28 nearest unit | Clarify targeted dispatch with broadcast escalation, ranger response and closure. The gap is lifecycle detail, not absence of the ranger. |
+| C6 | Coverage claims pp. 3, 18-20 lack calculation/data definitions | Define spatial denominator, time window and neglected areas. A grid is our choice, not a UML requirement. |
+| C7 | Patrol sequence p. 21 omits manager assignment/GPS polling loop and draws local backup as a return | Add assignment, tracking loop and explicit local persistence/sync sequences. |
+| C8 | Incident sequence p. 14 models optional photo and online/offline paths but not later retry/conflict recovery | Retain these strengths; add reconnect/media/storage failure and retained-form behavior. |
+| C9 | Analytics p. 6 permits skipping export but makes download an unconditional postcondition | Make download conditional. Preserve no-data, timeout and export-failure paths. |
+| C10 | Patrol pp. 18-20 assumes online operation/central persistence while allowing offline completion | Permit prepared offline operation, with central persistence after sync. Explicitly justify prototype battery/encryption changes. |
+| C11 | Class diagram p. 3 mixes a collar-to-alert dependency with multiplicities; planned/recorded waypoints are ambiguous | Define a clear association and distinguish route geometry from session observations. Returning Waypoint references does not prove double composition. |
+| C12 | Analytics sequence p. 7 has inconsistent numbering; Jayakodi's p. 4 header repeats Rathnayaka's number | Correct notation/presentation and identity inconsistencies; do not infer patrol authorship. |
+
+Interaction strengths include incident GPS lock/accuracy feedback on pp. 16-17, patrol precision/offline feedback on p. 24, optional evidence, and the KPI/filter layout on pp. 9-10. Preserve them.
+
+Interaction improvements:
+
+- Replace the offline map-download dialog on p. 17 with an incident-save confirmation.
+- Use Sri Lankan sample context consistently; patrol pp. 23-24 and monitoring pp. 29-30 use nonlocal places, coordinates or wildlife.
+- Add GPS failure/retry, empty/error, failed-sync and end-patrol confirmation states. Do not claim success-state GPS accuracy is missing.
+- Measure legibility, contrast and touch targets on actual screens; scaled PDFs cannot establish measured failures.
+- Explain/remove the analytics confidence percentage and design the heatmap state.
+- Separate report source from category: a ranger can report crop damage. Species/severity are enhancements, not proof the original form is invalid.
+
+## 4. Improved design and traceability
+
+1. Preserve the four business use cases. Associate manager and researcher with analytics; shared access alone does not justify inheritance or require matching domain classes.
+2. Specify community intake, camera review and ranger response with actors/scenarios. Use include/extend only where semantics fit. Deferred network synchronization must not be required to complete an offline save.
+3. Model entities/states from the implementation plan. Services improve testability; controller/entity calls alone are not invalid UML, and two related operations do not establish a God class.
+4. Draw four primary sequence diagrams with supporting fragments/diagrams for all retained alternate/exception paths. Correct loops, conditions, lifelines and creation/return notation.
+5. Treat Ministry as an external report recipient unless direct interaction is implemented. Make manager/ranger patrol responsibilities explicit.
+6. Agree scenarios/wireframes before implementing the corresponding flows; keep report and code synchronized after justified changes.
+
+The prior review checked [OMG composition semantics](https://www.omg.org/spec/UML/2.5/PDF) and [Include semantics](https://www.omg.org/spec/UML/ISO/19505-2/PDF): references are not composite ownership, and included behavior executes within its including behavior rather than being deferred until later connectivity.
+
+Create `docs/traceability.md` during implementation. Each flow needs source/page, retained/changed decision, justification/critique ID, improved scenario/diagram, UI/API, owner and test/evidence.
+
+| Owner | Source flow groups | Required evidence |
+|---|---|---|
+| M1 | G39 pp. 11-14: online/offline, auto-sync, no photo, GPS/camera/storage failure | Save/sync/recovery/error tests; community/camera additions mapped to C1/C2 |
+| M2 | G39 pp. 18-21: assign/reassign, track/end, skipped manual waypoint, offline, unavailable ranger, GPS loss, battery | Offline preparation, assignment/recovery/coverage/battery tests |
+| M3 | G39 pp. 25-27: breach/immobility, dispatch/acknowledgment, low severity, safe return, signal loss, no unit | Rule/state tests, audit history, dispatch/broadcast demonstration |
+| M4 | G39 pp. 4-7: reports/filters, heatmap, conflicts, optional export, no data, timeout/export error | Aggregation/export assertions, preserved filters/report, query audit |
+
+These groups are a starting checklist; expand into individual flow rows.
+
+## 5. Architecture and technical contract
+
+Keep the existing TypeScript/pnpm architecture: three apps (@wr/api, @wr/ranger, @wr/ops), three shared packages (@wr/shared, @wr/ui, @wr/offline), and four Compose services (db, api, ranger, ops). Preserve current imports, startup scripts, ports, app routers and module folders. This plan extends the repository; it does not replace or re-scaffold it.
+
+Fastify, React/Vite, Drizzle/postgres, Dexie, Leaflet/Recharts and Vitest are declared dependencies; an outbox, DB schema, business routes, SSE and exporters are still future implementation. Do not equate a declared dependency with a completed feature. Proposed data entities/endpoints describe required behavior, not a mandatory new table/service for every name.
+
+```text
+apps/api/src/core/              configuration, errors, DB, clock, events
+apps/api/src/server.ts          existing createServer and health route
+apps/api/src/index.ts           existing startup
+apps/api/src/modules/reference/ existing reserved reference/config module
+apps/api/src/modules/incidents/ M1
+apps/api/src/modules/patrols/   M2
+apps/api/src/modules/alerts/    M3
+apps/api/src/modules/analytics/ M4
+apps/api/drizzle/               existing reserved schema/migration location
+apps/ranger/                   mobile PWA (M1/M2/M3 screens)
+apps/ops/                      desktop dashboard
+packages/shared/               contracts, validation, enums, geo helpers
+packages/ui/                   shared components
+packages/offline/              Ranger persistence and sync
+tools/                         reserved scripts/assets, not workspace packages
+docs/                          planned diagrams, traceability, report assets, AI log
 ```
 
-**Patterns to apply (and name in the report/code comments):**
-- **Repository** (data access, easy to mock in unit tests)
-- **Strategy** (hotspot algorithms, export formats PDF/CSV, incident-type workflows per park)
-- **State** (Alert: `NEW → DISPATCHED → ACCEPTED → ON_SCENE → RESOLVED`, plus `REJECTED` and `CANCELLED`; Patrol: `ASSIGNED → ACTIVE → COMPLETED / PARTIAL`)
-- **Observer / event bus** (a collar ping raises an event; the alert module and SSE hub react)
-- **Adapter** (SMS gateway, collar feed, camera-trap feed behind interfaces so mocks are swappable)
-- **Outbox / Command** (offline sync queue)
-- **Factory** (create Incident by source)
+[Group037_Implementation_Plan.md](./Group037_Implementation_Plan.md) maps each planned capability onto existing code and separates the verified baseline from proposed additions. Reuse current Clock, AppError, Role, IncidentStatus and Coordinates contracts. Keep React hooks in Ranger, generic offline logic in @wr/offline, and common maps/components in @wr/ui. Community/camera workflows remain inside incidents; collars/dispatch remain inside alerts. No extra app, microservice, queue broker or database is required.
 
-**Flexibility requirement (system must be configurable per park):** a `park-config` (DB table plus seed JSON) holds incident types, species lists, zones, workflow rules, and alert thresholds. Show the demo by switching *Yala (open grassland)* ↔ *Sinharaja (dense jungle)* and seeing different incident types and species.
+Implement planned APIs through createServer and the reserved modules. Consolidate logical entities into a small Drizzle schema where sensible. Reuse Fastify injection tests; add only dependencies actually needed for missing export/coverage/offline-test capabilities. Preserve existing commands and document future migration/seed/simulator commands only after they exist and work. Use patterns where useful; pattern counts or arbitrary function-length limits do not establish quality.
 
-**Core data (sketch):** `parks`, `zones(geometry, kind)`, `species`, `incident_types(park_id, …)`, `users(role)`, `incidents(source, status, geom, sync fields)`, `incident_media`, `patrol_routes`, `patrol_assignments`, `patrol_sessions`, `track_points`, `waypoints`, `grid_cells`, `collars`, `collar_pings`, `alerts`, `dispatches`, `camera_traps`, `camera_images`, `report_audit`.
+Demonstrate flexibility by switching Yala/Sinharaja configurations, showing changed types/species, zones and at least one workflow or threshold setting. Label synthetic seed data as demo data.
 
----
+## 6. Schedule and completion gates
 
-## 6. Per-member scope and definition of done
+The 5 October review found app/API shells, not finished business modules. Verify foundation exit criteria. Dates are targets; defer optional extras before changing required flows.
 
-Every member delivers: **(a)** API module plus unit tests, **(b)** UI screens consistent with the report wireframes, **(c)** all scenarios in their use case (main, alternate and exception flows), **(d)** coverage ≥ 80% on their module.
-
-### M1: Report Wildlife Incident (+ community and camera-trap sources)
-- Ranger form: type (per-park config), severity, species, description, photo, auto GPS (manual fallback).
-- Validation (missing fields, GPS fail, photo/storage failure → submit without photo).
-- Offline: save to IndexedDB, mark `PENDING`, auto-sync on reconnect with retry/backoff; corrupted-record handling.
-- Community report: SMS parser (`ELEPHANT near Kelegama`) via mock gateway, plus a basic app form; incomplete-report follow-up.
-- Camera trap: image feed (mock), staff species/poacher review.
-- Dashboard: incident list/detail/status workflow, duplicate flag for nearby reports.
-- Tests: validators, SMS parser, sync queue (success/fail/retry), status transitions, repository mocks.
-
-### M2: Manage Ranger Patrols
-- Manager assigns route (rejects if ranger already active), reassign before start.
-- Ranger: start, GPS breadcrumbs (simulated GPS in demo), manual waypoint, end, **end early (partial, confirm)**, restore after app crash.
-- Offline-first tracking and sync; low-battery auto-save.
-- Coverage: distance, duration, grid-cell coverage %, sector status "surveyed / neglected for N days"; dashboard coverage map.
-- Tests: distance/coverage maths, state transitions, assignment conflicts, offline sync, edge cases (zero points, duplicate points).
-
-### M3: Monitor Wildlife & Collar Alerts
-- Collar simulator posts pings; geofence check with PostGIS; severity rules; debounce duplicates.
-- Dashboard live map plus alert feed (SSE); detail panel (battery, speed, nearest settlement).
-- Dispatch: nearest-available rangers list, dispatch, ranger accept/reject (mobile), on-the-way/on-scene/resolved, manager cancel (false positive), reassign on reject, **timeout when ranger unreachable**.
-- Camera trap verification before dispatch; collar offline ("signal lost") detection; auto-resolve when the animal returns; escalation when no ranger is nearby.
-- Tests: geofence logic, state machine (all legal and illegal transitions), nearest-ranger selection, timeout handling, event bus.
-
-### M4: Analyze Conservation Data & Generate Reports
-- Filters (park, date range, category), KPIs, incident-frequency trend, sector breakdown table.
-- Hotspots (grid-density strategy), patrol-gap area, heatmap toggle.
-- **Human-wildlife conflict trends:** by month and boundary stretch, repeat-site detection, response times.
-- Export PDF and CSV; audit log of queries; empty/error states (no records, timeout, export failure keeps the on-screen report).
-- Seed script generating 6+ months of realistic Sri Lankan data (so the analytics look real, and everyone can test with it).
-- Tests: aggregation maths, hotspot strategy, trend calc, exporter output, error paths.
-
----
-
-## 7. Timeline (5 days to deadline)
-
-| Day | Date | Everyone | Milestone |
-|---|---|---|---|
-| 1 | **Sun 4 Oct** | Confirm assignment and stack. Foundation scaffold (monorepo, DB schema, shared types, mock user switcher, CI). Start critique doc. | Repo live, `docker compose up` works |
-| 2 | **Mon 5 Oct** | Core backend of own module + draft UI. **Report:** critique section drafted; v2 use-case and class diagrams. | Core happy path works per module |
-| 3 | **Tue 6 Oct** | Alternate/exception flows, offline behaviour, unit tests. **Report:** sequence diagrams v2, scenarios v2. | All flows implemented, coverage ≥ 60% |
-| 4 | **Wed 7 Oct** | Integration across modules (shared seed data, live alerts, dashboards). UI polish vs wireframes. Tests to ≥ 80%. | **Feature freeze (evening)** |
-| 5 | **Thu 8 Oct** | Bug fixing only. Screenshots, flow descriptions, UI v2 wireframes into the report. Compile PDF. Appendix of AI prompts. | Report v1 complete |
-| 6 | **Fri 9 Oct** | Final review, tag release, **submit before ~6 PM** (buffer for upload problems). **No commits after submission.** | Submitted |
-
----
-
-## 8. Team workflow
-
-- **Branching:** `main` (protected) ← `feat/<member>-<module>` via PR, with one reviewer; squash-merge. Each member only touches their module folder, plus the shared package through small PRs, to avoid conflicts.
-- **Commits:** Conventional Commits (`feat:`, `fix:`, `test:`). The history shows who did what (examiners can see it).
-- **Definition of Done (per PR):** lint clean, tests pass, coverage for the module ≥ 80%, UI matches the wireframe, scenario steps checked off.
-- **Contracts first:** API shapes and enums live in `packages/shared` on day 1 so UI and API work in parallel.
-- **Keep an AI-prompt log** (`docs/ai-prompts.md`) from now on. It is required in the report appendix.
-
----
-
-## 9. Report outline (single PDF)
-
-1. **Cover:** Group_037, campus **Malabe**, all four reg numbers, reviewed group (Group_39).
-2. **Executive summary** of findings.
-3. **Critique of G39's design** (functional 90%): use case diagram, class diagram, sequence diagrams ×4, use case scenarios ×4, strengths and weaknesses, requirement-coverage matrix (case study requirement → covered / partial / missing).
-4. **Critique of interaction design** (10%): usability, logical flow, HCI heuristics (Nielsen), domain consistency issues.
-5. **Proposed improvements:** each change = *Problem → Justification → Updated diagram/UI*. Use a table linking every change to a critique item.
-6. **Implementation:** per member, with UI screenshots, short flow descriptions, design patterns used and test coverage screenshot.
-7. **GitHub repo URL** (and release tag).
-8. **Appendix:** all AI prompts.
-
----
-
-## 10. Risks and mitigations
-
-| Risk | Mitigation |
+| Date (2026) | Work and gate |
 |---|---|
-| 5 days is tight | Foundation done on day 1; feature freeze Wed; no gold-plating |
-| Offline sync is hard | Build the outbox library once (shared), test it heavily, demo with browser DevTools "Offline" |
-| PostGIS setup trouble | Docker image `postgis/postgis`; fallback: Turf.js geofence in code behind the same interface |
-| Merge conflicts | Module ownership, small PRs, contracts in `shared` |
-| Coverage < 80% | Pure-logic services with injected repositories; track coverage daily in CI |
-| Report written last-minute | Critique and diagrams proceed in parallel from day 1 |
-| Demo mismatch with repo | Tag `v1.0-submission`; demo from that tag only |
+| Mon 5 Oct | Record owners; agree corrected scenarios/wireframes/contracts; finish migrations, seed, role switcher and tested offline foundation; start core flows |
+| Tue 6 Oct | Complete core workflows and original alternate/exception paths; integrate data and write meaningful tests |
+| Wed 7 Oct | Target feature freeze: integrated demos, >80% coverage per use case, report design consistent with implementation |
+| Thu 8 Oct | Fix defects, rehearse clean-clone setup, capture actual UI/coverage evidence, assemble report and AI appendix |
+| Fri 9 Oct | Final verification; tag and record SHA; submit around 6 PM for buffer before official 11:59 PM deadline |
 
----
+## 7. Team workflow and testing
 
-## 11. Decisions we need from the group
+- Use module branches and small reviewed PRs. Coordinate shared contracts and preserve member attribution.
+- Each member supplies API/UI work, agreed flows, meaningful tests, screenshots and report contributions.
+- Target **>80% line and branch coverage per use case**; implement an 85% threshold as margin. Include untested sources and report each member's API/UI/domain scope, plus shared offline coverage separately. A combined API-package percentage is insufficient.
+- Coverage enforcement remains to be implemented; reviewed Vitest/CI files did not enforce it. Positive/negative/edge/error assertions matter as well as percentage.
+- Verify offline persistence, restart, reconnect, media retries and stale-update rejection.
+- Keep exact AI prompts in `docs/ai-prompts.md` and include them in the appendix. Do not invent missing historical prompts.
 
-1. Who takes M1, M2, M3, M4?
-2. Do you agree on the **PWA + Node/TypeScript + PostgreSQL/PostGIS** stack? (Alternative: Java Spring Boot + React if the team is stronger in Java.)
-3. Is Docker available on everyone's machine? (Otherwise: plain Postgres install, or SQLite plus Turf.js.)
-4. Who owns the report assembly and final PDF?
+## 8. Report and release checklist
+
+1. Cover: Group 037, verified campus/member numbers and reviewed Group 039.
+2. Executive summary and requirement-coverage matrix.
+3. Functional critique with strengths/weaknesses and source pages.
+4. Interaction critique with evidence and testable concerns.
+5. Improvements: problem -> justification -> revised diagrams/scenarios/UI -> implementation/tests.
+6. Per-member screenshots, flow descriptions, relevant patterns and individual coverage evidence.
+7. GitHub URL, release tag and exact commit SHA.
+8. All AI prompts in the appendix.
+
+Before submission: verify clean-clone startup/migrations/seed, lint/typecheck/tests and coverage; run the implementation demo/failure checklist; check report/code/UI agreement; freeze and demonstrate the submitted commit.
+
+## 9. Open ownership details and status
+
+Record actual M1-M4 allocations, report assembler and release coordinator. Verify team environments and cover details. These are human ownership decisions, not a requirement to pause technical work.
+
+These corrected plans do not claim that features, diagrams, tests or the report are finished. [Group037_Plan_Review.md](./Group037_Plan_Review.md) records historical findings using pre-correction line references.
