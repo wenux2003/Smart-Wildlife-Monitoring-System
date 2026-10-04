@@ -86,6 +86,8 @@ These groups are a starting checklist; expand into individual flow rows.
 
 ## 5. Architecture and technical contract
 
+Use Neon PostgreSQL with PostGIS for shared development, retaining local Docker PostGIS as a fallback. See [Neon setup](./docs/neon-setup.md). The hosted option runs the same three apps through `docker-compose.neon.yml`; only the database host changes. The private connection URL and PostGIS enablement must be supplied before verifying live connectivity.
+
 Keep the existing TypeScript/pnpm architecture: three apps (@wr/api, @wr/ranger, @wr/ops), three shared packages (@wr/shared, @wr/ui, @wr/offline), and four Compose services (db, api, ranger, ops). Preserve current imports, startup scripts, ports, app routers and module folders. This plan extends the repository; it does not replace or re-scaffold it.
 
 Fastify, React/Vite, Drizzle/postgres, Dexie, Leaflet/Recharts and Vitest are declared dependencies; an outbox, DB schema, business routes, SSE and exporters are still future implementation. Do not equate a declared dependency with a completed feature. Proposed data entities/endpoints describe required behavior, not a mandatory new table/service for every name.

@@ -7,6 +7,7 @@
   },
   "scripts": {
     "dev:api": "pnpm --filter @wr/api dev",
+    "db:check": "pnpm --filter @wr/api db:check",
     "dev:ranger": "pnpm --filter @wr/ranger dev",
     "dev:ops": "pnpm --filter @wr/ops dev",
     "dev:all": "pnpm --parallel --filter @wr/api --filter @wr/ranger --filter @wr/ops dev",

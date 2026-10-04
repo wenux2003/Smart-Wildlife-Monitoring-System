@@ -34,6 +34,10 @@ the full feature and database design.
 
 ## Run locally
 
+For hosted PostgreSQL, follow [Neon setup](./docs/neon-setup.md). Use
+`docker compose -f docker-compose.neon.yml up --build` with your private Neon
+`DATABASE_URL`. The default Compose file below uses local PostGIS instead.
+
 Requirements: Node.js 20 or newer, Corepack/pnpm, and Docker Desktop with the
 Docker engine running.
 

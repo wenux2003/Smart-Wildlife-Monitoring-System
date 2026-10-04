@@ -1,0 +1,31 @@
+# Standalone alternative: docker compose -f docker-compose.neon.yml up --build
+# Uses the private root .env for interpolation. No local database is started.
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      API_PORT: 3000
+      API_HOST: 0.0.0.0
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to your Neon connection URL in .env}
+    ports:
+      - "${API_PORT:-3000}:3000"
+
+  ranger:
+    build:
+      context: .
+      dockerfile: apps/ranger/Dockerfile
+    ports:
+      - "${RANGER_PORT:-5173}:5173"
+    depends_on:
+      - api
+
+  ops:
+    build:
+      context: .
+      dockerfile: apps/ops/Dockerfile
+    ports:
+      - "${OPS_PORT:-5174}:5174"
+    depends_on:
+      - api

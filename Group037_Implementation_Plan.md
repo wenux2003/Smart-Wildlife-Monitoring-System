@@ -8,6 +8,8 @@ This is a development contract, not a statement of completed functionality. The 
 
 ## 1. Existing architecture and compatible additions
 
+**Database hosting choice:** use Neon PostgreSQL with PostGIS for the shared development database. Follow [Neon setup](./docs/neon-setup.md); `docker-compose.neon.yml` runs the three apps with a hosted DATABASE_URL, while the original four-service Compose setup remains a local fallback. This changes the DB host, not the API/ORM/package architecture. `pnpm db:check` is now provided; live connection still needs the team's private URL and enabled PostGIS. Business migrations/repositories remain to be implemented.
+
 The repository is the authority for code placement and package boundaries. Extend the existing modular Fastify application and two React apps; do not scaffold replacement apps, split business modules into services, add another database, or turn every named responsibility below into a new package/class. Feature requirements remain, but proposed endpoints/entities below are not evidence of existing implementation.
 
 ### Verified repository baseline
