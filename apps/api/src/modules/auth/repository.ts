@@ -11,6 +11,16 @@ export type AuthUser = {
   park_name?: string | null;
   disabled_at: Date | null;
   must_change_password: boolean;
+  created_by?: string | null;
+  created_at?: Date;
+};
+export type AuthAuditEvent = {
+  id: string;
+  actorId: string;
+  targetUserId: string | null;
+  action: string;
+  oldValue: unknown;
+  newValue: unknown;
 };
 export interface AuthRepository {
   findUser(email: string): Promise<AuthUser | undefined>;
@@ -18,6 +28,14 @@ export interface AuthRepository {
   saveSession(hash: string, userId: string, expires: Date): Promise<void>;
   sessionUser(hash: string, now: Date): Promise<AuthUser | undefined>;
   removeSession(hash: string): Promise<void>;
+  changePassword(input: {
+    userId: string;
+    passwordHash: string;
+    currentSessionHash: string;
+    replacementSessionHash: string;
+    expiresAt: Date;
+    event: AuthAuditEvent;
+  }): Promise<boolean>;
   close?(): Promise<void>;
 }
 export function createAuthRepository(url: string): AuthRepository {
@@ -48,6 +66,37 @@ export function createAuthRepository(url: string): AuthRepository {
     },
     async removeSession(hash) {
       await sql`DELETE FROM auth_sessions WHERE token_hash=${hash}`;
+    },
+    async changePassword(input) {
+      return sql.begin(async (tx) => {
+        const active = await tx`
+          SELECT u.id FROM auth_users u
+          JOIN auth_sessions s ON s.user_id = u.id
+          WHERE u.id = ${input.userId}
+            AND u.disabled_at IS NULL
+            AND s.token_hash = ${input.currentSessionHash}
+            AND s.expires_at > now()
+          FOR UPDATE OF u
+        `;
+        if (!active.length) return false;
+        await tx`
+          UPDATE auth_users
+          SET password_hash = ${input.passwordHash}, must_change_password = false
+          WHERE id = ${input.userId}`;
+        await tx`
+          DELETE FROM auth_sessions
+          WHERE user_id = ${input.userId} AND token_hash <> ${input.currentSessionHash}`;
+        await tx`
+          UPDATE auth_sessions
+          SET token_hash = ${input.replacementSessionHash}, expires_at = ${input.expiresAt}
+          WHERE user_id = ${input.userId} AND token_hash = ${input.currentSessionHash}`;
+        await tx`
+          INSERT INTO account_events (id, actor_id, target_user_id, action, old_value, new_value)
+          VALUES (${input.event.id}, ${input.event.actorId}, ${input.event.targetUserId},
+            ${input.event.action}, ${JSON.stringify(input.event.oldValue)}::jsonb,
+            ${JSON.stringify(input.event.newValue)}::jsonb)`;
+        return true;
+      });
     },
     async close() {
       await sql.end();

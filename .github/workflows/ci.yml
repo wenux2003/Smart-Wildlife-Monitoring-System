@@ -116,6 +116,45 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:3000/api/auth/login \
             -H 'Content-Type: application/json' -H 'Origin: http://localhost:5174' \
             -d '{"email":"ranger1.yala@example.org","password":"wrong-password-123"}')" = "401"
+      - name: Verify account administration and temporary-password flow
+        run: |
+          origin='http://localhost:5174'
+          api='http://localhost:3000'
+          curl -fsS -c admin.cookies -b admin.cookies -X POST "$api/api/auth/login" \
+            -H 'Content-Type: application/json' -H "Origin: $origin" \
+            -d "{\"email\":\"$SUPER_ADMIN_EMAIL\",\"password\":\"$SUPER_ADMIN_PASSWORD\"}" > admin-session.json
+          yala_id=$(curl -fsS -b admin.cookies "$api/api/parks" | jq -r '.[] | select(.code == "YALA") | .id')
+          test -n "$yala_id"
+          curl -fsS -c admin.cookies -b admin.cookies -X POST "$api/api/accounts" \
+            -H 'Content-Type: application/json' -H "Origin: $origin" \
+            -d "$(jq -n --arg parkId "$yala_id" '{name:"CI Park Manager",email:"ci-manager@example.org",role:"PARK_MANAGER",parkId:$parkId,temporaryPassword:"ci-only-manager-temporary-passphrase"}')" > manager-created.json
+          curl -fsS -c manager.cookies -b manager.cookies -X POST "$api/api/auth/login" \
+            -H 'Content-Type: application/json' -H "Origin: $origin" \
+            -d '{"email":"ci-manager@example.org","password":"ci-only-manager-temporary-passphrase"}' > manager-session.json
+          grep -q '"mustChangePassword":true' manager-session.json
+          test "$(curl -s -o /dev/null -w '%{http_code}' -c manager.cookies -b manager.cookies \
+            -X GET "$api/api/accounts" -H "Origin: $origin")" = "403"
+          curl -fsS -c manager.cookies -b manager.cookies -X POST "$api/api/auth/change-password" \
+            -H 'Content-Type: application/json' -H "Origin: $origin" \
+            -d '{"currentPassword":"ci-only-manager-temporary-passphrase","newPassword":"ci-only-manager-permanent-passphrase"}' > manager-changed.json
+          grep -q '"mustChangePassword":false' manager-changed.json
+          curl -fsS -c manager.cookies -b manager.cookies -X POST "$api/api/accounts" \
+            -H 'Content-Type: application/json' -H "Origin: $origin" \
+            -d "$(jq -n --arg parkId "$yala_id" '{name:"CI Ranger",email:"ci-ranger@example.org",role:"RANGER",parkId:$parkId,temporaryPassword:"ci-only-ranger-temporary-passphrase"}')" > ranger-created.json
+          curl -fsS -c ranger.cookies -b ranger.cookies -X POST "$api/api/auth/login" \
+            -H 'Content-Type: application/json' -H "Origin: $origin" \
+            -d '{"email":"ci-ranger@example.org","password":"ci-only-ranger-temporary-passphrase"}' > ranger-session.json
+          grep -q '"mustChangePassword":true' ranger-session.json
+          test "$(curl -s -o ranger-locked.json -w '%{http_code}' -c ranger.cookies -b ranger.cookies \
+            -X GET "$api/api/accounts" -H "Origin: $origin")" = "403"
+          grep -q '"code":"PASSWORD_CHANGE_REQUIRED"' ranger-locked.json
+          curl -fsS -c ranger.cookies -b ranger.cookies -X POST "$api/api/auth/change-password" \
+            -H 'Content-Type: application/json' -H "Origin: $origin" \
+            -d '{"currentPassword":"ci-only-ranger-temporary-passphrase","newPassword":"ci-only-ranger-permanent-passphrase"}' > ranger-changed.json
+          grep -q '"mustChangePassword":false' ranger-changed.json
+          curl -fsS -b ranger.cookies "$api/api/auth/me" | tee ranger-me.json
+          grep -q '"role":"RANGER"' ranger-me.json
+          grep -q '"parkName":"Yala National Park"' ranger-me.json
       - name: API log
         if: failure()
         run: cat api.log || true

@@ -1,22 +1,17 @@
-import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import {
   ArrowRight,
   Binoculars,
   ChartNoAxesCombined,
   Footprints,
-  LogOut,
   Radio,
   ShieldCheck,
 } from "lucide-react";
-import { Brand } from "../components/Brand.js";
+import { AccountHeader } from "../components/AccountHeader.js";
 import { useAuth } from "../auth/AuthContext.js";
 
 export function WorkspacePage() {
-  const { user, loading, error, refresh, signOut } = useAuth();
-  const navigate = useNavigate();
-  const [logoutError, setLogoutError] = useState("");
-  const [pending, setPending] = useState(false);
+  const { user, loading, error, refresh } = useAuth();
   if (loading)
     return (
       <main className="center-state" role="status">
@@ -35,30 +30,9 @@ export function WorkspacePage() {
       </main>
     );
   if (!user) return <Navigate to="/login" replace />;
-  async function logout() {
-    setPending(true);
-    try {
-      await signOut();
-      navigate("/login", { replace: true });
-    } catch (failure) {
-      setLogoutError((failure as Error).message);
-    } finally {
-      setPending(false);
-    }
-  }
   return (
     <div className="workspace-page">
-      <header className="workspace-header content-width">
-        <Brand />
-        <button
-          className="button button-outline"
-          onClick={() => void logout()}
-          disabled={pending}
-        >
-          <LogOut size={16} />
-          {pending ? "Signing out…" : "Sign out"}
-        </button>
-      </header>
+      <AccountHeader />
       <main id="main-content" className="workspace-main content-width">
         <p className="section-kicker">YOUR CONSERVATION WORKSPACE</p>
         <h1>
@@ -68,10 +42,10 @@ export function WorkspacePage() {
         <p className="workspace-intro">
           A shared purpose. A new starting point.
         </p>
-        {logoutError && (
-          <p role="alert" className="form-error">
-            {logoutError}
-          </p>
+        {user.role === "PARK_MANAGER" && (
+          <Link className="button button-green staff-link" to="/staff">
+            Manage staff accounts
+          </Link>
         )}
         <div className="account-card">
           <ShieldCheck size={30} />
