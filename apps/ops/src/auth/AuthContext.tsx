@@ -13,6 +13,8 @@ export type User = {
   email: string;
   role: string;
   parkId: string | null;
+  parkName: string | null;
+  mustChangePassword: boolean;
 };
 type AuthState = {
   user: User | null;

@@ -81,9 +81,11 @@ export function WorkspacePage() {
               {user.email} · {user.role.replaceAll("_", " ").toLowerCase()}
             </p>
             <p>
-              {user.parkId
-                ? "Your park assignment is saved."
-                : "Park access is pending. Contact your project administrator to arrange a park assignment."}
+              {user.role === "SUPER_ADMIN"
+                ? "National access: you manage parks and Park Manager accounts across Sri Lanka."
+                : user.parkId
+                  ? `Assigned park: ${user.parkName ?? "saved"}.`
+                  : "Park access is pending. Contact the park manager of the park you work with to arrange access."}
             </p>
           </div>
           <span className="account-status">Signed in</span>

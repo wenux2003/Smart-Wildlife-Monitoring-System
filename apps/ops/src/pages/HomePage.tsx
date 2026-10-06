@@ -303,7 +303,7 @@ export function HomePage() {
               ],
               [
                 "Can I create an account?",
-                "Yes. New accounts start as Researchers, with no park data access until a project administrator assigns a park. Staff roles are assigned separately.",
+                "Yes. New accounts start as Researchers, with no park data access until a park manager grants access to their park. Staff accounts are created by park managers.",
               ],
               [
                 "Is the entire platform available?",

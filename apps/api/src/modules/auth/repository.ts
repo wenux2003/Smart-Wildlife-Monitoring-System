@@ -8,6 +8,9 @@ export type AuthUser = {
   password_hash: string;
   role: Role;
   park_id: string | null;
+  park_name?: string | null;
+  disabled_at: Date | null;
+  must_change_password: boolean;
 };
 export interface AuthRepository {
   findUser(email: string): Promise<AuthUser | undefined>;
@@ -23,7 +26,7 @@ export function createAuthRepository(url: string): AuthRepository {
     async findUser(email) {
       const rows = await sql<
         AuthUser[]
-      >`SELECT * FROM auth_users WHERE email = ${email}`;
+      >`SELECT u.*, p.name AS park_name FROM auth_users u LEFT JOIN parks p ON p.id = u.park_id WHERE u.email = ${email}`;
       return rows[0];
     },
     async createUser(user) {
@@ -40,7 +43,7 @@ export function createAuthRepository(url: string): AuthRepository {
     async sessionUser(hash, now) {
       const rows = await sql<
         AuthUser[]
-      >`SELECT u.* FROM auth_users u JOIN auth_sessions s ON s.user_id=u.id WHERE s.token_hash=${hash} AND s.expires_at > ${now}`;
+      >`SELECT u.*, p.name AS park_name FROM auth_users u JOIN auth_sessions s ON s.user_id=u.id LEFT JOIN parks p ON p.id = u.park_id WHERE s.token_hash=${hash} AND s.expires_at > ${now}`;
       return rows[0];
     },
     async removeSession(hash) {

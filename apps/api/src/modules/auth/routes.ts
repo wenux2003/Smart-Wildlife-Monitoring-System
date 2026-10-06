@@ -4,7 +4,7 @@ import { z } from "zod";
 import { systemClock } from "../../core/clock.js";
 import type { Clock } from "../../core/clock.js";
 import type { AuthRepository, AuthUser } from "./repository.js";
-import { createAuthRepository } from "./repository.js";
+import { readSessionToken, toSessionUser } from "./guard.js";
 import {
   hashPassword,
   sessionToken,
@@ -29,20 +29,9 @@ const registration = credentials
   .strict();
 const SESSION_SECONDS = 60 * 60 * 24 * 7;
 const publicUser = (user: AuthUser) => ({
-  id: user.id,
-  name: user.name,
-  email: user.email,
-  role: user.role,
-  parkId: user.park_id,
+  ...toSessionUser(user),
+  mustChangePassword: user.must_change_password,
 });
-const cookieToken = (request: FastifyRequest) => {
-  const value = request.headers.cookie
-    ?.split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith("wr_session="))
-    ?.slice(11);
-  return value && /^[a-f0-9]{64}$/.test(value) ? value : undefined;
-};
 
 export type AuthOptions = {
   repository?: AuthRepository;
@@ -51,11 +40,8 @@ export type AuthOptions = {
   secure?: boolean;
 };
 export async function authRoutes(app: FastifyInstance, options: AuthOptions) {
-  const repository =
-    options.repository ??
-    (process.env.DATABASE_URL
-      ? createAuthRepository(process.env.DATABASE_URL)
-      : undefined);
+  // createServer() resolves the repository so these routes and app.authorize() share it.
+  const { repository } = options;
   const clock = options.clock ?? systemClock;
   const secure = options.secure ?? process.env.NODE_ENV === "production";
   const origins =
@@ -67,7 +53,6 @@ export async function authRoutes(app: FastifyInstance, options: AuthOptions) {
   const dummyHash = await hashPassword(sessionToken());
   const cookie = (value: string, age: number) =>
     `wr_session=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${age}${secure ? "; Secure" : ""}`;
-  if (repository?.close) app.addHook("onClose", () => repository.close!());
   app.addHook("onRequest", async (request, reply) => {
     reply.header("Cache-Control", "no-store");
     if (!repository)
@@ -121,7 +106,7 @@ export async function authRoutes(app: FastifyInstance, options: AuthOptions) {
       user.id,
       new Date(clock.now().getTime() + SESSION_SECONDS * 1000),
     );
-    const previous = cookieToken(request);
+    const previous = readSessionToken(request);
     if (previous) await repository!.removeSession(tokenHash(previous));
     reply.header("Set-Cookie", cookie(token, SESSION_SECONDS));
     return { user: publicUser(user) };
@@ -142,6 +127,8 @@ export async function authRoutes(app: FastifyInstance, options: AuthOptions) {
       password_hash: await hashPassword(parsed.data.password),
       role: "RESEARCHER",
       park_id: null,
+      disabled_at: null,
+      must_change_password: false,
     };
     if (!(await repository!.createUser(user)))
       return reply
@@ -168,14 +155,20 @@ export async function authRoutes(app: FastifyInstance, options: AuthOptions) {
       return reply
         .code(401)
         .send({ message: "Email or password is incorrect." });
+    // Checked only after the password matches, so it reveals nothing to guessers.
+    if (user.disabled_at)
+      return reply.code(403).send({
+        message:
+          "This account has been deactivated. Contact your park manager.",
+      });
     return startSession(user, request, reply);
   });
   app.get("/me", async (request, reply) => {
-    const token = cookieToken(request);
+    const token = readSessionToken(request);
     const user = token
       ? await repository!.sessionUser(tokenHash(token), clock.now())
       : undefined;
-    if (!user)
+    if (!user || user.disabled_at)
       return reply
         .header("Set-Cookie", cookie("", 0))
         .code(401)
@@ -183,7 +176,7 @@ export async function authRoutes(app: FastifyInstance, options: AuthOptions) {
     return { user: publicUser(user) };
   });
   app.post("/logout", async (request, reply) => {
-    const token = cookieToken(request);
+    const token = readSessionToken(request);
     if (token) await repository!.removeSession(tokenHash(token));
     return reply.header("Set-Cookie", cookie("", 0)).code(204).send();
   });

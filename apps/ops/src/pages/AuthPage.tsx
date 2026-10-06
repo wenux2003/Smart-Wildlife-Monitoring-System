@@ -214,16 +214,16 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
                 <div className="account-note">
                   <ShieldCheck size={18} />
                   <p>
-                    You’ll join as a Researcher. A project administrator must
-                    assign your park before you can access park data.
+                    You’ll join as a Researcher. A park manager must grant
+                    access to their park before you can see park data.
                   </p>
                 </div>
               </>
             )}
             {help && (
               <p className="help-notice" id="password-help" role="status">
-                Password recovery is not available yet. Please contact your
-                project administrator for help; no reset email has been sent.
+                Password recovery is not available yet. Please contact your park
+                manager for help; no reset email has been sent.
               </p>
             )}
             {error && (
