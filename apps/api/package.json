@@ -7,6 +7,8 @@
     "dev": "tsx watch --env-file=../../.env src/index.ts",
     "start": "tsx src/index.ts",
     "db:check": "node --env-file=../../.env scripts/check-db.mjs",
+    "db:migrate": "node --env-file=../../.env scripts/migrate-auth.mjs",
+    "auth:check": "node --env-file=../../.env scripts/check-auth.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
   },
