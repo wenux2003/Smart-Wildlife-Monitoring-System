@@ -22,7 +22,8 @@ Malabe). Reviewed design: Group 39.
 | Deactivate/reactivate, temporary-password reset and account audit history | ✅ Done |
 | Server-side access checks (`app.authorize()`, `assertParkAccess()`) | ✅ Done |
 | Migrations, seed, demo accounts and required CI checks on `main` | ✅ Done |
-| Incidents (M1), patrols (M2), alerts (M3), analytics and reports (M4) | ⏳ Not started |
+| Ranger patrol route/assignment database, authenticated API and assignment UI (M2 foundation) | ✅ Done |
+| Patrol start/GPS/waypoints/sync, incidents (M1), alerts (M3), analytics and reports (M4) | ⏳ Not started |
 | Offline storage and sync, shared map, simulator tools | ⏳ Not started |
 
 Details: [web authentication](./docs/web-auth.md), [user groups](./docs/User_groups.md)

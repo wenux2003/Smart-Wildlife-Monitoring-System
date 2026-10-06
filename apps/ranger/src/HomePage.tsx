@@ -1,11 +1,137 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import type { PatrolAssignmentSummary } from "@wr/shared";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext.js";
+import { fetchMyPatrolAssignments } from "./lib/patrols.js";
+
+function BackIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  );
+}
+
+function MenuIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </svg>
+  );
+}
+
+function SyncIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M20 7h-5V2M4 17h5v5M18.5 11a7 7 0 0 0-11.9-4.9L4 8M5.5 13a7 7 0 0 0 11.9 4.9L20 16" />
+    </svg>
+  );
+}
+
+function MapPinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  );
+}
+
+function StartIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m9 7 8 5-8 5V7Z" />
+    </svg>
+  );
+}
+
+function PatrolCard({
+  patrol,
+  selected,
+  onSelect,
+}: {
+  patrol: PatrolAssignmentSummary;
+  selected: boolean;
+  onSelect: (id: string) => void;
+}) {
+  const complete = patrol.status === "COMPLETED" || patrol.status === "PARTIAL";
+  const selectable = patrol.status === "ASSIGNED";
+  const routeLabel = `${patrol.route.name} · ${patrol.route.sector}`;
+  const assignedAt = new Date(patrol.assignedAt);
+  const elapsedMinutes = Math.max(
+    0,
+    Math.floor((Date.now() - assignedAt.getTime()) / 60_000),
+  );
+  const timing = complete
+    ? patrol.completedAt
+      ? `completed ${new Date(patrol.completedAt).toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+        })}`
+      : "completed"
+    : elapsedMinutes < 60
+      ? `assigned ${elapsedMinutes} min ago`
+      : `assigned ${assignedAt.toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+        })}`;
+
+  return (
+    <article
+      className={`patrol-card ${complete ? "is-complete" : ""} ${selected ? "is-selected" : ""}`}
+    >
+      <div className="patrol-card-heading">
+        <div>
+          <h3>{routeLabel}</h3>
+          <p>
+            {patrol.route.estimatedDistanceKm.toFixed(1)} km path
+            <span aria-hidden="true"> · </span>
+            {timing}
+          </p>
+        </div>
+        {complete ? (
+          <span
+            className="patrol-status-dot is-complete"
+            aria-label="Completed"
+            title="Completed"
+          />
+        ) : selectable ? (
+          <button
+            className="patrol-select-control"
+            type="button"
+            aria-pressed={selected}
+            aria-label={`${selected ? "Selected" : "Select"} ${routeLabel}`}
+            onClick={() => onSelect(patrol.id)}
+          >
+            <span aria-hidden="true">{selected ? "✓" : ""}</span>
+          </button>
+        ) : (
+          <span className="patrol-status-label">{patrol.status.toLowerCase()}</span>
+        )}
+      </div>
+
+      <div className="coverage-block">
+        <div className="coverage-track" aria-hidden="true">
+          <span style={{ width: `${patrol.coveragePercentage}%` }} />
+        </div>
+        <p>{complete ? `${patrol.coveragePercentage}% covered` : "Not covered"}</p>
+      </div>
+
+      <div className="patrol-card-meta">
+        <span><MapPinIcon /> {patrol.route.sector}</span>
+        <span>{complete ? `${patrol.coveragePercentage}% coverage` : "Ready to start"}</span>
+      </div>
+    </article>
+  );
+}
 
 export function RangerHomePage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [online, setOnline] = useState(() => navigator.onLine);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [selectedPatrolId, setSelectedPatrolId] = useState<string>();
   const [error, setError] = useState("");
   const [signingOut, setSigningOut] = useState(false);
 
@@ -32,65 +158,133 @@ export function RangerHomePage() {
     }
   }
 
+  const patrolQuery = useQuery({
+    queryKey: ["patrol-assignments", "mine", user?.id],
+    queryFn: fetchMyPatrolAssignments,
+    staleTime: 30_000,
+  });
+  const patrolAssignments = patrolQuery.data ?? [];
+  const selectedPatrol = patrolAssignments.find(
+    (patrol) => patrol.id === selectedPatrolId && patrol.status === "ASSIGNED",
+  ) ?? patrolAssignments.find((patrol) => patrol.status === "ASSIGNED");
+
   return (
-    <main className="home-screen" id="main-content">
-      <header className="home-header">
-        <div>
-          <p className="eyebrow">WILDLIFE GUARDIAN</p>
-          <h1>Ranger account</h1>
+    <main className="patrol-screen" id="main-content">
+      <header className="patrol-header">
+        <div className="patrol-nav-row">
+          <button className="back-button" type="button" aria-label="Back to home">
+            <BackIcon />
+            <span>Home</span>
+          </button>
+          <button
+            className="menu-button"
+            type="button"
+            aria-label="Open account menu"
+            aria-expanded={menuOpen}
+            aria-controls="ranger-account-menu"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <MenuIcon />
+          </button>
         </div>
-        <span className={`connection-pill ${online ? "is-online" : "is-offline"}`} role="status">
-          <span aria-hidden="true" className="connection-dot" />
-          {online ? "Online" : "Offline"}
-        </span>
+
+        <div className="patrol-title-row">
+          <div>
+            <p className="patrol-kicker">FIELD OPERATIONS</p>
+            <h1>Patrol</h1>
+          </div>
+          <span
+            className={`sync-pill ${online ? "is-online" : "is-offline"}`}
+            role="status"
+          >
+            <SyncIcon />
+            {online ? "Synced just now" : "Saving offline"}
+          </span>
+        </div>
+
+        {menuOpen && (
+          <section className="ranger-menu" id="ranger-account-menu" aria-label="Ranger account">
+            <div>
+              <strong>{user?.name}</strong>
+              <span>{user?.parkName ?? "No park assigned"}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => void leaveAccount()}
+              disabled={signingOut}
+            >
+              {signingOut ? "Signing out…" : "Sign out"}
+            </button>
+          </section>
+        )}
       </header>
 
-      <section className="welcome-card" aria-labelledby="welcome-title">
-        <p className="eyebrow">FIELD ACCESS</p>
-        <h2 id="welcome-title">Hello, {user?.name}</h2>
-        <p>Your ranger account is signed in and ready.</p>
-      </section>
+      <section className="patrol-content" aria-labelledby="today-patrols">
+        <div className="patrol-section-heading">
+          <div>
+            <p className="section-date">Today</p>
+            <h2 id="today-patrols">{user?.parkName ?? "Yala West"}</h2>
+          </div>
+          <span>
+            {patrolQuery.isLoading
+              ? "Loading routes"
+              : `${patrolAssignments.length} ${patrolAssignments.length === 1 ? "route" : "routes"}`}
+          </span>
+        </div>
 
-      <section className="account-card" aria-labelledby="account-title">
-        <h2 id="account-title">Account &amp; park</h2>
-        <dl className="account-details">
-          <div>
-            <dt>Name</dt>
-            <dd>{user?.name}</dd>
+        {patrolQuery.isLoading ? (
+          <div className="patrol-loading" role="status" aria-label="Loading patrol assignments">
+            <span /><span /><span />
           </div>
-          <div>
-            <dt>Email</dt>
-            <dd>{user?.email}</dd>
+        ) : patrolQuery.isError ? (
+          <div className="patrol-query-state" role="alert">
+            <strong>Patrols couldn’t be loaded</strong>
+            <p>{(patrolQuery.error as Error).message}</p>
+            <button type="button" onClick={() => void patrolQuery.refetch()}>Try again</button>
           </div>
-          <div>
-            <dt>Role</dt>
-            <dd>Ranger</dd>
+        ) : patrolAssignments.length === 0 ? (
+          <div className="patrol-query-state">
+            <strong>No patrols assigned</strong>
+            <p>Your next route will appear here after your park manager assigns it.</p>
           </div>
-          <div>
-            <dt>Assigned park</dt>
-            <dd>{user?.parkName ?? "No park assigned"}</dd>
+        ) : (
+          <div className="patrol-list">
+            {patrolAssignments.map((patrol) => (
+              <PatrolCard
+                key={patrol.id}
+                patrol={patrol}
+                selected={patrol.id === selectedPatrol?.id}
+                onSelect={setSelectedPatrolId}
+              />
+            ))}
           </div>
-        </dl>
-      </section>
+        )}
 
-      <section className="connection-card" aria-labelledby="connection-title">
-        <h2 id="connection-title">Connection</h2>
-        <p>
-          {online
-            ? "You’re connected. Account updates can reach the service."
-            : "You’re offline. Sign-in and account updates need a connection."}
+        {error && <p className="alert" role="alert">{error}</p>}
+
+        {!patrolQuery.isLoading && !patrolQuery.isError && patrolAssignments.length > 0 && (
+          <button
+            className="start-patrol-button"
+            type="button"
+            disabled={!selectedPatrol}
+          >
+            <span className="start-patrol-icon"><StartIcon /></span>
+            <span className="start-patrol-copy">
+              <strong>Start patrol</strong>
+              <small>
+                {selectedPatrol
+                  ? `${selectedPatrol.route.name} · ${selectedPatrol.route.estimatedDistanceKm.toFixed(1)} km`
+                  : "No assigned trail available"}
+              </small>
+            </span>
+            <span className="start-patrol-arrow" aria-hidden="true">→</span>
+          </button>
+        )}
+
+        <p className="patrol-footnote">
+          GPS tracking begins only after you start the patrol.
         </p>
       </section>
-
-      {error && <p className="alert" role="alert">{error}</p>}
-      <button
-        className="secondary-button"
-        type="button"
-        onClick={() => void leaveAccount()}
-        disabled={signingOut}
-      >
-        {signingOut ? "Signing out…" : "Sign out"}
-      </button>
     </main>
   );
 }

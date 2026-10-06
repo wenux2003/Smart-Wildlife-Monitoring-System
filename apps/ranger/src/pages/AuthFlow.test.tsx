@@ -8,6 +8,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { App } from "../app/App.js";
 
@@ -35,11 +36,45 @@ function rangerUser(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function patrolAssignments() {
+  const route = (id: string, name: string, distance: number) => ({
+    id,
+    name,
+    sector: "Southern Ridge",
+    description: `${name} patrol route`,
+    estimatedDistanceKm: distance,
+    version: 1,
+  });
+  return [
+    {
+      id: "50000000-0000-4000-8000-000000000001",
+      status: "ASSIGNED",
+      assignedAt: "2026-10-07T10:00:00.000Z",
+      route: route("40000000-0000-4000-8000-000000000001", "Trail 4B", 4.2),
+      coveragePercentage: 0,
+      completedAt: null,
+    },
+    {
+      id: "50000000-0000-4000-8000-000000000002",
+      status: "ASSIGNED",
+      assignedAt: "2026-10-07T10:15:00.000Z",
+      route: route("40000000-0000-4000-8000-000000000002", "Trail 4C", 4.7),
+      coveragePercentage: 0,
+      completedAt: null,
+    },
+  ];
+}
+
 function renderApp(path = "/login") {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
-    <MemoryRouter initialEntries={[path]}>
-      <App />
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[path]}>
+        <App />
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 
@@ -58,7 +93,7 @@ afterEach(() => {
 });
 
 describe("Ranger account access", () => {
-  it("signs in a ranger and shows account, park, and connection details", async () => {
+  it("signs in a ranger and shows assigned patrols, park, and connection status", async () => {
     renderApp();
     fireEvent.change(screen.getByLabelText("Email address"), {
       target: { value: "kamal@example.org" },
@@ -66,16 +101,18 @@ describe("Ranger account access", () => {
     fireEvent.change(screen.getByLabelText("Password"), {
       target: { value: "correct-horse-battery" },
     });
-    vi.mocked(fetch).mockResolvedValueOnce(
-      response({ user: rangerUser() }),
-    );
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(response({ user: rangerUser() }))
+      .mockResolvedValueOnce(response(patrolAssignments()));
     fireEvent.submit(screen.getByRole("form", { name: "Ranger sign in" }));
 
-    expect(await screen.findByRole("heading", { name: "Hello, Kamal Perera" }))
+    expect(await screen.findByRole("heading", { name: "Patrol" }))
       .toBeInTheDocument();
     expect(screen.getByText("Yala National Park")).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent("Online");
-    expect(fetch).toHaveBeenLastCalledWith(
+    expect(screen.getByText("Synced just now")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /Start patrol/i }))
+      .toBeInTheDocument();
+    expect(fetch).toHaveBeenCalledWith(
       "/api/auth/login",
       expect.objectContaining({
         method: "POST",
@@ -86,6 +123,26 @@ describe("Ranger account access", () => {
         }),
       }),
     );
+  });
+
+  it("selects an assigned trail and updates the start patrol action", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(response({ user: rangerUser() }))
+      .mockResolvedValueOnce(response(patrolAssignments()));
+    renderApp("/");
+
+    expect(await screen.findByRole("button", { name: /Start patrol/i }))
+      .toHaveTextContent("Trail 4B");
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Select Trail 4C · Southern Ridge" }),
+    );
+
+    expect(screen.getByRole("button", { name: /Start patrol/i }))
+      .toHaveTextContent("Trail 4C");
+    expect(
+      screen.getByRole("button", { name: "Selected Trail 4C · Southern Ridge" }),
+    ).toHaveAttribute("aria-pressed", "true");
   });
 
   it("shows clear connection guidance when sign-in cannot reach the API", async () => {
@@ -116,16 +173,16 @@ describe("Ranger account access", () => {
     fireEvent.change(screen.getByLabelText("Confirm new password"), {
       target: { value: "new-secure-password" },
     });
-    vi.mocked(fetch).mockResolvedValueOnce(
-      response({ user: rangerUser() }),
-    );
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(response({ user: rangerUser() }))
+      .mockResolvedValueOnce(response(patrolAssignments()));
     fireEvent.submit(
       screen.getByRole("form", { name: "Change temporary password" }),
     );
 
-    expect(await screen.findByRole("heading", { name: "Ranger account" }))
+    expect(await screen.findByRole("heading", { name: "Patrol" }))
       .toBeInTheDocument();
-    expect(fetch).toHaveBeenLastCalledWith(
+    expect(fetch).toHaveBeenCalledWith(
       "/api/auth/change-password",
       expect.objectContaining({
         body: JSON.stringify({
@@ -151,7 +208,7 @@ describe("Ranger account access", () => {
       "/api/auth/logout",
       expect.objectContaining({ method: "POST" }),
     ));
-    expect(screen.queryByRole("heading", { name: "Ranger account" }))
+    expect(screen.queryByRole("heading", { name: "Patrol" }))
       .not.toBeInTheDocument();
   });
 });

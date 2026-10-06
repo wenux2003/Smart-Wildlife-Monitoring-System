@@ -10,6 +10,7 @@
     "db:check": "corepack pnpm --filter @wr/api db:check",
     "db:migrate": "corepack pnpm --filter @wr/api db:migrate",
     "db:seed": "corepack pnpm --filter @wr/api db:seed",
+    "db:seed:patrols": "corepack pnpm --filter @wr/api db:seed:patrols",
     "auth:check": "corepack pnpm --filter @wr/api auth:check",
     "dev:ranger": "corepack pnpm --filter @wr/ranger dev",
     "dev:ops": "corepack pnpm --filter @wr/ops dev",

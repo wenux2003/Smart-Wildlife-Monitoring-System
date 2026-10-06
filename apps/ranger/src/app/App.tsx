@@ -35,7 +35,7 @@ function RangerRoutes() {
 
   useEffect(() => {
     const titles: Record<string, string> = {
-      "/": "Ranger account",
+      "/": "Patrol",
       "/login": "Ranger sign in",
       "/change-password": "Change password",
     };

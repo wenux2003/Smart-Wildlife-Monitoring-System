@@ -15,9 +15,13 @@ import { createAuthorize } from "./modules/auth/guard.js";
 import { accountRoutes } from "./modules/accounts/routes.js";
 import type { AccountRepository } from "./modules/accounts/repository.js";
 import { createAccountRepository } from "./modules/accounts/repository.js";
+import { patrolRoutes } from "./modules/patrols/routes.js";
+import type { PatrolRepository } from "./modules/patrols/repository.js";
+import { createPatrolRepository } from "./modules/patrols/repository.js";
 
 export type ServerOptions = AuthOptions & {
   accountsRepository?: AccountRepository;
+  patrolRepository?: PatrolRepository;
 };
 
 export function createServer(authOptions: ServerOptions = {}) {
@@ -59,9 +63,16 @@ export function createServer(authOptions: ServerOptions = {}) {
     (process.env.DATABASE_URL
       ? createAccountRepository(process.env.DATABASE_URL)
       : undefined);
+  const patrolRepository =
+    authOptions.patrolRepository ??
+    (process.env.DATABASE_URL
+      ? createPatrolRepository(process.env.DATABASE_URL)
+      : undefined);
   if (repository?.close) server.addHook("onClose", () => repository.close!());
   if (accountsRepository?.close)
     server.addHook("onClose", () => accountsRepository.close!());
+  if (patrolRepository?.close)
+    server.addHook("onClose", () => patrolRepository.close!());
   // Available to every module: { preHandler: app.authorize({ roles: [...] }) }.
   server.decorateRequest("user", null);
   server.decorate(
@@ -77,6 +88,10 @@ export function createServer(authOptions: ServerOptions = {}) {
   server.register(accountRoutes, {
     prefix: "/api",
     repository: accountsRepository,
+  });
+  server.register(patrolRoutes, {
+    prefix: "/api",
+    repository: patrolRepository,
   });
 
   server.get(
