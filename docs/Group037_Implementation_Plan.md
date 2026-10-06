@@ -1,5 +1,8 @@
 # Implementation Plan: Wildlife Guardian (Group 037)
 
+> **6 October 2026 scope update:** The user explicitly requested real email/password registration and sign-in for the Operations website. This supersedes demo-only web authentication references below. See [web authentication](./web-auth.md) for implemented tables, session behavior, tests and limitations. The four assessed business functions retain priority.
+
+
 **Revised: 5 October 2026 | Submission deadline: 9 October 2026, 11:59 PM (Asia/Colombo)**
 
 This is a development contract, not a statement of completed functionality. The reviewed repository has app/API shells, shared-package starters and a CI workflow; domain modules, migrations/seed, synchronization and simulators remain to be completed. Coverage enforcement is not yet configured.

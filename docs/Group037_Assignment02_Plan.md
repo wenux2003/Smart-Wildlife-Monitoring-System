@@ -1,5 +1,8 @@
 # Group 037: Assignment 02 Plan
 
+> **6 October 2026 scope update:** The user explicitly requested real email/password registration and sign-in for the Operations website. This supersedes demo-only web authentication references below. See [web authentication](./web-auth.md) for implemented tables, session behavior, tests and limitations. The four assessed business functions retain priority.
+
+
 **SE3070 | Reviewing Group 039 | Revised 5 October 2026 | Deadline: 9 October 2026, 11:59 PM (Asia/Colombo)**
 
 ## 1. Requirements and sources

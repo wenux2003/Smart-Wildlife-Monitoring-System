@@ -12,22 +12,22 @@ Follow the existing [implementation plan](./Group037_Implementation_Plan.md) for
 
 ## 2. Authentication decision
 
-**Baseline: use a clearly labeled demo user selector, not real login.**
+**Scope update, explicitly requested on 6 October 2026: real email/password registration and sign-in for the Operations website.** This supersedes the earlier demo-only baseline for web authentication; it does not change assessment weighting.
 
-- Seed example users for Ranger, Park Manager, Liaison Officer and Researcher.
-- Show “Acting as” and the selected park in the app header or a small workspace selector.
-- Selecting a user selects that user's seeded role; do not let a role field independently override the user's role.
-- The API looks up the selected demo user and checks role, allowed park and record ownership for every protected operation. Hiding a button is not sufficient.
-- Remember the selection locally for convenience. This is demo context, not authenticated identity or production security.
-- Keep pending offline records attached to their original user/park. Switching context must not relabel or discard them.
+- Public home, sign-in and registration pages use the agreed palette. Registration creates a Researcher with no park assignment; public visitors cannot choose staff roles.
+- Store salted scrypt password hashes and hashed session tokens in Neon. Use HttpOnly session cookies, expiry, logout revocation and server validation.
+- Signed-in account details come from the API. Do not trust a local role selector or browser storage as authorization.
+- Each future domain API must enforce the account's role, allowed park and record ownership. No operational data is exposed by the initial account workspace.
+- Keep pending offline records attached to their original user/park when Ranger authentication is integrated.
+- Password recovery, email verification, social login and an account-administration dashboard remain deferred. Recovery UI must describe this limitation honestly.
 
-Defer passwords, registration, password reset, email verification, social login, session-token management and an account-administration dashboard. Add real authentication only through an explicit scope change after the required functions are complete.
+See [Web authentication](./web-auth.md) for implementation, setup, tests and remaining limitations. Authenticated context replaces the earlier demo selector in the shared work below.
 
 ## 3. Minimum shared features
 
 | Feature | Small version to build | Where it belongs |
 |---|---|---|
-| Demo user and park context | Seeded user selector; current role/park visible; park-scoped requests | Both app headers and API reference module |
+| Account and park context | Signed-in account; server-assigned role/park visible; park-scoped requests | Both app headers and API |
 | Access checks | Server-side user, role, park and ownership validation; clear access-denied response | API and route/menu guards |
 | Navigation and layout | Ops sidebar/header; mobile Ranger navigation; menus appropriate to each role | Existing app shells |
 | Design system | Shared colors, typography, buttons, fields, cards, tables, dialogs and status badges | Shared UI package and app styling |
@@ -50,7 +50,7 @@ Park configuration should demonstrate switching Yala/Sinharaja changes species/t
 
 Only add these shared surfaces initially:
 
-1. **Workspace selector:** choose a demo user and an allowed park; show the current context. This may be a dialog rather than a separate page.
+1. **Account/workspace context:** show the signed-in user and assigned park; allow only authorized park selection. This may be a dialog rather than a separate page.
 2. **App shell/home:** navigation, context and shortcuts. Module owners supply summary data; do not duplicate their detailed pages.
 3. **Park settings:** a small manager-only screen with essential configuration and validation.
 4. **Ranger sync panel:** pending/failed item counts and retry; also show persistent connection/sync feedback.
@@ -75,7 +75,7 @@ These are coordination leads, not a requirement for one person to implement ever
 |---|---|
 | M1 — Incidents | Common form/photo helpers and feedback; review offline incident/media integration |
 | M2 — Patrols | Coordinate offline storage/outbox and map foundations; other members help integrate their workflows |
-| M3 — Alerts | Coordinate demo-context/access checks and event updates; review cross-module integration |
+| M3 — Alerts | Coordinate authenticated-context/access checks and event updates; review cross-module integration |
 | M4 — Analytics (your part) | Coordinate palette and Ops layout, reusable filters/tables and seed-data contracts; each member supplies their own fixtures |
 | Whole team | Agree contracts, create each module's migrations, implement permissions/audit in owned routes, review integration, test and document |
 
@@ -85,7 +85,7 @@ Record actual names before work starts. Keep responsibilities small and review t
 
 ### Step 1 — Agree before coding
 
-- Confirm demo identity instead of real login.
+- Use the approved real web authentication; agree how Ranger will adopt it.
 - Confirm the role-access table, park selection rules and navigation for each app.
 - Sketch the shared shell, workspace selector, settings and sync panel.
 - Agree shared DTOs, API errors, audit fields and module data needed by analytics.
@@ -94,7 +94,7 @@ Record actual names before work starts. Keep responsibilities small and review t
 ### Step 2 — Build the minimum foundation
 
 - Verify Node/Corepack + Neon setup without Docker using [Neon setup](./neon-setup.md).
-- Add reference migrations/seed data, demo context and server-side checks.
+- Add reference migrations/seed data, authenticated context and server-side checks.
 - Build the reusable layout, palette, essential controls and basic page states.
 - Prove one minimal UI → API → database flow with park scoping.
 
@@ -117,7 +117,7 @@ Start the four core modules once this foundation works. Do not wait for every sh
 
 ## 7. Defer to protect the assessed scope
 
-- Real authentication and user administration.
+- Further authentication expansion (social login/MFA) and user-administration screens.
 - Profile avatars and extensive personal preferences.
 - Dark mode, multiple themes and decorative animations.
 - A separate notification center, email/push integrations and chat.
@@ -129,8 +129,8 @@ Offline recovery, park isolation, required validation, audit records and require
 ## 8. Ready-to-integrate checklist
 
 - [ ] All members agree on scope, access rules, shared ownership and wireframes.
-- [ ] Both apps show the selected demo identity and park clearly.
-- [ ] Backend rejects invalid identities, forbidden operations and cross-park access.
+- [ ] Both apps show the authenticated identity and assigned park clearly.
+- [ ] Backend rejects invalid sessions, forbidden operations and cross-park access.
 - [ ] Shared layout and controls use the agreed palette and work on intended screen sizes.
 - [ ] Reference data and park configuration support the required demonstrations.
 - [ ] Offline helpers preserve the original user/park and survive restart/retry.

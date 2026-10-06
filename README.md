@@ -13,10 +13,10 @@ Malabe). Reviewed design: Group 39.
 
 ## Project status
 
-The repository currently contains the monorepo foundation and separate Ranger,
-Ops, and API shells. Domain modules, database schema/migrations and seed data,
-authentication, offline synchronization, and the simulator tools are still to
-be implemented.
+The Operations website includes a public home page, registration, real email/password
+sign-in and an account workspace backed by Neon. See [web authentication](./docs/web-auth.md).
+Ranger and the four business modules remain foundation work. Business database
+schemas, seed data, offline synchronization and simulator tools still need implementation.
 
 ## Repository layout
 
@@ -51,6 +51,7 @@ Requirements: Node.js 20.6 or newer, Corepack/pnpm, and internet access for Neon
 
    ```sh
    corepack pnpm db:check
+   corepack pnpm db:migrate
    corepack pnpm dev:all
    ```
 
