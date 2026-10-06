@@ -3,17 +3,20 @@
   "private": true,
   "packageManager": "pnpm@10.12.1",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "dev:api": "corepack pnpm --filter @wr/api dev",
     "db:check": "corepack pnpm --filter @wr/api db:check",
+    "db:migrate": "corepack pnpm --filter @wr/api db:migrate",
+    "db:seed": "corepack pnpm --filter @wr/api db:seed",
+    "auth:check": "corepack pnpm --filter @wr/api auth:check",
     "dev:ranger": "corepack pnpm --filter @wr/ranger dev",
     "dev:ops": "corepack pnpm --filter @wr/ops dev",
     "dev:all": "corepack pnpm --parallel --filter @wr/api --filter @wr/ranger --filter @wr/ops dev",
     "build": "corepack pnpm -r build",
-    "test": "corepack pnpm -r test",
-    "typecheck": "corepack pnpm -r typecheck",
+    "test": "vitest run",
+    "typecheck": "tsc -b packages/shared packages/ui && corepack pnpm -r typecheck",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

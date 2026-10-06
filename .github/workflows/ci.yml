@@ -1,22 +1,137 @@
 name: CI
 
+# Required checks for the protected main branch. Every pull request must pass
+# all three jobs before it can be merged. Job names are referenced by branch
+# protection, so rename them only together with the protection settings.
 on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  validate:
+  checks:
+    name: Lint, typecheck, test and build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      # Uses the pnpm version from packageManager in package.json.
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies (lockfile must be up to date)
+        run: pnpm install --frozen-lockfile
+      - name: Refuse committed environment files
+        run: |
+          if git ls-files | grep -E '(^|/)\.env(\..+)?$' | grep -v '\.env\.example$'; then
+            echo "::error::An .env file is committed. Remove it and rotate any secrets it contained."
+            exit 1
+          fi
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Test
+        run: pnpm test
+      - name: Build web apps
+        run: |
+          pnpm --filter @wr/ops build
+          pnpm --filter @wr/ranger build
+
+  database:
+    name: Migrations, seed and sign-in
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgis/postgis:16-3.5
+        env:
+          POSTGRES_DB: wildlife
+          POSTGRES_USER: wildlife
+          POSTGRES_PASSWORD: wildlife
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U wildlife"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    # Throwaway CI-only database and demo values; not real credentials.
+    env:
+      DATABASE_URL: postgres://wildlife:wildlife@localhost:5432/wildlife
+      SUPER_ADMIN_EMAIL: ci-admin@example.org
+      SUPER_ADMIN_NAME: CI Super Admin
+      SUPER_ADMIN_PASSWORD: ci-only-admin-passphrase
+      DEMO_ACCOUNT_PASSWORD: ci-only-demo-passphrase
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10.12.1
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - run: pnpm install --no-frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm -r typecheck
-      - run: pnpm -r test
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The db scripts load the root .env; job env values take precedence.
+      - run: touch .env
+      - name: Apply migrations, then re-run to prove they are idempotent
+        run: |
+          pnpm db:migrate
+          pnpm db:migrate | tee migrate-again.log
+          grep -q "already up to date" migrate-again.log
+      - name: Seed, then re-run to prove no duplicates
+        run: |
+          pnpm db:seed
+          pnpm db:seed | tee seed-again.log
+          if grep -q "'created'" seed-again.log; then
+            echo "::error::Re-running the seed created new accounts."
+            exit 1
+          fi
+      - name: Start the API and sign in as seeded accounts
+        run: |
+          pnpm --filter @wr/api start > api.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            curl -sf http://localhost:3000/health > /dev/null && break
+            sleep 1
+          done
+          login() {
+            curl -s -X POST http://localhost:3000/api/auth/login \
+              -H "Content-Type: application/json" \
+              -H "Origin: http://localhost:5174" \
+              -d "{\"email\":\"$1\",\"password\":\"$2\"}"
+          }
+          login "$SUPER_ADMIN_EMAIL" "$SUPER_ADMIN_PASSWORD" | tee admin.json
+          grep -q '"role":"SUPER_ADMIN"' admin.json
+          login "ranger1.yala@example.org" "$DEMO_ACCOUNT_PASSWORD" | tee ranger.json
+          grep -q '"parkName":"Yala National Park"' ranger.json
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:3000/api/auth/login \
+            -H 'Content-Type: application/json' -H 'Origin: http://localhost:5174' \
+            -d '{"email":"ranger1.yala@example.org","password":"wrong-password-123"}')" = "401"
+      - name: API log
+        if: failure()
+        run: cat api.log || true
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # gitleaks lists the pull request's commits to know what to scan.
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -29,7 +29,7 @@ On Windows, use `corepack pnpm` if `pnpm` is not on PATH. Root scripts also invo
 
 ### Without Docker (team development)
 
-Install Node.js 20.6 or newer and Corepack. Each teammate needs a private root
+Install Node.js 22 or newer and Corepack. Each teammate needs a private root
 `.env` containing the intended Neon connection URL. If `.env` already exists,
 edit it rather than overwriting it with the example.
 
