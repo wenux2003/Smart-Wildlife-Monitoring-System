@@ -53,7 +53,7 @@ The system serves the Department of Wildlife Conservation across **all national 
 ### 2.2 Structure
 
 ```text
-Super Admin  (DWC head office — whole Sri Lanka; one account, owned by Wenura)
+Super Admin  (DWC head office — whole Sri Lanka; one account, owned by the database owner)
    │  creates parks and Park Manager accounts; can act on any park
    ▼
 Park Manager  (one or more per park: Yala, Wilpattu, Sinharaja, Udawalawe …)
@@ -144,7 +144,7 @@ Community members, ministries and devices are **not** roles. There is deliberate
 
 ### 4.1 Super Admin
 
-**Who:** the national administrator at Department of Wildlife Conservation head office. In this project it is **Wenura**, and in the demo it is the seeded Super Admin account.
+**Who:** the national administrator at Department of Wildlife Conservation head office. In this project it is the team member who owns the shared database, and in the demo it is the seeded Super Admin account.
 
 **App:** Operations website.
 
@@ -395,7 +395,7 @@ The initial shared demo identities are seeded. For subsequent accounts, use `/ad
 
 ### 6.2 What exists today
 
-- **`corepack pnpm db:seed` is implemented** (`apps/api/src/seed.ts`, with its logic in `apps/api/src/modules/reference/seed.ts`). It creates the parks, the Super Admin and the demo staff below. **It was run on the shared Neon database on 6 October 2026** by its owner (Wenura): 3 parks and 14 accounts were created, and sign-in was verified for the Super Admin and a ranger. Teammates only run `db:migrate`.
+- **`corepack pnpm db:seed` is implemented** (`apps/api/src/seed.ts`, with its logic in `apps/api/src/modules/reference/seed.ts`). It creates the parks, the Super Admin and the demo staff below. **It was run on the shared Neon database on 6 October 2026** by the database owner: 3 parks and 14 accounts were created, and sign-in was verified for the Super Admin and a ranger. Teammates only run `db:migrate`.
 - Self-registration on the Ops website still produces a Researcher with no park.
 - `corepack pnpm auth:check` creates a temporary test account and then deletes it. It is a smoke test, not a seed.
 
@@ -405,7 +405,7 @@ Parks: **Yala**, **Sinharaja** and **Wilpattu**. The demo must show park switchi
 
 | Scope | Accounts | Emails |
 |---|---|---|
-| National | **1 Super Admin** (owned by Wenura) | `SUPER_ADMIN_EMAIL` from `.env` |
+| National | **1 Super Admin** (owned by the database owner) | `SUPER_ADMIN_EMAIL` from `.env` |
 | Yala | 1 Park Manager, 1 Liaison Officer, 3 Rangers (enough to demo nearest-available dispatch and a rejection or timeout), 1 Researcher with Yala access | `manager.yala@example.org`, `liaison.yala@…`, `ranger1.yala@…` to `ranger3.yala@…`, `researcher.yala@…` |
 | Sinharaja | 1 Park Manager, 1 Liaison Officer, 2 Rangers | `manager.sinharaja@example.org`, `liaison.sinharaja@…`, `ranger1.sinharaja@…`, `ranger2.sinharaja@…` |
 | Wilpattu | 1 Park Manager, 2 Rangers | `manager.wilpattu@example.org`, `ranger1.wilpattu@…`, `ranger2.wilpattu@…` |
@@ -460,7 +460,7 @@ How the seed behaves:
 | Migration runner that applies each numbered file once (`schema_migrations`) | ✅ Implemented (Phase A) |
 | `db:seed`: parks, the Super Admin and demo staff for each park | ✅ Implemented (Phase A). Run on the shared Neon database on 6 October |
 | Shared server-side guard `app.authorize({ roles })` and `assertParkAccess()` | ✅ Implemented (Phase A). M1–M4 must use it on every route |
-| Apply migration `0003_account_audit.sql` to the shared Neon database | ⏳ Pending Wenura's approval; do not run `db:migrate` on Neon before approval |
+| Apply migration `0003_account_audit.sql` to the shared Neon database | ✅ Applied on 6 October 2026 |
 | Offline authentication, offline account changes and synchronization | ❌ Out of scope; Ranger sign-in requires a connection |
 | Role, park and ownership checks inside each module's routes | ⏳ Planned. The module APIs don't exist yet; they must call the guard |
 | Community form `/community/new` and the SMS mock | ⏳ Planned (M1) |

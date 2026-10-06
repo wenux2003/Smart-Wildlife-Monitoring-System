@@ -13,12 +13,20 @@ Malabe). Reviewed design: Group 39.
 
 ## Project status
 
-The Operations website includes a public home page, registration, real email/password
-sign-in and an account workspace backed by Neon. See [web authentication](./docs/web-auth.md).
-Parks, the Super Admin → Park Manager → staff account hierarchy, demo account
-seeding and the shared server-side access check are in place. Ranger and the
-four business modules remain foundation work. Business database schemas,
-offline synchronization and simulator tools still need implementation.
+| Area | Status |
+|---|---|
+| Ops public website, registration, email/password sign-in and sign-out | ✅ Done |
+| Ranger app sign-in, forced first-login password change and home page | ✅ Done |
+| Account hierarchy: Super Admin → Park Manager → staff | ✅ Done |
+| Super Admin page (parks, Park Managers, all accounts) and Park Manager staff page | ✅ Done |
+| Deactivate/reactivate, temporary-password reset and account audit history | ✅ Done |
+| Server-side access checks (`app.authorize()`, `assertParkAccess()`) | ✅ Done |
+| Migrations, seed, demo accounts and required CI checks on `main` | ✅ Done |
+| Incidents (M1), patrols (M2), alerts (M3), analytics and reports (M4) | ⏳ Not started |
+| Offline storage and sync, shared map, simulator tools | ⏳ Not started |
+
+Details: [web authentication](./docs/web-auth.md), [user groups](./docs/User_groups.md)
+and [demo accounts](./docs/Demo_Accounts.md).
 
 ## Repository layout
 
@@ -28,7 +36,7 @@ offline synchronization and simulator tools still need implementation.
 - `packages/shared` — shared TypeScript types, Zod schemas, and geo helpers
 - `packages/ui` — shared React UI package
 - `packages/offline` — Dexie/outbox package used by the Ranger App
-- `tools` — planned seed-data and simulator tools
+- `tools` — planned simulator tools (the account and park seed lives in `apps/api/src/seed.ts`)
 - `docker-compose.yml` — local API, Ranger, Ops, and PostGIS services
 
 See [Group037_Implementation_Plan.md](./docs/Group037_Implementation_Plan.md) for
@@ -49,34 +57,64 @@ Requirements: Node.js 22 or newer, Corepack/pnpm, and internet access for Neon.
    corepack pnpm install
    ```
 
-3. Verify the database:
+3. Check the database connection and bring the schema up to date:
 
    ```sh
    corepack pnpm db:check
+   corepack pnpm db:migrate
    ```
 
-   Run `corepack pnpm db:migrate` on local/test databases. On shared Neon,
-   wait for Wenura's explicit approval before applying migration
-   `0003_account_audit.sql`.
+   `db:migrate` is safe to repeat. Run it again after every `git pull` that
+   adds a migration.
 
-4. Seed parks and accounts **only if your database has none yet**. See
-   [Database: migrations and seeding](#database-migrations-and-seeding) below.
-5. Start all three development servers:
+4. Seed parks and accounts **only if your database has none yet**. The shared
+   Neon database is already seeded, so teammates skip this step. See
+   [Database: migrations and seeding](#database-migrations-and-seeding).
+5. Start the API, the Ops website and the Ranger app together:
 
    ```sh
    corepack pnpm dev:all
    ```
 
-The API health endpoint is available at `http://localhost:3000/health`; the
-Ranger shell is at `http://localhost:5173` and Ops at
-`http://localhost:5174`. Start all three development servers with
-`corepack pnpm dev:all`, or start individual apps with `corepack pnpm dev:api`,
-`corepack pnpm dev:ranger`, and `corepack pnpm dev:ops`.
+   Keep this terminal open. Press **Ctrl+C** to stop everything.
 
-The API development command loads the root `.env`. Keep the terminal running;
-press Ctrl+C to stop the development servers. The frontends use ports 5173 and
-5174 in their development scripts. Never put database credentials in frontend
-environment variables.
+### Open the website and app
+
+| What | URL | Who uses it |
+|---|---|---|
+| **Ops website** | http://localhost:5174 (sign in at `/login`) | Super Admin, Park Managers, Liaison Officers, Researchers |
+| **Ranger app** (mobile) | http://localhost:5173 | Rangers |
+| API health check | http://localhost:3000/health | Should return `{"status":"ok"}` |
+
+Demo accounts, the demo password and what to try with each role are in
+**[docs/Demo_Accounts.md](./docs/Demo_Accounts.md)**.
+
+**On a phone:** connect it to the same Wi-Fi as your PC and open
+`http://<your-PC's-IP-address>:5173` (find the address with `ipconfig`). The
+dev servers already listen on your network; allow Node.js through the Windows
+firewall if asked.
+
+**Start one part at a time** (each in its own terminal):
+
+```sh
+corepack pnpm dev:api      # API on port 3000 (loads the root .env)
+corepack pnpm dev:ops      # Ops website on port 5174
+corepack pnpm dev:ranger   # Ranger app on port 5173
+```
+
+The website and app send `/api` requests to the API on port 3000, so **the API
+must be running** for sign-in to work.
+
+**If something doesn't work**
+
+| Problem | Fix |
+|---|---|
+| Sign-in says *"The account service is unavailable"* | The API isn't running. Start `corepack pnpm dev:api` (or `dev:all`) and check http://localhost:3000/health |
+| Sign-in says *"Account service is temporarily unavailable"* | The database is missing a migration. Run `corepack pnpm db:migrate` |
+| *"Port 5173/5174 is already in use"* | That app is already running in another terminal. Use it, or stop it with Ctrl+C first |
+| Install fails with an engine error | Use Node.js 22 or newer (`node --version`) |
+
+Never put database credentials in frontend environment variables.
 
 Docker remains an optional alternative: use `docker compose -f
 docker-compose.neon.yml up --build` for apps with Neon, or `docker compose up
@@ -131,14 +169,13 @@ other settings from the root `.env`.
   after a pull, the database is probably missing a new migration. Run
   `corepack pnpm db:migrate`.
 - **Adding a table or column (module owners):** create a new numbered file
-  such as `apps/api/drizzle/0003_incidents.sql`, using the next free number.
+  such as `apps/api/drizzle/0004_incidents.sql`, using the next free number.
   Write it to be idempotent (`CREATE TABLE IF NOT EXISTS`,
   `ADD COLUMN IF NOT EXISTS`). Update the matching Drizzle schema file, run
   `db:migrate`, and commit both. **Never edit a migration that has already
   been committed**; add a new one instead.
-- Migration `0003_account_audit.sql` adds account history. Do not apply it to
-  the shared Neon database until Wenura explicitly approves; local/test
-  databases can be migrated normally.
+- Migration `0003_account_audit.sql` adds account history. It is already
+  applied to the shared Neon database.
 - Applied migrations are recorded in the `schema_migrations` table.
 
 ### Seeding accounts
@@ -149,10 +186,10 @@ park staff** in [User groups](./docs/User_groups.md#2-account-hierarchy-who-crea
 
 **If the team shares one Neon database (the normal setup):**
 
-- **The database owner (Wenura)** seeds it once. Nobody else needs to run `db:seed`.
+- **The database owner** seeds it once. Nobody else needs to run `db:seed`.
 - Everyone else only needs `DATABASE_URL` in their `.env` and to run
-  `db:migrate`. They sign in with the demo accounts below; get the demo
-  password privately from the owner.
+  `db:migrate`. They sign in with the demo accounts listed in
+  [docs/Demo_Accounts.md](./docs/Demo_Accounts.md), which has the demo password.
 - If someone else runs `db:seed` with a different `SUPER_ADMIN_EMAIL`, it stops
   with *"A Super Admin already exists"* and changes nothing.
 
@@ -189,7 +226,7 @@ corepack pnpm db:seed --reset-passwords   # reset all seeded accounts to the .en
 corepack pnpm db:seed --no-demo           # create only the parks and the Super Admin
 ```
 
-**Demo accounts.** All use `DEMO_ACCOUNT_PASSWORD`, and all are demo data on
+**Demo accounts** (password, URLs and what to test: [docs/Demo_Accounts.md](./docs/Demo_Accounts.md)). All use `DEMO_ACCOUNT_PASSWORD`, and all are demo data on
 the reserved `example.org` domain.
 
 | Park | Park Manager | Liaison Officer | Rangers | Researcher |

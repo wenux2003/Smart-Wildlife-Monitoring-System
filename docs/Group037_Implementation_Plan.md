@@ -1,5 +1,7 @@
 # Implementation Plan: Wildlife Guardian (Group 037)
 
+> **✅ Implemented so far (6 October 2026):** web and Ranger sign-in, the Super Admin → Park Manager → staff account hierarchy with admin and staff pages, parks, server-side access checks, migrations `0001`–`0003`, the seed and required CI on `main`. The four business modules are not started. The README [project status](../README.md#project-status) and [User groups §8](./User_groups.md#8-current-status-implemented-vs-planned) track the current state; where this plan describes "shells" below, it reflects the earlier baseline.
+
 > **6 October 2026 scope update:** The user explicitly requested real email/password registration and sign-in for the Operations website. This supersedes demo-only web authentication references below. See [web authentication](./web-auth.md) for implemented tables, session behavior, tests and limitations. The four assessed business functions retain priority.
 
 

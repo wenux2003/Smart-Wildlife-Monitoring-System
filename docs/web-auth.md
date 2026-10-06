@@ -11,7 +11,7 @@ corepack pnpm install
 corepack pnpm dev:all
 ```
 
-The shared Neon database already contains the seed accounts. **Do not run `db:seed` against it.** Migration `0003_account_audit.sql` is pending Wenura's approval before it may be applied to Neon; for local/test databases, run `corepack pnpm db:migrate` as appropriate. Open http://localhost:5174 for Ops or http://localhost:5173 for Ranger.
+The shared Neon database already contains the seed accounts. **Do not run `db:seed` against it.** Migration `0003_account_audit.sql` has been applied to Neon (6 October 2026); run `corepack pnpm db:migrate` after pulling new migrations. Open http://localhost:5174 for Ops or http://localhost:5173 for Ranger. Demo accounts are listed in [Demo accounts](./Demo_Accounts.md).
 
 `db:migrate` applies each numbered SQL file in `apps/api/drizzle/` once, in order, in one locked transaction, and records it in `schema_migrations`; migrations are idempotent and none drops data. `0001_auth.sql` creates `auth_users` and `auth_sessions`; `0002_parks_and_account_hierarchy.sql` adds parks, the Super Admin role and account flags; `0003_account_audit.sql` adds `account_events` and indexes on target user and creation time. `auth-schema.ts` and `reference-schema.ts` are the matching Drizzle models. Add new numbered migrations rather than editing applied ones.
 

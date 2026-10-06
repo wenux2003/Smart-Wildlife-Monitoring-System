@@ -26,22 +26,24 @@ See [Web authentication](./web-auth.md) for implementation, setup, tests and rem
 
 ## 3. Minimum shared features
 
-| Feature | Small version to build | Where it belongs |
-|---|---|---|
-| Account and park context | Signed-in account; server-assigned role/park visible; park-scoped requests | Both app headers and API |
-| Access checks | Server-side user, role, park and ownership validation; clear access-denied response | API and route/menu guards |
-| Navigation and layout | Ops sidebar/header; mobile Ranger navigation; menus appropriate to each role | Existing app shells |
-| Design system | Shared colors, typography, buttons, fields, cards, tables, dialogs and status badges | Shared UI package and app styling |
-| Park reference/configuration | Seed parks, species, types, zones and thresholds; small manager-only settings view for editable values | Reference module and Ops settings |
-| Shared map | Map frame, markers, legend and reusable location display/selection; show coordinate source and age where relevant | Shared UI package |
-| Offline foundation | Durable Ranger storage/outbox, connection and sync status, retry, restart recovery and prepared-route readiness | Offline package and Ranger app |
-| Photo handling | Common size/type validation, preview, compression and upload/retry support; preserve no-photo reporting | M1 workflow with shared helpers |
-| Feedback and page states | Success/error feedback, loading, no results, not found, access denied and confirmation dialogs | Reusable UI components |
-| Search/filter controls | Reuse date, park and category inputs; add sorting/pagination only where needed | Shared UI; queries stay in each module |
-| Notifications | Visible pending work and alert indicators linking to existing module screens | App shell with module-provided data |
-| Audit events | Common actor/time/action/record fields; modules record meaningful changes and report/export activity | API persistence and module history views |
-| Data/API conventions | Shared DTOs, validation, consistent errors, timestamps, IDs and park scoping | Shared package and existing API |
-| Team setup | Neon `.env`, migrations, seed commands, Node/Corepack startup instructions and automated checks | Root tooling, API and docs |
+Status key: ✅ done · 🟡 partly done · ⏳ not started (as of 6 October 2026)
+
+| Feature | Small version to build | Where it belongs | Status |
+|---|---|---|---|
+| Account and park context | Signed-in account; server-assigned role/park visible; park-scoped requests | Both app headers and API | ✅ Ops and Ranger headers show the account and park; requests are park-scoped on the server |
+| Access checks | Server-side user, role, park and ownership validation; clear access-denied response | API and route/menu guards | ✅ `app.authorize()` and `assertParkAccess()` on the server; Ops role routes and an access-denied page. Each module still checks record ownership in its own routes |
+| Navigation and layout | Ops sidebar/header; mobile Ranger navigation; menus appropriate to each role | Existing app shells | 🟡 Role-based home routing and an account header; module menus and the sidebar come with the modules |
+| Design system | Shared colors, typography, buttons, fields, cards, tables, dialogs and status badges | Shared UI package and app styling | 🟡 Palette applied in Ops and Ranger styling; shared `@wr/ui` components not built yet |
+| Park reference/configuration | Seed parks, species, types, zones and thresholds; small manager-only settings view for editable values | Reference module and Ops settings | 🟡 Yala, Sinharaja and Wilpattu seeded; species, incident types, zones, thresholds and the settings view still to do |
+| Shared map | Map frame, markers, legend and reusable location display/selection; show coordinate source and age where relevant | Shared UI package | ⏳ |
+| Offline foundation | Durable Ranger storage/outbox, connection and sync status, retry, restart recovery and prepared-route readiness | Offline package and Ranger app | ⏳ The Ranger home shows online/offline status only |
+| Photo handling | Common size/type validation, preview, compression and upload/retry support; preserve no-photo reporting | M1 workflow with shared helpers | ⏳ |
+| Feedback and page states | Success/error feedback, loading, no results, not found, access denied and confirmation dialogs | Reusable UI components | 🟡 On the account pages; not yet extracted as reusable components |
+| Search/filter controls | Reuse date, park and category inputs; add sorting/pagination only where needed | Shared UI; queries stay in each module | 🟡 Account filtering by park and role on the Admin page; module filters still to do |
+| Notifications | Visible pending work and alert indicators linking to existing module screens | App shell with module-provided data | ⏳ |
+| Audit events | Common actor/time/action/record fields; modules record meaningful changes and report/export activity | API persistence and module history views | 🟡 `account_events` records every account and park change; module audit still to do |
+| Data/API conventions | Shared DTOs, validation, consistent errors, timestamps, IDs and park scoping | Shared package and existing API | 🟡 Zod validation, `{ code, message }` errors and park scoping in auth and accounts; module DTOs still to do |
+| Team setup | Neon `.env`, migrations, seed commands, Node/Corepack startup instructions and automated checks | Root tooling, API and docs | ✅ Neon `.env`, `db:migrate`, `db:seed`, README run steps and required CI checks on `main` |
 
 Use in-app feedback and existing module lists initially; a separate notification center is unnecessary. Mock SMS intake/replies remain required within M1, and alert dispatch/broadcast remains within M3. Shared scope reduction must not remove these business flows.
 
@@ -132,12 +134,12 @@ Offline recovery, park isolation, required validation, audit records and require
 ## 8. Ready-to-integrate checklist
 
 - [ ] All members agree on scope, access rules, shared ownership and wireframes.
-- [ ] Both apps show the authenticated identity and assigned park clearly.
-- [ ] Backend rejects invalid sessions, forbidden operations and cross-park access.
+- [x] ✅ Both apps show the authenticated identity and assigned park clearly.
+- [x] ✅ Backend rejects invalid sessions, forbidden operations and cross-park access.
 - [ ] Shared layout and controls use the agreed palette and work on intended screen sizes.
 - [ ] Reference data and park configuration support the required demonstrations.
 - [ ] Offline helpers preserve the original user/park and survive restart/retry.
 - [ ] Core modules consume the shared foundation without duplicating it.
-- [ ] Setup and checks are reproducible; prototype limitations are documented honestly.
+- [x] ✅ Setup and checks are reproducible; prototype limitations are documented honestly.
 
 **Success criterion:** shared features make the four assessed functions easier to implement, test and demonstrate, without becoming a competing project.
