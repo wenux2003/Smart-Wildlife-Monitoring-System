@@ -39,7 +39,7 @@ the full feature and database design.
 With Neon, Docker and a local PostgreSQL installation are optional. Follow
 [Neon setup](./docs/neon-setup.md) to configure the hosted database.
 
-Requirements: Node.js 20.6 or newer, Corepack/pnpm, and internet access for Neon.
+Requirements: Node.js 22 or newer, Corepack/pnpm, and internet access for Neon.
 
 1. If `.env` does not exist, copy `.env.example` to `.env`. Set `DATABASE_URL`
    to your private Neon connection URL and enable PostGIS in that database.
@@ -79,8 +79,34 @@ Docker remains an optional alternative: use `docker compose -f
 docker-compose.neon.yml up --build` for apps with Neon, or `docker compose up
 --build` for apps with local PostGIS. These commands require Docker Desktop.
 
-Run checks with `corepack pnpm lint`, `corepack pnpm -r typecheck`, and
-`corepack pnpm -r test`.
+Run checks with `corepack pnpm lint`, `corepack pnpm typecheck`, and
+`corepack pnpm test`. These are the same commands CI runs.
+
+## CI and the protected `main` branch
+
+`main` is protected. Changes reach it only through a pull request, and the PR
+can be merged only when all three CI jobs in
+[`.github/workflows/ci.yml`](./.github/workflows/ci.yml) pass:
+
+| Check | What it verifies |
+|---|---|
+| **Lint, typecheck, test and build** | The lockfile is up to date (`--frozen-lockfile`); no `.env` file is committed; ESLint; TypeScript for every package; all Vitest tests; and production builds of Ops and Ranger |
+| **Migrations, seed and sign-in** | On a fresh PostGIS database: all migrations apply and re-run cleanly; the seed runs twice without creating duplicates; the API starts; the seeded Super Admin and a Yala ranger can sign in; a wrong password is rejected |
+| **Secret scan** | gitleaks finds no keys or tokens in the commits |
+
+**Day-to-day workflow:**
+
+1. Create a branch from the latest `main`, e.g. `git switch -c m4-analytics`.
+2. Before pushing, run `corepack pnpm lint`, `corepack pnpm typecheck` and
+   `corepack pnpm test`.
+3. Push and open a pull request into `main`. Wait for all checks to pass, then merge.
+4. If you add a dependency, commit the updated `pnpm-lock.yaml`; CI refuses an
+   out-of-date lockfile.
+5. If you add a migration, the database job proves it applies and re-runs
+   cleanly on a fresh database.
+
+CI uses **Node.js 22**, the minimum this project supports, because a test
+dependency requires it.
 
 ## Database: migrations and seeding
 
