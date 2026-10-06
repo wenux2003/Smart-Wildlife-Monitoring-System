@@ -49,12 +49,15 @@ Requirements: Node.js 22 or newer, Corepack/pnpm, and internet access for Neon.
    corepack pnpm install
    ```
 
-3. Verify the database and bring its schema up to date:
+3. Verify the database:
 
    ```sh
    corepack pnpm db:check
-   corepack pnpm db:migrate
    ```
+
+   Run `corepack pnpm db:migrate` on local/test databases. On shared Neon,
+   wait for Wenura's explicit approval before applying migration
+   `0003_account_audit.sql`.
 
 4. Seed parks and accounts **only if your database has none yet**. See
    [Database: migrations and seeding](#database-migrations-and-seeding) below.
@@ -91,7 +94,7 @@ can be merged only when all three CI jobs in
 | Check | What it verifies |
 |---|---|
 | **Lint, typecheck, test and build** | The lockfile is up to date (`--frozen-lockfile`); no `.env` file is committed; ESLint; TypeScript for every package; all Vitest tests; and production builds of Ops and Ranger |
-| **Migrations, seed and sign-in** | On a fresh PostGIS database: all migrations apply and re-run cleanly; the seed runs twice without creating duplicates; the API starts; the seeded Super Admin and a Yala ranger can sign in; a wrong password is rejected |
+| **Migrations, seed and sign-in** | On a fresh PostGIS database: all migrations apply and re-run cleanly; the seed runs twice without creating duplicates; the API starts; Super Admin creates a Park Manager, the manager creates a Ranger, and the temporary-password flow completes; seeded sign-in and wrong-password behavior are checked |
 | **Secret scan** | gitleaks finds no keys or tokens in the commits |
 
 **Day-to-day workflow:**
@@ -121,7 +124,7 @@ other settings from the root `.env`.
 
 ### Migrations
 
-- `db:migrate` is safe to run at any time. Migrations that have already run
+- `db:migrate` is safe to run at any time on approved databases. Migrations that have already run
   are skipped, and every migration is idempotent. Running it again prints
   `Database schema is already up to date.`
 - If sign-in suddenly says *"Account service is temporarily unavailable"*
@@ -133,6 +136,9 @@ other settings from the root `.env`.
   `ADD COLUMN IF NOT EXISTS`). Update the matching Drizzle schema file, run
   `db:migrate`, and commit both. **Never edit a migration that has already
   been committed**; add a new one instead.
+- Migration `0003_account_audit.sql` adds account history. Do not apply it to
+  the shared Neon database until Wenura explicitly approves; local/test
+  databases can be migrated normally.
 - Applied migrations are recorded in the `schema_migrations` table.
 
 ### Seeding accounts
@@ -194,6 +200,22 @@ the reserved `example.org` domain.
 
 The Super Admin signs in with `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_PASSWORD`.
 A self-registered account at `/register` is always a Researcher with no park.
+
+### Creating staff and setting their passwords
+
+After signing in to Ops, the Super Admin opens **Parks & managers** in `/admin`
+to create parks and Park Managers. The **All accounts** tab can create Rangers
+and Liaison Officers in any park and manage account role/park assignments.
+A Park Manager opens **Staff accounts** at `/staff` to create and manage only
+Rangers and Liaison Officers in their own park, and to grant or remove that
+park's access for Researchers.
+
+When creating an account or resetting its password, the administrator enters a
+temporary password of 12–128 characters and gives it to the user directly.
+There is no email delivery. At the user's first sign-in, Ops or Ranger requires
+them to choose a different password before proceeding. Ranger sign-in requires
+an internet connection; offline authentication is not supported. Deactivated
+accounts are not deleted, and their existing sessions are revoked immediately.
 
 **Common seed messages**
 

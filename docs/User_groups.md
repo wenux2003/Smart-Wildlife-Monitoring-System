@@ -2,7 +2,7 @@
 
 **Group 037 | 6 October 2026 | Reference note: what exists now is separated from what is planned**
 
-> **6 October 2026 update: account hierarchy, Phase A implemented.** Accounts follow **Super Admin → Park Manager → park staff** (§2). **Phase A is built:** the `parks` table, the `SUPER_ADMIN` role and account flags (migration `0002`), the `db:seed` script, and the shared route guard `app.authorize()` and `assertParkAccess()` for M1–M4 (see [web-auth.md](./web-auth.md#protecting-module-routes-m1m4)). **Phase B** (account-management screens) is still a proposal, and the [Shared features plan](./Shared_Features_Plan.md) §7 still defers those screens. Scope impact is covered in §2.6.
+> **6 October 2026 update: Phase B account management and sign-in are implemented.** Accounts follow **Super Admin → Park Manager → park staff** (§2). The Ops account pages, API-side permission checks, temporary-password flow, account audit history and Ranger sign-in are implemented. This is account administration, not one of the four graded business use cases. See [web-auth.md](./web-auth.md) for routes and limitations.
 
 This note answers five questions for the whole team:
 
@@ -22,9 +22,9 @@ Sources: the client brief `Case study 01.pdf` (pp. 1–3), [Implementation plan]
 
 | User group | Type | App they use | Sign in? | Self sign-up? | Who creates the account |
 |---|---|---|---|---|---|
-| **Super Admin** | National admin role | Operations website (port 5174) | **Yes** | **No** | Created once by the **bootstrap seed script** |
-| **Park Manager** | Staff role, also park-level admin | Operations website | **Yes** | **No** | The **Super Admin** |
-| **Ranger** | Staff role | Ranger mobile app (PWA, port 5173) | **Yes** | **No** | **Their park's Park Manager** |
+| **Super Admin** | National admin role | Ops account administration (port 5174) | **Yes** | **No** | Bootstrap seed; then manages accounts in `/admin` |
+| **Park Manager** | Staff role, also park-level admin | Ops workspace and `/staff` | **Yes** | **No** | Super Admin; manages own park staff in `/staff` |
+| **Ranger** | Staff role | Ranger mobile app (PWA, port 5173) | **Yes** | **No** | Their park's Park Manager |
 | **Liaison Officer** | Staff role | Operations website | **Yes** | **No** | **Their park's Park Manager** |
 | **Researcher** | Partner role | Operations website | **Yes** | **Yes**, the only role that can self-register | Themselves. Park access is granted by that park's Park Manager or the Super Admin |
 | **Community member / villager** | Public, not a role | SMS (mock gateway) or the public community form in the Ranger app | **No** | **No** | No account. Identified by phone number only |
@@ -32,7 +32,7 @@ Sources: the client brief `Case study 01.pdf` (pp. 1–3), [Implementation plan]
 | **Government ministries and funding bodies** | External recipients | None. They receive exported PDF/CSV reports | **No** | **No** | No account |
 | **Devices and simulators** (GPS collars, camera traps, SMS gateway) | System actors | Call the API directly | No user login | No | No account |
 
-Until the staff-account screen is built (§2.5, Phase B), `corepack pnpm db:seed` creates every demo account and a team member does the Super Admin's job directly on the database.
+The seed creates demo accounts for the shared demonstration. After that, the Super Admin and Park Managers use their account-management screens to provision staff.
 
 **In short:**
 
@@ -44,7 +44,7 @@ Until the staff-account screen is built (§2.5, Phase B), `corepack pnpm db:seed
 
 ## 2. Account hierarchy: who creates whom
 
-*Phase A (database rules, seed and route guard) is implemented. Phase B (account-management screens) is proposed; see §2.5.*
+*Phase A (database rules, seed and route guard) and Phase B (account-management screens and sign-in flows) are implemented; see §2.5.*
 
 ### 2.1 Why
 
@@ -89,21 +89,21 @@ The server must enforce these rules on every request. Hiding buttons in the inte
 4. **Deactivate, never delete.** Rangers' past incidents, patrols and dispatches must keep their author, so accounts are switched off, not removed. Deactivating an account also revokes all its sessions immediately.
 5. **The first account comes from a seed script.** The Super Admin account is created once by the bootstrap script, using `SUPER_ADMIN_EMAIL`, `SUPER_ADMIN_NAME` and `SUPER_ADMIN_PASSWORD` from `.env`. It can't be created from a screen, and public registration can never produce it.
 6. **Temporary passwords.** There is no email system, so whoever creates an account sets a temporary password (12–128 characters) and gives it to the person directly. The account is flagged so that the user must **change the password at first sign-in**.
-7. **Audit trail.** Every create, park change, role change, deactivation and reactivation records the actor, time, target user, old and new values, and a reason. This uses the shared audit-event format.
+7. **Audit trail.** Every account or park change records the actor, time, target user where applicable, action, and old/new values in `account_events`. Password values are never recorded.
 
 ### 2.5 Build in two phases
 
 | Phase | What | When | Needed for the demo? |
 |---|---|---|---|
 | **A: foundation** ✅ *done* | Migration `0002` with `parks`, `SUPER_ADMIN` and the account flags (§3). `corepack pnpm db:seed`, which creates the Super Admin from `.env`, then Park Managers, Liaison Officers, Rangers and a Researcher for each demo park (§6.3). The route guard `app.authorize()` and `assertParkAccess()` for M1–M4. | **Done 6 October.** It unblocks every module. | **Yes** |
-| **B: staff-account screens** | Ops pages: *Parks & managers* for the Super Admin, *Staff accounts* for Park Managers (create, list, deactivate, grant Researcher access), plus a first-login password-change page. API endpoints and tests for the rules in §2.4. | **Only after** the four graded modules work, around 7–8 October at the earliest. | No. Phase A already gives the demo its accounts. |
+| **B: account management and sign-in** ✅ *done* | Ops `/admin` (park creation, Park Manager provisioning and account search/actions), `/staff` (park staff, lifecycle and Researcher access), audit history, and forced password change. Ranger `/login`, `/change-password` and protected home. API routes enforce the rules in §2.4; migration `0003_account_audit.sql` records changes. | **Implemented 6 October.** Apply migration `0003` to a database before using these endpoints. | Supporting infrastructure only; not a graded use case. |
 
-Until Phase B exists, a team member does the Super Admin's work with the seed script or SQL against Neon. Nobody may claim in the report that Phase B screens exist unless they are built and tested.
+New users receive a temporary password from their creator and must change it at first sign-in. Deactivation and password reset revoke all existing sessions.
 
 ### 2.6 Scope check against the assignment
 
 - **This doesn't break the assignment rules.** The plans, quoting the specification and campus FAQ, say *"login/logout and privilege administration are not graded use cases."* They earn no marks, but they aren't banned.
-- **It changes the team's own agreed scope.** [Shared features plan](./Shared_Features_Plan.md) §7 defers "user-administration screens." Phase A adds no screens, only a migration, a seed script and the access checks the plan already requires ("Account and park context", "Access checks", "Team setup: migrations, seed commands"). Phase B needs team agreement and an update to that plan.
+- **It is supporting work, not an assessed business use case.** Login/logout and privilege administration receive no separate use-case marks. The four assessed workflows remain the priority, and [Shared features plan](./Shared_Features_Plan.md) §7 now records the account screens as implemented rather than deferred.
 - **It isn't any member's graded use case.** Each member's marks still come from incidents (M1), patrols (M2), alerts (M3) or analytics (M4), with their main, alternate and error flows and more than 80% test coverage. Admin work must not take time from these.
 - **In the report:** if the improved use-case diagram shows a Super Admin actor, justify it briefly. For example: "the case study requires several parks with different staffing, so accounts are provisioned per park under national control." Alternatively, describe it as supporting infrastructure outside the four main use cases. Group 039's design is the one being critiqued, and new actors need a reason.
 - The plans quote the Assignment 02 specification and FAQ; this note did not check them directly. If unsure, confirm with the module team at a tutorial.
@@ -128,8 +128,9 @@ Each account (`auth_users`) stores `name`, `email` (unique, lowercase), `passwor
 | Super Admin has no park; Ranger, Park Manager and Liaison Officer must have one; Researcher may or may not | Check `auth_users_park_scope_check` |
 | Exactly one Super Admin | Unique partial index `auth_users_single_super_admin` |
 | Deactivation (§2.4 rule 4) | `disabled_at`: sign-in, `/me` and `app.authorize()` treat a deactivated account as signed out |
-| Temporary passwords (§2.4 rule 6) | `must_change_password`: `app.authorize()` returns `403 PASSWORD_CHANGE_REQUIRED`. The change-password page comes in Phase B; seeded accounts have this flag set to false |
+| Temporary passwords (§2.4 rule 6) | `must_change_password`: `app.authorize()` returns `403 PASSWORD_CHANGE_REQUIRED`; both apps expose the forced change-password flow. Seeded demo accounts have this flag set to false |
 | Who created the account | `created_by`: the seed records Super Admin → Park Manager → staff; `NULL` for self-registered accounts |
+| Account audit | Migration `0003_account_audit.sql`: `account_events` records account and park changes without password values |
 
 These rules were checked against Neon inside a rolled-back transaction (see [web-auth.md](./web-auth.md#verification)).
 
@@ -154,14 +155,13 @@ Community members, ministries and devices are **not** roles. There is deliberate
 
 **Screens:**
 
-| Area | Route (proposed) | Purpose | Phase |
+| Area | Route | Purpose | Status |
 |---|---|---|---|
-| Dashboard | `/dashboard` | Identity, national scope, links to administration | A (the existing page shows the role) |
-| Parks & managers | `/admin/parks` | List and create parks; create, deactivate and move Park Managers | B |
-| All staff | `/admin/users` | Search accounts across all parks; change role or park; deactivate or reactivate | B |
+| Account administration | `/admin` | Two tabs: **Parks & managers** and **All accounts**; create parks and staff, manage status/password/role/park, and grant Researcher access | Implemented |
+| Change password | `/change-password` | Required for a temporary-password account; available to signed-in users | Implemented |
 
-**Can do:** everything in §2.3 for any park.
-**Not decided:** whether the Super Admin can also *view* operational data and analytics across all parks. See §9. The default is account administration only, so the Super Admin doesn't become a hidden fifth operational role.
+**Can do:** create parks; create Park Managers, Rangers and Liaison Officers in any park; manage accounts and Researcher access; view account audit history.
+**Cannot do:** view operational park data, analytics, patrols, incidents or alerts. The Super Admin is an account administrator, not an operational role.
 
 ---
 
@@ -174,14 +174,14 @@ Community members, ministries and devices are **not** roles. There is deliberate
 **Account:**
 
 - **Sign in: yes.** **Sign up: no.**
-- **Created by the Super Admin** (by the seed script until Phase B), with `role = PARK_MANAGER` and a `park_id`. Managers have the widest operational authority in their park, so the account must never be self-created.
+- **Created by the Super Admin**, with `role = PARK_MANAGER` and a `park_id`. Managers have the widest operational authority in their park, so the account must never be self-created.
 
-**Planned screens:**
+**Screens:**
 
 | Area | Route | Purpose | Owner |
 |---|---|---|---|
 | Dashboard | `/dashboard` | Identity, park, summary cards from each module, shortcuts | Shared |
-| **Staff accounts** | `/staff` *(proposed, Phase B)* | Create Rangers and Liaison Officers for own park; list and deactivate them; grant or remove Researcher access to own park | Shared |
+| **Staff accounts** | `/staff` | Create and list own-park Rangers and Liaison Officers; deactivate/reactivate them; reset passwords; grant/remove Researcher access; view audit history | Implemented |
 | Incidents | `/incidents`, `/incidents/:id` | Park-wide incident review, status changes and history | M1 |
 | Camera review | `/camera-traps` | Classify camera images: wildlife, authorised person, suspicious, unsure | M1 (who reviews is still to be confirmed by M1) |
 | Patrols | `/patrols` | Assign and reassign patrols; detect conflicts | M2 |
@@ -206,20 +206,23 @@ Community members, ministries and devices are **not** roles. There is deliberate
 
 **App:** Ranger mobile web app (`apps/ranger`, port 5173). It is offline-first: data is saved to the phone (IndexedDB) and synchronised when the connection returns.
 
+If a Ranger signs in to the Ops website, Ops shows a short "Rangers use the Ranger app" page with an app link and sign-out. It exposes no Ops data.
+
 **Account:**
 
 - **Sign in: yes.** **Sign up: no.**
-- **Created by their park's Park Manager** (by the seed script until Phase B), with `role = RANGER` and that park's `park_id`. A self-registered account always becomes a Researcher, so a ranger account can't be made that way.
+- **Created by their park's Park Manager** (or the Super Admin), with `role = RANGER` and that park's `park_id`. A self-registered account always becomes a Researcher, so a ranger account can't be made that way.
 - At first sign-in the ranger sets their own password, replacing the temporary one (§2.4 rule 6).
 - The ranger should sign in **while online, before going into the field**. Sessions last seven days. Offline records must stay attached to the original user and park, even if the session expires before sync (Shared features plan §2). If the session has expired, the outbox should wait for the ranger to sign in again rather than discard or reassign the work.
 - If a ranger is deactivated, work they recorded **before** deactivation and still queued offline should still be accepted and attributed to them. The server should flag it for the Park Manager to review rather than silently drop it. Confirm this in §9.
 
-**Planned screens** (Implementation plan §8):
+**Sign-in screens** (implemented; business workflow screens remain planned):
 
 | Area | Route | Purpose | Owner |
 |---|---|---|---|
-| Sign in | `/login` *(to add)* | Email and password; first-login password change | Shared |
-| Home | `/` | Signed-in identity, assigned park, shortcuts, connection and sync status | Shared |
+| Sign in | `/login` | Email/password sign-in; online connection required | Shared |
+| Change password | `/change-password` | Mandatory for a temporary-password account; session is rotated | Shared |
+| Home | `/` | Signed-in identity, assigned park, connection status and sign-out | Shared |
 | Sync panel | panel or dialog | Pending and failed item counts; manual retry | Shared (M2 lead) |
 | Incidents | `/incidents` | List of own reports and their sync status | M1 |
 | | `/incidents/new` | Report an incident: category, description, GPS or manual location, optional photo; review and submit; works offline | M1 |
@@ -234,7 +237,7 @@ Community members, ministries and devices are **not** roles. There is deliberate
 **Can do:** submit and view **own** reports; see **own** assigned patrols; respond to dispatches **assigned to them**; manage **own** offline work.
 **Cannot do:** view other rangers' private data, assign patrols, dispatch alerts, open park-wide analytics, change park settings or manage accounts.
 
-**Status today:** the Ranger app is only a shell with a single `/` placeholder page. It has **no sign-in screen yet**. The API already accepts auth requests from `http://localhost:5173`, so the Ranger app can use the same `/api/auth/login`, `/me` and `/logout` endpoints when it is integrated.
+**Status today:** Ranger sign-in, forced password change and protected home are implemented. Offline authentication and record synchronization are not part of this work; the ranger must sign in while connected.
 
 ---
 
@@ -249,13 +252,13 @@ The case study (p. 2) says that when a collared elephant enters a high-risk zone
 **Account:**
 
 - **Sign in: yes.** **Sign up: no.**
-- **Created by their park's Park Manager** (by the seed script until Phase B), with `role = LIAISON_OFFICER` and a `park_id`. They change the temporary password at first sign-in.
+- **Created by their park's Park Manager** (or the Super Admin), with `role = LIAISON_OFFICER` and a `park_id`. They change the temporary password at first sign-in.
 
 **Planned screens:**
 
 | Area | Route | Purpose | Owner |
 |---|---|---|---|
-| Dashboard | `/dashboard` | Identity, park, pending community items | Shared |
+| Dashboard | `/dashboard` | Single home page showing identity and assigned park; no operational modules are implemented yet | Shared |
 | Conflict inbox | `/conflicts` | Incoming SMS and community-form reports; resolve landmark or location; send a follow-up for missing details; assign a responder; record the outcome | M1 |
 | Incidents | `/incidents`, `/incidents/:id` | Verify or reject, view history, close with outcome notes | M1 |
 | Camera review | `/camera-traps` | Possibly; to be confirmed in M1's permission contract | M1 |
@@ -275,14 +278,14 @@ The case study (p. 2) says that when a collared elephant enters a high-risk zone
 
 - **Sign in: yes.** **Sign up: yes.** This is the **only** group that can create its own account.
 - Registering at `/register` requires a name, email and a password of 12–128 characters. The server **always** sets `role = RESEARCHER` and `park_id = NULL`. A request that includes a `role` or park field is rejected.
-- A new Researcher has **no park access**. The workspace says: *"Park access is pending. Contact the park manager of the park you work with to arrange access."* **The Park Manager of the park they want to study, or the Super Admin, grants access** (§2.3). Until Phase B, this is done with SQL against Neon.
+- A new Researcher has **no park access**. The workspace says park access is pending. **The Park Manager of the park they want to study, or the Super Admin, grants access** (§2.3) through `/staff` or `/admin`.
 - For the demo, a Researcher account **with a park already assigned** is seeded so analytics can be shown immediately (§6.3).
 
 **Planned screens:**
 
 | Area | Route | Purpose | Owner |
 |---|---|---|---|
-| Dashboard | `/dashboard` | Identity, allowed park(s) | Shared |
+| Dashboard | `/dashboard` | Single home page showing identity and park access status; no operational modules are implemented yet | Shared |
 | Analytics | `/analytics`, `/analytics/conflicts` | Read-only statistics, trends and heatmaps | M4 |
 | Reports | `/reports` | PDF/CSV export, recorded in the report audit | M4 |
 
@@ -343,30 +346,34 @@ These are local demo tools, not people, and they aren't part of the account hier
 
 ## 5. Screen access matrix
 
-✅ = allowed  ·  👁 = read-only  ·  — = no access  ·  **own** = only their own records  ·  **park** = own park only  ·  ❓ = to be confirmed
+✅ = allowed  ·  👁 = read-only  ·  — = no access  ·  **own** = only their own records  ·  **park** = own park only
 
 | Screen / feature | Public | Community | Ranger | Liaison Officer | Researcher | Park Manager | Super Admin |
 |---|---|---|---|---|---|---|---|
 | Ops public home, login, register | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Ops `/dashboard` workspace | — | — | ❓ (Ranger uses its own app) | ✅ | ✅ | ✅ | ✅ |
+| Ops `/dashboard` workspace | — | — | Guidance page only | ✅ | ✅ | ✅ | — |
+| Ops `/admin` parks and all accounts | — | — | — | — | — | — | ✅ |
+| Ops `/staff` own-park staff and Researcher access | — | — | — | — | — | ✅ park | — |
+| Ops account audit history | — | — | — | — | — | ✅ own park | ✅ all |
+| Change temporary password | — | — | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Community form `/community/new` / SMS | ✅ | ✅ | — | — | — | — | — |
 | Ranger: report incident | — | — | ✅ | — | — | — | — |
 | Ranger: incident list/detail | — | — | **own** | — | — | — | — |
 | Ranger: patrol screens | — | — | **own assigned** | — | — | — | — |
 | Ranger: dispatch accept/arrive/resolve | — | — | **own assigned** | ❓ (§4.4) | — | — | — |
-| Ops: incidents list/detail | — | — | — | ✅ park | — | ✅ park | ❓ |
-| Ops: camera-trap review | — | — | — | ❓ | — | ❓ | — |
-| Ops: conflict inbox | — | — | — | ✅ park | — | 👁 ❓ | — |
+| Ops: incidents list/detail | — | — | — | ✅ park | — | ✅ park | — |
+| Ops: camera-trap review | — | — | — | To be agreed in M1 | — | To be agreed in M1 | — |
+| Ops: conflict inbox | — | — | — | ✅ park | — | Read-only if agreed in M1 | — |
 | Ops: patrol assignment | — | — | — | — | — | ✅ park | — |
-| Ops: patrol coverage/tracks | — | — | — | — | 👁 ❓ (aggregated gaps only) | ✅ park | ❓ |
+| Ops: patrol coverage/tracks | — | — | — | — | Aggregated gaps only if agreed | ✅ park | — |
 | Ops: alerts, dispatch, broadcast | — | — | — | — | — | ✅ park | — |
 | Ops: collar diagnostics | — | — | — | — | — | ✅ park | — |
-| Ops: analytics and conflict trends | — | — | — | — | 👁 allowed parks | ✅ park | ❓ 👁 all parks |
-| Ops: PDF/CSV export | — | — | — | — | ✅ allowed parks | ✅ park | ❓ |
-| Ops: park settings | — | — | — | — | — | ✅ park | ❓ |
-| **Ops: staff accounts** (`/staff`) | — | — | — | — | — | ✅ park (Rangers, Liaison Officers, Researcher access) | ✅ all |
-| **Ops: parks & managers** (`/admin/parks`) | — | — | — | — | — | — | ✅ |
-| Change own temporary password | — | — | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Ops: analytics and conflict trends | — | — | — | — | 👁 allowed parks | ✅ park | — |
+| Ops: PDF/CSV export | — | — | — | — | ✅ allowed parks | ✅ park | — |
+| Ops: park settings | — | — | — | — | — | ✅ park | — |
+| **Ops: staff accounts** (`/staff`) | — | — | — | — | — | ✅ park (Rangers, Liaison Officers, Researcher access) | — |
+| **Ops: parks & account administration** (`/admin`) | — | — | — | — | — | — | ✅ |
+| Change own password | — | — | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 Every check above must be enforced **by the API** on each request, using the session's role, park and record ownership. Hiding a menu item or protecting a client route is **not** enough (web-auth.md).
 
@@ -379,12 +386,12 @@ Every check above must be enforced **by the API** on each request, using the ses
 | Role | Pre-created? | Created by | Reason |
 |---|---|---|---|
 | Super Admin | **Must** | Bootstrap seed script, once | Someone has to exist before anyone can create accounts |
-| Park Manager | **Must** | Super Admin | Highest operational authority in a park; never self-created |
-| Ranger | **Must** | Their park's Park Manager | Registration can't assign this role; it needs a park |
-| Liaison Officer | **Must** | Their park's Park Manager | Handles personal data such as villagers' phone numbers |
+| Park Manager | **Must** | Super Admin, using `/admin` | Highest operational authority in a park; never self-created |
+| Ranger | **Must** | Their park's Park Manager, using `/staff` (or Super Admin) | Registration can't assign this role; it needs a park |
+| Liaison Officer | **Must** | Their park's Park Manager, using `/staff` (or Super Admin) | Handles personal data such as villagers' phone numbers |
 | Researcher | Optional | Self-registered; park access granted by Park Manager or Super Admin | Self-registered accounts have no park; a seeded one with a park makes the demo smoother |
 
-Until Phase B, the seed script creates all of the above, and a team member does the Super Admin's work directly on the database.
+The initial shared demo identities are seeded. For subsequent accounts, use `/admin` or `/staff`; never create or delete staff records directly in production data.
 
 ### 6.2 What exists today
 
@@ -426,12 +433,14 @@ How the seed behaves:
 - There is a limit of 30 auth attempts per IP per 15 minutes.
 - Requests are accepted only from the allowed origins (`APP_ORIGINS`, by default ports 5174 and 5173).
 
-**Added by the hierarchy proposal:**
+**Account hierarchy and password handling (implemented):**
 
-- Deactivated accounts can't sign in, and their existing sessions are revoked immediately.
-- Accounts flagged with `must_change_password` can reach only the change-password page until a new password is set.
+- Deactivated accounts can't sign in; deactivation and password reset revoke all existing sessions immediately.
+- New staff receive a creator-provided temporary password, and every app forces a change before other pages or API routes.
+- Password changes verify the current password, rotate the active session and write a `PASSWORD_CHANGED` audit event.
+- Account and park changes are recorded in `account_events` by migration `0003`.
 
-**Not implemented and still deferred:** password reset by email, email verification, MFA and social login. The "Forgot password?" link tells the user to contact an administrator. Under the hierarchy, that means their Park Manager, who can set a new temporary password in Phase B.
+**Not implemented and still deferred:** password reset by email, email verification, MFA and social login. The "Forgot password?" link tells the user to contact an administrator. A Park Manager or Super Admin can set a new temporary password from their account page.
 
 ---
 
@@ -439,17 +448,20 @@ How the seed behaves:
 
 | Item | Status |
 |---|---|
-| Ops public home, `/login`, `/register`, `/dashboard`, 404 | ✅ Implemented |
+| Ops public home, `/login`, `/register`, role-aware `/dashboard`, `/admin`, `/staff`, `/change-password`, access denied and 404 | ✅ Implemented |
 | Real accounts and sessions in Neon (`auth_users`, `auth_sessions`) | ✅ Implemented |
 | Self-registration as Researcher with no park | ✅ Implemented |
-| Ops dashboard shows identity, role, assigned park name, or national scope for the Super Admin | ✅ Implemented |
+| Ops workspace shows identity and park/access-pending status for Park Managers, Liaison Officers and Researchers | ✅ Implemented |
 | `parks` table, `park_id` foreign key, `SUPER_ADMIN` role, deactivation and first-login password flag (migration `0002`) | ✅ Implemented (Phase A) |
+| Account change audit trail (`account_events`, migration `0003`) | ✅ Implemented |
+| Super Admin park/account administration; Park Manager staff and Researcher-access administration | ✅ Implemented (Phase B) |
+| Temporary password, mandatory change, session rotation and password reset/deactivation revocation | ✅ Implemented in Ops, Ranger and API |
+| Ranger sign-in, Ranger-only protected home, online requirement and sign-out | ✅ Implemented |
 | Migration runner that applies each numbered file once (`schema_migrations`) | ✅ Implemented (Phase A) |
 | `db:seed`: parks, the Super Admin and demo staff for each park | ✅ Implemented (Phase A). Run on the shared Neon database on 6 October |
 | Shared server-side guard `app.authorize({ roles })` and `assertParkAccess()` | ✅ Implemented (Phase A). M1–M4 must use it on every route |
-| Ops *Staff accounts* and *Parks & managers* screens, change-password page, plus their API | 📝 Proposed: Phase B, only after the graded modules work |
-| Ranger app sign-in | ⏳ Planned. The app shell has no auth UI yet |
-| Role- and park-based menus and client route guards | ⏳ Planned |
+| Apply migration `0003_account_audit.sql` to the shared Neon database | ⏳ Pending Wenura's approval; do not run `db:migrate` on Neon before approval |
+| Offline authentication, offline account changes and synchronization | ❌ Out of scope; Ranger sign-in requires a connection |
 | Role, park and ownership checks inside each module's routes | ⏳ Planned. The module APIs don't exist yet; they must call the guard |
 | Community form `/community/new` and the SMS mock | ⏳ Planned (M1) |
 | All module screens in §4 | ⏳ Planned (M1–M4) |
@@ -459,12 +471,16 @@ How the seed behaves:
 
 ## 9. Open decisions for the team
 
-**Account hierarchy**
+**Decisions made 6 October 2026**
 
-1. **Phase B or not?** Phase A is built. Decide after the graded modules work whether to build the account-management screens, and update [Shared features plan](./Shared_Features_Plan.md) §7 if so.
-2. **Super Admin and operational data:** account administration only, or also read-only analytics across all parks? Read-only national analytics fits head-office reporting, but every M4 query must then handle "all parks."
+1. **Phase B:** build and use the account-management screens. Done; the [Shared features plan](./Shared_Features_Plan.md) §7 is updated.
+2. **Super Admin and operational data:** account administration only. No operational park data or analytics.
+4. **Deactivated Ranger with queued offline work:** accept work recorded before deactivation and flag it for Park Manager review rather than dropping it. M2 must implement and test this during offline sync; it is not part of account-management code.
+10. **Rangers on the Ops website:** show the "Rangers use the Ranger app" page with a link and sign-out; do not show a limited operational dashboard.
+
+**Remaining decisions**
+
 3. **More than one Park Manager per park?** The design allows it. Confirm that two managers in the same park have equal rights.
-4. **Deactivated ranger with queued offline work:** accept and flag for review (recommended), or reject?
 5. **Who owns the Neon database and runs the seed script** for development and the demo? Where is the demo password list kept?
 
 **Other roles and screens**
@@ -473,7 +489,6 @@ How the seed behaves:
 7. **Liaison Officer dispatch:** should collar alerts also be dispatchable to a Liaison Officer, as the case study suggests, or only to rangers? (M3's contract)
 8. **Researcher park scope:** one park or several? A single `park_id` column supports only one. Access to several parks needs a small join table.
 9. **Researcher view of patrol coverage:** aggregated gaps only, or nothing?
-10. **Rangers on the Ops website:** block them with an "access denied" page, or show a limited dashboard?
 11. **Ranger session expiry while offline:** confirm that queued records wait for re-login and keep their original user and park.
 12. **Device and simulator authentication:** shared key, local-only access, or both?
 
