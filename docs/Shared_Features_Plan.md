@@ -18,6 +18,7 @@ Follow the existing [implementation plan](./Group037_Implementation_Plan.md) for
 - Store salted scrypt password hashes and hashed session tokens in Neon. Use HttpOnly session cookies, expiry, logout revocation and server validation.
 - Signed-in account details come from the API. Do not trust a local role selector or browser storage as authorization.
 - Each future domain API must enforce the account's role, allowed park and record ownership. No operational data is exposed by the initial account workspace.
+- **Implemented 6 October (Phase A of [User groups](./User_groups.md) §2):** the account hierarchy Super Admin → Park Manager → park staff. This adds the `parks` table, the `SUPER_ADMIN` role, `corepack pnpm db:seed` for parks and demo accounts, and the shared guard `app.authorize({ roles })` / `assertParkAccess()`, which every module route must use (see [web-auth.md](./web-auth.md#protecting-module-routes-m1m4)). Account-management screens remain deferred (§7).
 - Keep pending offline records attached to their original user/park when Ranger authentication is integrated.
 - Password recovery, email verification, social login and an account-administration dashboard remain deferred. Recovery UI must describe this limitation honestly.
 

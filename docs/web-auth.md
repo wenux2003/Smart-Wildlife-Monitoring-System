@@ -4,19 +4,59 @@ Implemented on 6 October 2026 following the user's explicit change from demo acc
 
 ## Start without Docker
 
-From the repository root, with your private Neon `DATABASE_URL` in `.env`:
+From the repository root, with your private Neon `DATABASE_URL` in `.env`, and `SUPER_ADMIN_EMAIL`, `SUPER_ADMIN_NAME`, `SUPER_ADMIN_PASSWORD` and `DEMO_ACCOUNT_PASSWORD` set there too (see `.env.example`):
 
 ```sh
 corepack pnpm install
 corepack pnpm db:migrate
+corepack pnpm db:seed
 corepack pnpm dev:all
 ```
 
 Open http://localhost:5174. Routes: `/` (public home), `/login`, `/register`, `/dashboard` (account workspace). `/signin` and `/signup` redirect to the corresponding account pages. The home page distinguishes planned modules from working account access.
 
-The idempotent, transaction-protected migration creates only `auth_users` and `auth_sessions`, with unique normalized emails, session expiry/user indexes and cascading session deletion. SQL lives in `apps/api/drizzle/0001_auth.sql`; `auth-schema.ts` provides the matching Drizzle model. The SQL additionally enforces the allowed-role and lowercase-email checks. The migration does not drop existing data. Future schema changes need new versioned migrations rather than editing the applied migration.
+`db:migrate` applies each numbered SQL file in `apps/api/drizzle/` once, in order, in one locked transaction, and records it in `schema_migrations`; every migration is also idempotent and none drops data. `0001_auth.sql` creates `auth_users` and `auth_sessions` (unique lowercase emails, session indexes, cascading session deletion). `0002_parks_and_account_hierarchy.sql` adds `parks`, the `SUPER_ADMIN` role and the `disabled_at`, `must_change_password` and `created_by` columns. It also enforces: a foreign key from `park_id` to `parks`, exactly one Super Admin, no park for the Super Admin, and a park for every Ranger, Park Manager and Liaison Officer. `auth-schema.ts` and `reference-schema.ts` are the matching Drizzle models. Add new numbered migrations rather than editing applied ones.
 
-`auth_users.park_id` is deliberately nullable while the park schema is unimplemented. New users receive `RESEARCHER` and no park. Link this field to the future park table and enforce domain authorization before exposing operational data. Staff provisioning/park assignment has no UI yet and must be a trusted administrative operation; registration cannot set either field.
+## Accounts and the seed
+
+Accounts follow the hierarchy in [User groups](./User_groups.md) §2: **Super Admin → Park Manager → park staff**. Public registration is unchanged: it always creates a `RESEARCHER` with no park, and cannot set either field.
+
+There is no account-management screen yet (Phase B). `corepack pnpm db:seed` creates:
+
+- the parks Yala, Sinharaja and Wilpattu;
+- the single Super Admin from `SUPER_ADMIN_*`;
+- demo staff (`manager.yala@example.org`, `ranger1.yala@example.org`, and so on), all using `DEMO_ACCOUNT_PASSWORD`. Each account's `created_by` follows the hierarchy.
+
+Re-running the seed is safe. It updates names, roles and parks but keeps existing passwords; add `--reset-passwords` to reset them to the `.env` values, or `--no-demo` to create only the parks and the Super Admin. It refuses to create a second Super Admin with a different email. Passwords are never printed or committed.
+
+## Protecting module routes (M1–M4)
+
+Every module route must check access on the server. `createServer()` provides `app.authorize()` and `assertParkAccess()` in `apps/api/src/modules/auth/guard.ts`:
+
+```ts
+import { Role } from "@wr/shared";
+import { assertParkAccess } from "../auth/guard.js";
+
+app.get(
+  "/api/incidents/:id",
+  { preHandler: app.authorize({ roles: [Role.PARK_MANAGER, Role.LIAISON_OFFICER] }) },
+  async (request) => {
+    const incident = await findIncident(request.params.id);
+    assertParkAccess(request.user, incident.parkId); // 403 PARK_FORBIDDEN for another park
+    return incident;
+  },
+);
+```
+
+- `authorize()` with no roles allows any active, signed-in account; `request.user` then holds `{ id, name, email, role, parkId, parkName }`.
+- Error responses:
+  - `401 UNAUTHENTICATED`: no session, an expired session or a deactivated account.
+  - `403 FORBIDDEN`: the role is not listed.
+  - `403 PASSWORD_CHANGE_REQUIRED`: the account still has a temporary password.
+  - `503 AUTH_UNAVAILABLE`: the account database can't be reached.
+- The Super Admin is **not** let in automatically. List `Role.SUPER_ADMIN` only on routes it should reach. Once it is allowed on a route, `assertParkAccess` accepts every park for it.
+- Filter list queries by `request.user.parkId` as well; the guard does not do that for you.
+- `AppError` thrown in a route becomes `{ code, message }` with its status. Unexpected errors return a generic `500 INTERNAL_ERROR`, and their details go only to the server log.
 
 ## Account behavior
 
@@ -28,7 +68,7 @@ The idempotent, transaction-protected migration creates only `auth_users` and `a
 - Ops calls relative `/api/auth/*` paths through Vite's development proxy. `API_PROXY_TARGET` can override `http://localhost:3000`; Docker uses `http://api:3000`.
 - `/api/auth/me` validates expiry and returns only public account fields. Future module routes must validate the session and enforce role/park permissions themselves; protecting a client route is not sufficient.
 
-Production requires HTTPS, secure cookies and same-origin reverse proxy routing for `/api`. These pages are a development implementation, not a claim of completed production security or operational modules. Email ownership verification, password reset, MFA and administrative provisioning are not implemented. The forgot-password help explicitly says no recovery email is sent. Do not treat an unverified email address as proof of identity.
+Production requires HTTPS, secure cookies and same-origin reverse proxy routing for `/api`. These pages are a development implementation, not a claim of completed production security or operational modules. Email ownership verification, password reset, MFA and account-management screens are not implemented; accounts come from `db:seed` until then. The forgot-password help explicitly says no recovery email is sent. Do not treat an unverified email address as proof of identity.
 
 ## Design and accessibility
 
@@ -49,7 +89,7 @@ corepack pnpm --filter @wr/ops typecheck
 corepack pnpm --filter @wr/ops build
 ```
 
-Tests cover password hashing, least-privilege registration, normalized duplicates, rejected role fields, origin checks, bad credentials, cookie flags, session rotation/expiry/revocation, rate limits, private error responses, accessible forms, password matching, network errors and honest recovery messaging. Real database smoke validation is separate from the fake repository tests.
+Tests cover password hashing, least-privilege registration, normalized duplicates, rejected role fields, origin checks, bad credentials, cookie flags, session rotation/expiry/revocation, rate limits, private error responses, the route guard (roles, deactivated accounts, temporary passwords, park scoping, store failures), error mapping, seed planning and validation, accessible forms, password matching, network errors and honest recovery messaging. Real database smoke validation is separate from the fake repository tests. Migration 0002 and the seed were also checked against Neon inside a rolled-back transaction: both migrations applied, the seed was idempotent, and the database rejected a second Super Admin, staff without a park, a Super Admin with a park, an unknown park, and deleting a park that has staff.
 
 With the API and Ops running on their default ports, `corepack pnpm auth:check`
 creates a uniquely named temporary account through the website proxy, verifies
