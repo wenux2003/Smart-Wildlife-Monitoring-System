@@ -8,6 +8,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { App } from "../app/App.js";
 
@@ -35,15 +36,51 @@ function rangerUser(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function patrolAssignments() {
+  const route = (id: string, name: string, distance: number) => ({
+    id,
+    name,
+    sector: "Southern Ridge",
+    description: `${name} patrol route`,
+    estimatedDistanceKm: distance,
+    version: 1,
+    path: [[81.516, 6.372], [81.523, 6.365], [81.531, 6.359]],
+  });
+  return [
+    {
+      id: "50000000-0000-4000-8000-000000000001",
+      status: "ASSIGNED",
+      assignedAt: "2026-10-07T10:00:00.000Z",
+      route: route("40000000-0000-4000-8000-000000000001", "Trail 4B", 4.2),
+      coveragePercentage: 0,
+      completedAt: null,
+    },
+    {
+      id: "50000000-0000-4000-8000-000000000002",
+      status: "ASSIGNED",
+      assignedAt: "2026-10-07T10:15:00.000Z",
+      route: route("40000000-0000-4000-8000-000000000002", "Trail 4C", 4.7),
+      coveragePercentage: 0,
+      completedAt: null,
+    },
+  ];
+}
+
 function renderApp(path = "/login") {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
-    <MemoryRouter initialEntries={[path]}>
-      <App />
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[path]}>
+        <App />
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 
 beforeEach(() => {
+  localStorage.clear();
   vi.stubGlobal(
     "fetch",
     vi.fn().mockResolvedValue(
@@ -58,7 +95,7 @@ afterEach(() => {
 });
 
 describe("Ranger account access", () => {
-  it("signs in a ranger and shows account, park, and connection details", async () => {
+  it("signs in a ranger and shows assigned patrols, park, and connection status", async () => {
     renderApp();
     fireEvent.change(screen.getByLabelText("Email address"), {
       target: { value: "kamal@example.org" },
@@ -66,16 +103,18 @@ describe("Ranger account access", () => {
     fireEvent.change(screen.getByLabelText("Password"), {
       target: { value: "correct-horse-battery" },
     });
-    vi.mocked(fetch).mockResolvedValueOnce(
-      response({ user: rangerUser() }),
-    );
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(response({ user: rangerUser() }))
+      .mockResolvedValueOnce(response(patrolAssignments()));
     fireEvent.submit(screen.getByRole("form", { name: "Ranger sign in" }));
 
-    expect(await screen.findByRole("heading", { name: "Hello, Kamal Perera" }))
+    expect(await screen.findByRole("heading", { name: "Patrol" }))
       .toBeInTheDocument();
     expect(screen.getByText("Yala National Park")).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent("Online");
-    expect(fetch).toHaveBeenLastCalledWith(
+    expect(screen.getByText("Synced just now")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /Start patrol/i }))
+      .toBeInTheDocument();
+    expect(fetch).toHaveBeenCalledWith(
       "/api/auth/login",
       expect.objectContaining({
         method: "POST",
@@ -86,6 +125,96 @@ describe("Ranger account access", () => {
         }),
       }),
     );
+  });
+
+  it("selects an assigned trail and updates the start patrol action", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(response({ user: rangerUser() }))
+      .mockResolvedValueOnce(response(patrolAssignments()));
+    renderApp("/");
+
+    expect(await screen.findByRole("button", { name: /Start patrol/i }))
+      .toHaveTextContent("Trail 4B");
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Select Trail 4C · Southern Ridge" }),
+    );
+
+    expect(screen.getByRole("button", { name: /Start patrol/i }))
+      .toHaveTextContent("Trail 4C");
+    expect(
+      screen.getByRole("button", { name: "Selected Trail 4C · Southern Ridge" }),
+    ).toHaveAttribute("aria-pressed", "true");
+
+    fireEvent.click(screen.getByRole("button", { name: /Start patrol/i }));
+    expect(await screen.findByLabelText("Trail 4C patrol map")).toBeInTheDocument();
+    expect(screen.getByText("Trail 4C · 4.7 km")).toBeInTheDocument();
+  });
+
+  it("records a GPS waypoint locally and returns it to the patrol map", async () => {
+    const clearWatch = vi.fn();
+    Object.defineProperty(navigator, "geolocation", {
+      configurable: true,
+      value: {
+        clearWatch,
+        watchPosition: vi.fn((success: PositionCallback) => {
+          success({
+            coords: {
+              accuracy: 8,
+              altitude: null,
+              altitudeAccuracy: null,
+              heading: null,
+              latitude: 6.365,
+              longitude: 81.523,
+              speed: null,
+              toJSON: () => ({
+                accuracy: 8,
+                altitude: null,
+                altitudeAccuracy: null,
+                heading: null,
+                latitude: 6.365,
+                longitude: 81.523,
+                speed: null,
+              }),
+            },
+            timestamp: Date.now(),
+            toJSON: () => ({
+              coords: {
+                accuracy: 8,
+                altitude: null,
+                altitudeAccuracy: null,
+                heading: null,
+                latitude: 6.365,
+                longitude: 81.523,
+                speed: null,
+              },
+              timestamp: Date.now(),
+            }),
+          });
+          return 7;
+        }),
+      },
+    });
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(response({ user: rangerUser() }))
+      .mockResolvedValueOnce(response(patrolAssignments()));
+    renderApp("/patrol/50000000-0000-4000-8000-000000000001/active");
+
+    const markWaypoint = await screen.findByRole("button", { name: /Mark waypoint/i });
+    await waitFor(() => expect(markWaypoint).toBeEnabled());
+    fireEvent.click(markWaypoint);
+
+    expect(await screen.findByRole("heading", { name: "New Waypoint" }))
+      .toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText("Sign of wildlife"));
+    fireEvent.change(screen.getByLabelText(/Note/i), {
+      target: { value: "Fresh elephant tracks near the watering point." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save waypoint" }));
+
+    expect(await screen.findByLabelText("Trail 4B patrol map")).toBeInTheDocument();
+    expect(screen.getByText("Waypoints").parentElement).toHaveTextContent("1");
+    expect(clearWatch).toHaveBeenCalled();
   });
 
   it("shows clear connection guidance when sign-in cannot reach the API", async () => {
@@ -116,16 +245,16 @@ describe("Ranger account access", () => {
     fireEvent.change(screen.getByLabelText("Confirm new password"), {
       target: { value: "new-secure-password" },
     });
-    vi.mocked(fetch).mockResolvedValueOnce(
-      response({ user: rangerUser() }),
-    );
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(response({ user: rangerUser() }))
+      .mockResolvedValueOnce(response(patrolAssignments()));
     fireEvent.submit(
       screen.getByRole("form", { name: "Change temporary password" }),
     );
 
-    expect(await screen.findByRole("heading", { name: "Ranger account" }))
+    expect(await screen.findByRole("heading", { name: "Patrol" }))
       .toBeInTheDocument();
-    expect(fetch).toHaveBeenLastCalledWith(
+    expect(fetch).toHaveBeenCalledWith(
       "/api/auth/change-password",
       expect.objectContaining({
         body: JSON.stringify({
@@ -151,7 +280,7 @@ describe("Ranger account access", () => {
       "/api/auth/logout",
       expect.objectContaining({ method: "POST" }),
     ));
-    expect(screen.queryByRole("heading", { name: "Ranger account" }))
+    expect(screen.queryByRole("heading", { name: "Patrol" }))
       .not.toBeInTheDocument();
   });
 });
