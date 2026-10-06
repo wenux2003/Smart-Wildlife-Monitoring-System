@@ -1,4 +1,4 @@
-﻿# Group 037: Assignment 02 Plan
+# Group 037: Assignment 02 Plan
 
 **SE3070 | Reviewing Group 039 | Revised 5 October 2026 | Deadline: 9 October 2026, 11:59 PM (Asia/Colombo)**
 
@@ -86,7 +86,7 @@ These groups are a starting checklist; expand into individual flow rows.
 
 ## 5. Architecture and technical contract
 
-Use Neon PostgreSQL with PostGIS for shared development, retaining local Docker PostGIS as a fallback. See [Neon setup](./docs/neon-setup.md). The hosted option runs the same three apps through `docker-compose.neon.yml`; only the database host changes. The private connection URL and PostGIS enablement must be supplied before verifying live connectivity.
+Use Neon PostgreSQL with PostGIS for shared development, retaining local Docker PostGIS as a fallback. See [Neon setup](./neon-setup.md). The hosted option runs the same three apps through `docker-compose.neon.yml`; only the database host changes. The private connection URL and PostGIS enablement must be supplied before verifying live connectivity.
 
 Keep the existing TypeScript/pnpm architecture: three apps (@wr/api, @wr/ranger, @wr/ops), three shared packages (@wr/shared, @wr/ui, @wr/offline), and four Compose services (db, api, ranger, ops). Preserve current imports, startup scripts, ports, app routers and module folders. This plan extends the repository; it does not replace or re-scaffold it.
 

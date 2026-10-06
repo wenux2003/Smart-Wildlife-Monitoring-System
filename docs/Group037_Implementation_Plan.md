@@ -1,4 +1,4 @@
-﻿# Implementation Plan: Wildlife Guardian (Group 037)
+# Implementation Plan: Wildlife Guardian (Group 037)
 
 **Revised: 5 October 2026 | Submission deadline: 9 October 2026, 11:59 PM (Asia/Colombo)**
 
@@ -8,7 +8,7 @@ This is a development contract, not a statement of completed functionality. The 
 
 ## 1. Existing architecture and compatible additions
 
-**Database hosting choice:** use Neon PostgreSQL with PostGIS for the shared development database. Follow [Neon setup](./docs/neon-setup.md); `docker-compose.neon.yml` runs the three apps with a hosted DATABASE_URL, while the original four-service Compose setup remains a local fallback. This changes the DB host, not the API/ORM/package architecture. `pnpm db:check` is now provided; live connection still needs the team's private URL and enabled PostGIS. Business migrations/repositories remain to be implemented.
+**Database hosting choice:** use Neon PostgreSQL with PostGIS for the shared development database. Follow [Neon setup](./neon-setup.md); `docker-compose.neon.yml` runs the three apps with a hosted DATABASE_URL, while the original four-service Compose setup remains a local fallback. This changes the DB host, not the API/ORM/package architecture. `pnpm db:check` is now provided; live connection still needs the team's private URL and enabled PostGIS. Business migrations/repositories remain to be implemented.
 
 The repository is the authority for code placement and package boundaries. Extend the existing modular Fastify application and two React apps; do not scaffold replacement apps, split business modules into services, add another database, or turn every named responsibility below into a new package/class. Feature requirements remain, but proposed endpoints/entities below are not evidence of existing implementation.
 
@@ -276,6 +276,29 @@ Both current routers implement only `/` and a wildcard redirect. The routes belo
 Ranger: readable high-contrast theme, approximately 48px minimum touch targets, icon plus text, persistent sync/connection feedback, GPS accuracy/source/age, confirmation before ending. A saved-state message appears only after successful persistence. Sound/vibration are optional enhancements; visual notifications and durable pending lists are required.
 
 Ops: clear table/map layout, keyboard-accessible controls, loading/empty/error states and explicit freshness. Use Sri Lankan demonstration data. Switching park must change types/species/zones and a workflow or threshold configuration without code changes. Keep improved wireframes consistent with implemented screens.
+
+### Shared color palette
+
+Use a forest green and warm neutral palette across the Operations website and Ranger app. The Operations website uses a deep forest sidebar and a light dashboard with white cards. Apply the same color roles to Ranger screens for a consistent project design. This is the agreed design direction; documenting it does not mean the app styles have been implemented.
+
+| Role | Color | Hex | Usage |
+|---|---|---|---|
+| Primary | Forest green | `#166534` | Primary buttons and active navigation |
+| Sidebar | Deep forest | `#14352B` | Operations navigation background, with light text |
+| Page background | Soft off-white | `#F6F8F5` | Main page canvas |
+| Surface | White | `#FFFFFF` | Cards, tables and forms |
+| Border | Light gray-green | `#DCE5DC` | Subtle card borders and separators |
+| Main text | Dark charcoal | `#1F2937` | Headings and body text |
+| Secondary text | Slate gray | `#64748B` | Supporting text and metadata |
+| Accent | Warm amber | `#D97706` | Selected highlights; use sparingly |
+| Success | Green | `#15803D` | Successful actions and resolved states |
+| Warning | Amber | `#B45309` | Warnings and pending states |
+| Critical | Red | `#B91C1C` | Urgent alerts and critical risks |
+| Information | Blue | `#1D4ED8` | Informational and active states |
+
+For analytics, use green, blue and purple for categorical chart series; reserve amber and red in data visualizations for warnings and risk levels. Keep series colors consistent across views and distinguish series with labels, markers or line styles. Use labels or icons alongside status colors so color alone never carries meaning.
+
+Implement these roles as reusable theme tokens shared by both apps. Verify text, controls and focus indicators against their actual backgrounds; subtle border and accent colors are not automatically suitable for text or essential control outlines. Keep the existing touch-target and keyboard-accessibility requirements above.
 
 ## 9. Simulators and demo evidence
 

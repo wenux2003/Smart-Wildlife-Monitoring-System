@@ -2,8 +2,8 @@ import Fastify from "fastify";
 import {
   serializerCompiler,
   validatorCompiler,
-} from "@fastify/type-provider-zod";
-import type { ZodTypeProvider } from "@fastify/type-provider-zod";
+} from "fastify-type-provider-zod";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { HealthResponseSchema } from "@wr/shared";
 
 export function createServer() {

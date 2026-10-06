@@ -6,14 +6,14 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev:api": "pnpm --filter @wr/api dev",
-    "db:check": "pnpm --filter @wr/api db:check",
-    "dev:ranger": "pnpm --filter @wr/ranger dev",
-    "dev:ops": "pnpm --filter @wr/ops dev",
-    "dev:all": "pnpm --parallel --filter @wr/api --filter @wr/ranger --filter @wr/ops dev",
-    "build": "pnpm -r build",
-    "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck",
+    "dev:api": "corepack pnpm --filter @wr/api dev",
+    "db:check": "corepack pnpm --filter @wr/api db:check",
+    "dev:ranger": "corepack pnpm --filter @wr/ranger dev",
+    "dev:ops": "corepack pnpm --filter @wr/ops dev",
+    "dev:all": "corepack pnpm --parallel --filter @wr/api --filter @wr/ranger --filter @wr/ops dev",
+    "build": "corepack pnpm -r build",
+    "test": "corepack pnpm -r test",
+    "typecheck": "corepack pnpm -r typecheck",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
