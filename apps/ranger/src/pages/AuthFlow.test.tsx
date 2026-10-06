@@ -167,8 +167,29 @@ describe("Ranger account access", () => {
               latitude: 6.365,
               longitude: 81.523,
               speed: null,
+              toJSON: () => ({
+                accuracy: 8,
+                altitude: null,
+                altitudeAccuracy: null,
+                heading: null,
+                latitude: 6.365,
+                longitude: 81.523,
+                speed: null,
+              }),
             },
             timestamp: Date.now(),
+            toJSON: () => ({
+              coords: {
+                accuracy: 8,
+                altitude: null,
+                altitudeAccuracy: null,
+                heading: null,
+                latitude: 6.365,
+                longitude: 81.523,
+                speed: null,
+              },
+              timestamp: Date.now(),
+            }),
           });
           return 7;
         }),
