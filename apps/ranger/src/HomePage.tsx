@@ -267,6 +267,7 @@ export function RangerHomePage() {
             className="start-patrol-button"
             type="button"
             disabled={!selectedPatrol}
+            onClick={() => selectedPatrol && navigate(`/patrol/${selectedPatrol.id}/active`)}
           >
             <span className="start-patrol-icon"><StartIcon /></span>
             <span className="start-patrol-copy">

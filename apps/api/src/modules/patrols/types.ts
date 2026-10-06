@@ -10,6 +10,7 @@ export type PatrolAssignmentRecord = {
   description: string;
   estimated_distance_m: number;
   route_version: number;
+  route_path: [number, number][] | null;
   coverage_percentage: number;
   completed_at: Date | null;
 };

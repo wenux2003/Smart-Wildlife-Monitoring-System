@@ -18,6 +18,7 @@ export const PatrolAssignmentSummarySchema = z.object({
     description: z.string(),
     estimatedDistanceKm: z.number().positive(),
     version: z.number().int().positive(),
+    path: z.array(z.tuple([z.number(), z.number()])).min(2).nullable(),
   }),
   coveragePercentage: z.number().min(0).max(100),
   completedAt: z.string().datetime().nullable(),

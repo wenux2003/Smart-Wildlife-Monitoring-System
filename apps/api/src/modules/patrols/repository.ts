@@ -22,6 +22,7 @@ export function createPatrolRepository(url: string): PatrolRepository {
           r.description,
           r.estimated_distance_m,
           a.route_version,
+          (ST_AsGeoJSON(r.route_geometry)::jsonb -> 'coordinates') AS route_path,
           COALESCE(s.coverage_percent, 0)::double precision AS coverage_percentage,
           s.ended_at AS completed_at
         FROM patrol_assignments a

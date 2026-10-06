@@ -44,6 +44,7 @@ function patrolAssignments() {
     description: `${name} patrol route`,
     estimatedDistanceKm: distance,
     version: 1,
+    path: [[81.516, 6.372], [81.523, 6.365], [81.531, 6.359]],
   });
   return [
     {
@@ -79,6 +80,7 @@ function renderApp(path = "/login") {
 }
 
 beforeEach(() => {
+  localStorage.clear();
   vi.stubGlobal(
     "fetch",
     vi.fn().mockResolvedValue(
@@ -143,6 +145,55 @@ describe("Ranger account access", () => {
     expect(
       screen.getByRole("button", { name: "Selected Trail 4C · Southern Ridge" }),
     ).toHaveAttribute("aria-pressed", "true");
+
+    fireEvent.click(screen.getByRole("button", { name: /Start patrol/i }));
+    expect(await screen.findByLabelText("Trail 4C patrol map")).toBeInTheDocument();
+    expect(screen.getByText("Trail 4C · 4.7 km")).toBeInTheDocument();
+  });
+
+  it("records a GPS waypoint locally and returns it to the patrol map", async () => {
+    const clearWatch = vi.fn();
+    Object.defineProperty(navigator, "geolocation", {
+      configurable: true,
+      value: {
+        clearWatch,
+        watchPosition: vi.fn((success: PositionCallback) => {
+          success({
+            coords: {
+              accuracy: 8,
+              altitude: null,
+              altitudeAccuracy: null,
+              heading: null,
+              latitude: 6.365,
+              longitude: 81.523,
+              speed: null,
+            },
+            timestamp: Date.now(),
+          });
+          return 7;
+        }),
+      },
+    });
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(response({ user: rangerUser() }))
+      .mockResolvedValueOnce(response(patrolAssignments()));
+    renderApp("/patrol/50000000-0000-4000-8000-000000000001/active");
+
+    const markWaypoint = await screen.findByRole("button", { name: /Mark waypoint/i });
+    await waitFor(() => expect(markWaypoint).toBeEnabled());
+    fireEvent.click(markWaypoint);
+
+    expect(await screen.findByRole("heading", { name: "New Waypoint" }))
+      .toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText("Sign of wildlife"));
+    fireEvent.change(screen.getByLabelText(/Note/i), {
+      target: { value: "Fresh elephant tracks near the watering point." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save waypoint" }));
+
+    expect(await screen.findByLabelText("Trail 4B patrol map")).toBeInTheDocument();
+    expect(screen.getByText("Waypoints").parentElement).toHaveTextContent("1");
+    expect(clearWatch).toHaveBeenCalled();
   });
 
   it("shows clear connection guidance when sign-in cannot reach the API", async () => {

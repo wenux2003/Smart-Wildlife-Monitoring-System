@@ -4,8 +4,10 @@ import { AuthProvider, useAuth } from "../auth/AuthContext.js";
 import { RangerHomePage } from "../HomePage.js";
 import { ChangePasswordPage, LoadingState } from "../pages/ChangePasswordPage.js";
 import { LoginPage } from "../pages/LoginPage.js";
+import { PatrolMapPage } from "../pages/PatrolMapPage.js";
+import { NewWaypointPage } from "../pages/NewWaypointPage.js";
 
-function ProtectedHome() {
+function ProtectedRanger({ children }: { children: React.ReactNode }) {
   const { user, loading, signOut } = useAuth();
   if (loading) return <LoadingState />;
   if (!user) return <Navigate to="/login" replace />;
@@ -27,7 +29,7 @@ function ProtectedHome() {
       </main>
     );
   if (user.mustChangePassword) return <Navigate to="/change-password" replace />;
-  return <RangerHomePage />;
+  return children;
 }
 
 function RangerRoutes() {
@@ -38,6 +40,7 @@ function RangerRoutes() {
       "/": "Patrol",
       "/login": "Ranger sign in",
       "/change-password": "Change password",
+      ...(location.pathname.startsWith("/patrol/") ? { [location.pathname]: "Active patrol" } : {}),
     };
     document.title = `${titles[location.pathname] ?? "Ranger access"} | Wildlife Guardian`;
   }, [location.pathname]);
@@ -48,7 +51,15 @@ function RangerRoutes() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
-        <Route path="/" element={<ProtectedHome />} />
+        <Route path="/" element={<ProtectedRanger><RangerHomePage /></ProtectedRanger>} />
+        <Route
+          path="/patrol/:assignmentId/active"
+          element={<ProtectedRanger><PatrolMapPage /></ProtectedRanger>}
+        />
+        <Route
+          path="/patrol/:assignmentId/waypoints/new"
+          element={<ProtectedRanger><NewWaypointPage /></ProtectedRanger>}
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

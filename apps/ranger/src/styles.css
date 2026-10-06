@@ -764,6 +764,457 @@ input:focus-visible {
   to { background-position: -100% 0; }
 }
 
+.active-patrol-screen {
+  display: grid;
+  width: min(100%, 48rem);
+  min-height: 100vh;
+  margin: 0 auto;
+  grid-template-rows: auto 1fr auto;
+  color: #172d23;
+  background: #f6f8f4;
+}
+
+.active-patrol-header {
+  position: relative;
+  z-index: 500;
+  display: grid;
+  min-height: 68px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  padding: max(0.65rem, env(safe-area-inset-top)) 1rem 0.65rem;
+  border-bottom: 1px solid #d2ddd4;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 3px 15px rgb(19 49 35 / 8%);
+}
+
+.active-patrol-header button {
+  width: 42px;
+  min-height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #173e2b;
+  background: #edf3ed;
+  font-size: 1.2rem;
+}
+
+.active-patrol-header > span {
+  overflow: hidden;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.active-patrol-header > span:last-child {
+  padding: 0.4rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+}
+
+.active-patrol-header .has-signal {
+  color: #185b3a;
+  background: #e5f2e7;
+}
+
+.active-patrol-header .no-signal {
+  color: #774622;
+  background: #fff0dc;
+}
+
+.active-map-shell {
+  position: relative;
+  min-height: 30rem;
+  background: #dce3da;
+}
+
+.active-patrol-map {
+  width: 100%;
+  height: 100%;
+  min-height: 30rem;
+  background: #dce3da;
+}
+
+.map-unavailable {
+  display: grid;
+  height: 100%;
+  min-height: 30rem;
+  place-items: center;
+  padding: 2rem;
+  color: #53695d;
+  text-align: center;
+}
+
+.patrol-map-stats {
+  position: absolute;
+  z-index: 500;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  border: 1px solid rgb(23 62 43 / 18%);
+  border-radius: 0.8rem;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 9px 25px rgb(18 47 34 / 16%);
+}
+
+.patrol-map-stats span {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.7rem 1rem;
+  font-size: 0.92rem;
+  font-weight: 850;
+  text-align: center;
+}
+
+.patrol-map-stats span + span {
+  border-left: 1px solid #d6e0d8;
+}
+
+.patrol-map-stats small {
+  color: #687b70;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.active-patrol-actions {
+  position: relative;
+  z-index: 500;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 0.7rem;
+  padding: 0.85rem 1rem max(0.85rem, env(safe-area-inset-bottom));
+  border-top: 1px solid #d2ddd4;
+  background: #fff;
+}
+
+.active-patrol-actions button {
+  min-width: 0;
+  min-height: 52px;
+  padding: 0.7rem;
+  border-radius: 0.7rem;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.end-patrol-button {
+  border: 1px solid #9daf9f;
+  color: #263c31;
+  background: #fff;
+}
+
+.mark-waypoint-button {
+  border: 1px solid #102c1e;
+  color: #fff;
+  background: linear-gradient(135deg, #173e2b, #0e2b1d);
+}
+
+.mark-waypoint-button span {
+  margin-right: 0.25rem;
+  font-size: 1.2rem;
+  line-height: 0;
+}
+
+.waypoint-screen {
+  width: min(100%, 46rem);
+  min-height: 100vh;
+  margin: 0 auto;
+  color: #172d23;
+  background:
+    radial-gradient(circle at 100% 0%, rgb(205 229 211 / 55%), transparent 22rem),
+    #f5f7f3;
+}
+
+.waypoint-header {
+  padding: max(0.8rem, env(safe-area-inset-top)) clamp(1rem, 5vw, 1.75rem) 1.15rem;
+  border-bottom: 1px solid #d5ded7;
+}
+
+.waypoint-back-button {
+  min-height: 42px;
+  margin: -0.25rem 0 0.7rem -0.55rem;
+  padding: 0.45rem 0.55rem;
+  border: 0;
+  border-radius: 0.55rem;
+  color: #314a3d;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.waypoint-back-button:hover {
+  background: rgb(23 78 55 / 8%);
+}
+
+.waypoint-header h1 {
+  margin: 0;
+  color: #112d20;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 10vw, 3rem);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.waypoint-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+}
+
+.waypoint-status-row span {
+  padding: 0.38rem 0.6rem;
+  border: 1px solid #c6d5c9;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 750;
+}
+
+.waypoint-status-row .is-online,
+.waypoint-status-row .is-ready {
+  color: #185b3a;
+  background: #e5f2e7;
+}
+
+.waypoint-status-row .is-offline,
+.waypoint-status-row .is-waiting {
+  color: #774622;
+  background: #fff0dc;
+}
+
+.waypoint-form {
+  display: grid;
+  gap: 1.3rem;
+  padding: 1.25rem clamp(1rem, 5vw, 1.75rem) max(1.25rem, env(safe-area-inset-bottom));
+}
+
+.waypoint-categories {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.waypoint-categories legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.waypoint-categories label {
+  position: relative;
+  min-width: 0;
+  margin: 0;
+}
+
+.waypoint-categories input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  opacity: 0;
+}
+
+.waypoint-categories span {
+  display: grid;
+  min-height: 52px;
+  place-items: center;
+  padding: 0.65rem 0.5rem;
+  border: 1px solid #9daf9f;
+  border-radius: 0.65rem;
+  color: #263c31;
+  background: #fff;
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+}
+
+.waypoint-categories label:hover span {
+  border-color: #527660;
+  background: #f0f6f0;
+}
+
+.waypoint-categories input:focus-visible + span {
+  outline: 3px solid #bd7912;
+  outline-offset: 3px;
+}
+
+.waypoint-categories .is-selected span {
+  border-color: #123624;
+  color: #fff;
+  background: #173e2b;
+  box-shadow: 0 7px 18px rgb(20 47 35 / 16%);
+}
+
+.waypoint-field {
+  position: relative;
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.waypoint-field-label {
+  color: #233b2f;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.waypoint-field-label small {
+  margin-left: 0.35rem;
+  color: #77877e;
+  font-size: 0.62rem;
+  font-weight: 650;
+  text-transform: uppercase;
+}
+
+.waypoint-photo-input {
+  display: grid;
+  min-height: 150px;
+  overflow: hidden;
+  place-items: center;
+  margin: 0;
+  border: 1.5px dashed #829789;
+  border-radius: 0.75rem;
+  background: #fff;
+  cursor: pointer;
+}
+
+.waypoint-photo-input:hover {
+  border-color: #286947;
+  background: #f5faf5;
+}
+
+.waypoint-photo-input input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  opacity: 0;
+}
+
+.waypoint-photo-input > span {
+  display: grid;
+  place-items: center;
+  gap: 0.25rem;
+  color: #355344;
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.waypoint-photo-input strong {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #286947;
+  font-size: 1.35rem;
+}
+
+.waypoint-photo-input small {
+  color: #74857b;
+  font-size: 0.65rem;
+}
+
+.waypoint-photo-input.has-photo,
+.waypoint-photo-input img {
+  width: 100%;
+  height: 180px;
+}
+
+.waypoint-photo-input img {
+  object-fit: cover;
+}
+
+.waypoint-file-name {
+  overflow: hidden;
+  margin: 0;
+  color: #5e7266;
+  font-size: 0.67rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.waypoint-field textarea {
+  width: 100%;
+  min-height: 135px;
+  resize: vertical;
+  padding: 0.85rem;
+  border: 1px solid #8da094;
+  border-radius: 0.65rem;
+  color: #17372a;
+  background: #fff;
+  font: inherit;
+  line-height: 1.5;
+}
+
+.waypoint-field textarea:focus-visible {
+  border-color: #286947;
+}
+
+.waypoint-character-count {
+  position: absolute;
+  right: 0.65rem;
+  bottom: 0.55rem;
+  color: #819087;
+  font-size: 0.62rem;
+}
+
+.waypoint-gps-warning {
+  margin: 0;
+  padding: 0.75rem;
+  border: 1px solid #dfb89d;
+  border-radius: 0.6rem;
+  color: #774622;
+  background: #fff0dc;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.save-waypoint-button {
+  width: 100%;
+  min-height: 56px;
+  margin-top: 0.25rem;
+  border: 1px solid #102c1e;
+  border-radius: 0.75rem;
+  color: #fff;
+  background: linear-gradient(135deg, #173e2b, #0e2b1d);
+  box-shadow: 0 10px 24px rgb(20 47 35 / 18%);
+  font-weight: 850;
+}
+
+.save-waypoint-button:disabled {
+  border-color: #9caaa0;
+  color: #66776d;
+  background: #dfe5df;
+  box-shadow: none;
+}
+
+@media (min-width: 768px) {
+  .active-patrol-screen {
+    min-height: calc(100vh - 2rem);
+    margin-block: 1rem;
+    overflow: hidden;
+    border: 1px solid #cad7cc;
+    border-radius: 1rem;
+    box-shadow: 0 18px 55px rgb(19 49 35 / 13%);
+  }
+}
+
 @media (min-width: 600px) {
   .patrol-header {
     padding-top: 1.5rem;

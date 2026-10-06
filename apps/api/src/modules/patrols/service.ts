@@ -18,6 +18,7 @@ export function createPatrolService(repository: PatrolRepository) {
           description: assignment.description,
           estimatedDistanceKm: assignment.estimated_distance_m / 1000,
           version: assignment.route_version,
+          path: assignment.route_path,
         },
         coveragePercentage: assignment.coverage_percentage,
         completedAt: assignment.completed_at?.toISOString() ?? null,

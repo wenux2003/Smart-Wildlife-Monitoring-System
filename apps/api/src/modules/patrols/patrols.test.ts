@@ -48,6 +48,7 @@ function setup(role: Role = Role.RANGER) {
         description: "Boundary patrol",
         estimated_distance_m: 4200,
         route_version: 1,
+        route_path: [[81.516, 6.372], [81.523, 6.365]],
         coverage_percentage: 0,
         completed_at: null,
       }];
@@ -83,6 +84,7 @@ describe("ranger patrol assignments", () => {
         description: "Boundary patrol",
         estimatedDistanceKm: 4.2,
         version: 1,
+        path: [[81.516, 6.372], [81.523, 6.365]],
       },
       coveragePercentage: 0,
       completedAt: null,
