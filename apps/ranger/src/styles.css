@@ -3,32 +3,340 @@
 @tailwind utilities;
 
 :root {
-  font-family: system-ui, sans-serif;
-  color: #17251d;
-  background: #f4f7f4;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #17372a;
+  background: #f2f6f1;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  --forest: #174e37;
+  --forest-dark: #103c2a;
+  --leaf: #d9ebdc;
+  --muted: #51675a;
+  --border: #cbd9ce;
+  --surface: #fff;
+  --danger: #9a3028;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
+  min-width: 320px;
+  min-height: 100vh;
   margin: 0;
 }
 
-.app-shell {
-  max-width: 72rem;
+button,
+input {
+  font: inherit;
+}
+
+button,
+input {
+  min-height: 48px;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+:focus-visible {
+  outline: 3px solid #bd7912;
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: absolute;
+  z-index: 2;
+  top: 0.5rem;
+  left: 0.5rem;
+  transform: translateY(-160%);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  color: white;
+  background: var(--forest-dark);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.auth-screen,
+.center-state {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 1.25rem;
+}
+
+.auth-card,
+.account-card,
+.connection-card,
+.welcome-card {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  box-shadow: 0 12px 34px rgb(23 55 42 / 8%);
+}
+
+.auth-card {
+  max-width: 29rem;
+  padding: clamp(1.25rem, 5vw, 2rem);
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--forest);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+h1,
+h2,
+p {
+  overflow-wrap: anywhere;
+}
+
+.auth-card h1,
+.home-header h1 {
+  margin: 0;
+  color: var(--forest-dark);
+  font-size: clamp(1.75rem, 7vw, 2.25rem);
+  line-height: 1.15;
+}
+
+.lead {
+  margin: 0.75rem 0 1.5rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+label {
+  margin-top: 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+input {
+  width: 100%;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid #809588;
+  border-radius: 0.6rem;
+  color: #17372a;
+  background: white;
+}
+
+input:focus-visible {
+  border-color: var(--forest);
+}
+
+.primary-button,
+.secondary-button {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--forest);
+  border-radius: 0.65rem;
+  font-weight: 750;
+  text-align: center;
+}
+
+.primary-button {
+  margin-top: 0.75rem;
+  color: white;
+  background: var(--forest);
+}
+
+.primary-button:hover:not(:disabled) {
+  background: var(--forest-dark);
+}
+
+.secondary-button {
+  color: var(--forest-dark);
+  background: white;
+}
+
+.secondary-button:hover:not(:disabled) {
+  background: var(--leaf);
+}
+
+.help-copy,
+.field-hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.help-copy {
+  margin: 1.25rem 0 0;
+  line-height: 1.5;
+}
+
+.field-hint {
+  margin-top: -0.5rem;
+}
+
+.alert,
+.notice {
+  padding: 0.875rem 1rem;
+  border-radius: 0.65rem;
+  line-height: 1.45;
+}
+
+.alert {
+  border: 1px solid #d99a94;
+  color: #74241e;
+  background: #fff0ee;
+}
+
+.notice {
+  border: 1px solid #86aa8c;
+  color: #174e37;
+  background: #edf7ed;
+}
+
+.auth-card > .alert,
+.auth-card > .notice {
+  margin: 1rem 0;
+}
+
+.home-screen {
+  display: grid;
+  width: min(100%, 46rem);
+  gap: 1rem;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
-.app-header {
-  border-bottom: 1px solid #cbd8ce;
+.home-header {
+  display: flex;
+  min-height: 4rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
 }
 
-.app-header h1 {
-  color: #163a2a;
-  font-size: 1.25rem;
+.home-header h1 {
+  font-size: clamp(1.45rem, 6vw, 2rem);
 }
 
-a {
-  color: #20583c;
+.connection-pill {
+  display: inline-flex;
+  min-height: 40px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 750;
+}
+
+.connection-pill.is-online {
+  color: #174e37;
+  background: #e7f3e8;
+}
+
+.connection-pill.is-offline {
+  color: #762d20;
+  background: #fff0e8;
+}
+
+.connection-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.welcome-card,
+.account-card,
+.connection-card {
+  padding: 1.25rem;
+}
+
+.welcome-card {
+  color: #f5fff5;
+  background: var(--forest);
+}
+
+.welcome-card .eyebrow {
+  color: #d9ebdc;
+}
+
+.welcome-card h2,
+.account-card h2,
+.connection-card h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.welcome-card h2 {
+  font-size: 1.6rem;
+}
+
+.welcome-card p:last-child,
+.connection-card p {
+  margin: 0.65rem 0 0;
+  line-height: 1.5;
+}
+
+.account-details {
+  display: grid;
+  gap: 0;
+  margin: 0.75rem 0 0;
+}
+
+.account-details div {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, 0.7fr) minmax(0, 1.3fr);
+  gap: 0.75rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid #e3ebe5;
+}
+
+.account-details dt {
+  color: var(--muted);
+  font-weight: 650;
+}
+
+.account-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+.connection-card p {
+  color: var(--muted);
+}
+
+.home-screen > .alert {
+  margin: 0;
+}
+
+@media (min-width: 600px) {
+  .home-screen {
+    gap: 1.25rem;
+    padding: 2rem 1.5rem;
+  }
+
+  .welcome-card,
+  .account-card,
+  .connection-card {
+    padding: 1.5rem;
+  }
 }

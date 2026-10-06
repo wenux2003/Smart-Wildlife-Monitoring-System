@@ -13,12 +13,20 @@ Malabe). Reviewed design: Group 39.
 
 ## Project status
 
-The Operations website includes a public home page, registration, real email/password
-sign-in and an account workspace backed by Neon. See [web authentication](./docs/web-auth.md).
-Parks, the Super Admin → Park Manager → staff account hierarchy, demo account
-seeding and the shared server-side access check are in place. Ranger and the
-four business modules remain foundation work. Business database schemas,
-offline synchronization and simulator tools still need implementation.
+| Area | Status |
+|---|---|
+| Ops public website, registration, email/password sign-in and sign-out | ✅ Done |
+| Ranger app sign-in, forced first-login password change and home page | ✅ Done |
+| Account hierarchy: Super Admin → Park Manager → staff | ✅ Done |
+| Super Admin page (parks, Park Managers, all accounts) and Park Manager staff page | ✅ Done |
+| Deactivate/reactivate, temporary-password reset and account audit history | ✅ Done |
+| Server-side access checks (`app.authorize()`, `assertParkAccess()`) | ✅ Done |
+| Migrations, seed, demo accounts and required CI checks on `main` | ✅ Done |
+| Incidents (M1), patrols (M2), alerts (M3), analytics and reports (M4) | ⏳ Not started |
+| Offline storage and sync, shared map, simulator tools | ⏳ Not started |
+
+Details: [web authentication](./docs/web-auth.md), [user groups](./docs/User_groups.md)
+and [demo accounts](./docs/Demo_Accounts.md).
 
 ## Repository layout
 
@@ -28,7 +36,7 @@ offline synchronization and simulator tools still need implementation.
 - `packages/shared` — shared TypeScript types, Zod schemas, and geo helpers
 - `packages/ui` — shared React UI package
 - `packages/offline` — Dexie/outbox package used by the Ranger App
-- `tools` — planned seed-data and simulator tools
+- `tools` — planned simulator tools (the account and park seed lives in `apps/api/src/seed.ts`)
 - `docker-compose.yml` — local API, Ranger, Ops, and PostGIS services
 
 See [Group037_Implementation_Plan.md](./docs/Group037_Implementation_Plan.md) for
@@ -49,31 +57,64 @@ Requirements: Node.js 22 or newer, Corepack/pnpm, and internet access for Neon.
    corepack pnpm install
    ```
 
-3. Verify the database and bring its schema up to date:
+3. Check the database connection and bring the schema up to date:
 
    ```sh
    corepack pnpm db:check
    corepack pnpm db:migrate
    ```
 
-4. Seed parks and accounts **only if your database has none yet**. See
-   [Database: migrations and seeding](#database-migrations-and-seeding) below.
-5. Start all three development servers:
+   `db:migrate` is safe to repeat. Run it again after every `git pull` that
+   adds a migration.
+
+4. Seed parks and accounts **only if your database has none yet**. The shared
+   Neon database is already seeded, so teammates skip this step. See
+   [Database: migrations and seeding](#database-migrations-and-seeding).
+5. Start the API, the Ops website and the Ranger app together:
 
    ```sh
    corepack pnpm dev:all
    ```
 
-The API health endpoint is available at `http://localhost:3000/health`; the
-Ranger shell is at `http://localhost:5173` and Ops at
-`http://localhost:5174`. Start all three development servers with
-`corepack pnpm dev:all`, or start individual apps with `corepack pnpm dev:api`,
-`corepack pnpm dev:ranger`, and `corepack pnpm dev:ops`.
+   Keep this terminal open. Press **Ctrl+C** to stop everything.
 
-The API development command loads the root `.env`. Keep the terminal running;
-press Ctrl+C to stop the development servers. The frontends use ports 5173 and
-5174 in their development scripts. Never put database credentials in frontend
-environment variables.
+### Open the website and app
+
+| What | URL | Who uses it |
+|---|---|---|
+| **Ops website** | http://localhost:5174 (sign in at `/login`) | Super Admin, Park Managers, Liaison Officers, Researchers |
+| **Ranger app** (mobile) | http://localhost:5173 | Rangers |
+| API health check | http://localhost:3000/health | Should return `{"status":"ok"}` |
+
+Demo accounts, the demo password and what to try with each role are in
+**[docs/Demo_Accounts.md](./docs/Demo_Accounts.md)**.
+
+**On a phone:** connect it to the same Wi-Fi as your PC and open
+`http://<your-PC's-IP-address>:5173` (find the address with `ipconfig`). The
+dev servers already listen on your network; allow Node.js through the Windows
+firewall if asked.
+
+**Start one part at a time** (each in its own terminal):
+
+```sh
+corepack pnpm dev:api      # API on port 3000 (loads the root .env)
+corepack pnpm dev:ops      # Ops website on port 5174
+corepack pnpm dev:ranger   # Ranger app on port 5173
+```
+
+The website and app send `/api` requests to the API on port 3000, so **the API
+must be running** for sign-in to work.
+
+**If something doesn't work**
+
+| Problem | Fix |
+|---|---|
+| Sign-in says *"The account service is unavailable"* | The API isn't running. Start `corepack pnpm dev:api` (or `dev:all`) and check http://localhost:3000/health |
+| Sign-in says *"Account service is temporarily unavailable"* | The database is missing a migration. Run `corepack pnpm db:migrate` |
+| *"Port 5173/5174 is already in use"* | That app is already running in another terminal. Use it, or stop it with Ctrl+C first |
+| Install fails with an engine error | Use Node.js 22 or newer (`node --version`) |
+
+Never put database credentials in frontend environment variables.
 
 Docker remains an optional alternative: use `docker compose -f
 docker-compose.neon.yml up --build` for apps with Neon, or `docker compose up
@@ -91,7 +132,7 @@ can be merged only when all three CI jobs in
 | Check | What it verifies |
 |---|---|
 | **Lint, typecheck, test and build** | The lockfile is up to date (`--frozen-lockfile`); no `.env` file is committed; ESLint; TypeScript for every package; all Vitest tests; and production builds of Ops and Ranger |
-| **Migrations, seed and sign-in** | On a fresh PostGIS database: all migrations apply and re-run cleanly; the seed runs twice without creating duplicates; the API starts; the seeded Super Admin and a Yala ranger can sign in; a wrong password is rejected |
+| **Migrations, seed and sign-in** | On a fresh PostGIS database: all migrations apply and re-run cleanly; the seed runs twice without creating duplicates; the API starts; Super Admin creates a Park Manager, the manager creates a Ranger, and the temporary-password flow completes; seeded sign-in and wrong-password behavior are checked |
 | **Secret scan** | gitleaks finds no keys or tokens in the commits |
 
 **Day-to-day workflow:**
@@ -121,18 +162,20 @@ other settings from the root `.env`.
 
 ### Migrations
 
-- `db:migrate` is safe to run at any time. Migrations that have already run
+- `db:migrate` is safe to run at any time on approved databases. Migrations that have already run
   are skipped, and every migration is idempotent. Running it again prints
   `Database schema is already up to date.`
 - If sign-in suddenly says *"Account service is temporarily unavailable"*
   after a pull, the database is probably missing a new migration. Run
   `corepack pnpm db:migrate`.
 - **Adding a table or column (module owners):** create a new numbered file
-  such as `apps/api/drizzle/0003_incidents.sql`, using the next free number.
+  such as `apps/api/drizzle/0004_incidents.sql`, using the next free number.
   Write it to be idempotent (`CREATE TABLE IF NOT EXISTS`,
   `ADD COLUMN IF NOT EXISTS`). Update the matching Drizzle schema file, run
   `db:migrate`, and commit both. **Never edit a migration that has already
   been committed**; add a new one instead.
+- Migration `0003_account_audit.sql` adds account history. It is already
+  applied to the shared Neon database.
 - Applied migrations are recorded in the `schema_migrations` table.
 
 ### Seeding accounts
@@ -143,10 +186,10 @@ park staff** in [User groups](./docs/User_groups.md#2-account-hierarchy-who-crea
 
 **If the team shares one Neon database (the normal setup):**
 
-- **The database owner (Wenura)** seeds it once. Nobody else needs to run `db:seed`.
+- **The database owner** seeds it once. Nobody else needs to run `db:seed`.
 - Everyone else only needs `DATABASE_URL` in their `.env` and to run
-  `db:migrate`. They sign in with the demo accounts below; get the demo
-  password privately from the owner.
+  `db:migrate`. They sign in with the demo accounts listed in
+  [docs/Demo_Accounts.md](./docs/Demo_Accounts.md), which has the demo password.
 - If someone else runs `db:seed` with a different `SUPER_ADMIN_EMAIL`, it stops
   with *"A Super Admin already exists"* and changes nothing.
 
@@ -183,7 +226,7 @@ corepack pnpm db:seed --reset-passwords   # reset all seeded accounts to the .en
 corepack pnpm db:seed --no-demo           # create only the parks and the Super Admin
 ```
 
-**Demo accounts.** All use `DEMO_ACCOUNT_PASSWORD`, and all are demo data on
+**Demo accounts** (password, URLs and what to test: [docs/Demo_Accounts.md](./docs/Demo_Accounts.md)). All use `DEMO_ACCOUNT_PASSWORD`, and all are demo data on
 the reserved `example.org` domain.
 
 | Park | Park Manager | Liaison Officer | Rangers | Researcher |
@@ -194,6 +237,22 @@ the reserved `example.org` domain.
 
 The Super Admin signs in with `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_PASSWORD`.
 A self-registered account at `/register` is always a Researcher with no park.
+
+### Creating staff and setting their passwords
+
+After signing in to Ops, the Super Admin opens **Parks & managers** in `/admin`
+to create parks and Park Managers. The **All accounts** tab can create Rangers
+and Liaison Officers in any park and manage account role/park assignments.
+A Park Manager opens **Staff accounts** at `/staff` to create and manage only
+Rangers and Liaison Officers in their own park, and to grant or remove that
+park's access for Researchers.
+
+When creating an account or resetting its password, the administrator enters a
+temporary password of 12–128 characters and gives it to the user directly.
+There is no email delivery. At the user's first sign-in, Ops or Ranger requires
+them to choose a different password before proceeding. Ranger sign-in requires
+an internet connection; offline authentication is not supported. Deactivated
+accounts are not deleted, and their existing sessions are revoked immediately.
 
 **Common seed messages**
 

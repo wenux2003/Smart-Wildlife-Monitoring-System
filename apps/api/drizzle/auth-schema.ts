@@ -7,7 +7,10 @@ import {
   char,
   index,
   boolean,
+  check,
+  jsonb,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { parks } from "./reference-schema.js";
 
@@ -52,5 +55,32 @@ export const authSessions = pgTable(
   (table) => [
     index("auth_sessions_user_idx").on(table.userId),
     index("auth_sessions_expiry_idx").on(table.expiresAt),
+  ],
+);
+
+export const accountEvents = pgTable(
+  "account_events",
+  {
+    id: uuid("id").primaryKey(),
+    actorId: uuid("actor_id")
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "restrict" }),
+    targetUserId: uuid("target_user_id").references(() => authUsers.id, {
+      onDelete: "restrict",
+    }),
+    action: text("action").notNull(),
+    oldValue: jsonb("old_value"),
+    newValue: jsonb("new_value"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    check(
+      "account_events_action_check",
+      sql`${table.action} IN ('CREATED','DEACTIVATED','REACTIVATED','PASSWORD_RESET','PASSWORD_CHANGED','PARK_CHANGED','ROLE_CHANGED','RESEARCHER_ACCESS_GRANTED','RESEARCHER_ACCESS_REMOVED','PARK_CREATED')`,
+    ),
+    index("account_events_target_user_idx").on(table.targetUserId),
+    index("account_events_created_at_idx").on(table.createdAt),
   ],
 );

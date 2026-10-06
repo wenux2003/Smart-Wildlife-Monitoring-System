@@ -12,8 +12,15 @@ import { authRoutes } from "./modules/auth/routes.js";
 import type { AuthOptions } from "./modules/auth/routes.js";
 import { createAuthRepository } from "./modules/auth/repository.js";
 import { createAuthorize } from "./modules/auth/guard.js";
+import { accountRoutes } from "./modules/accounts/routes.js";
+import type { AccountRepository } from "./modules/accounts/repository.js";
+import { createAccountRepository } from "./modules/accounts/repository.js";
 
-export function createServer(authOptions: AuthOptions = {}) {
+export type ServerOptions = AuthOptions & {
+  accountsRepository?: AccountRepository;
+};
+
+export function createServer(authOptions: ServerOptions = {}) {
   const server = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
 
   server.setValidatorCompiler(validatorCompiler);
@@ -47,7 +54,14 @@ export function createServer(authOptions: AuthOptions = {}) {
     (process.env.DATABASE_URL
       ? createAuthRepository(process.env.DATABASE_URL)
       : undefined);
+  const accountsRepository =
+    authOptions.accountsRepository ??
+    (process.env.DATABASE_URL
+      ? createAccountRepository(process.env.DATABASE_URL)
+      : undefined);
   if (repository?.close) server.addHook("onClose", () => repository.close!());
+  if (accountsRepository?.close)
+    server.addHook("onClose", () => accountsRepository.close!());
   // Available to every module: { preHandler: app.authorize({ roles: [...] }) }.
   server.decorateRequest("user", null);
   server.decorate(
@@ -59,6 +73,10 @@ export function createServer(authOptions: AuthOptions = {}) {
     prefix: "/api/auth",
     ...authOptions,
     repository,
+  });
+  server.register(accountRoutes, {
+    prefix: "/api",
+    repository: accountsRepository,
   });
 
   server.get(

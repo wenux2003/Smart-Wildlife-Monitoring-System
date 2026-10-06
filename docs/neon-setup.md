@@ -55,7 +55,7 @@ docker compose -f docker-compose.neon.yml up --build
 
 This standalone Compose file runs API/Ranger/Ops and injects DATABASE_URL into the API only. The original `docker-compose.yml` remains the local PostGIS alternative and deliberately uses its local `db` service instead. Do not combine these two files as overrides.
 
-The Neon API shell receives the URL, but business persistence is still planned work: there are no business tables/migrations or domain repositories yet. Implement them in `apps/api/drizzle` and the existing API modules. Host development loads root `.env` through the API dev script; Docker supplies environment variables through Compose. The `db:check` command also loads root `.env` explicitly.
+The API uses the Neon URL for accounts, sessions, parks and the account audit (migrations `0001`–`0003`). Business-module persistence (incidents, patrols, alerts, analytics) is still planned: those tables and repositories don't exist yet. Implement them in `apps/api/drizzle` and the existing API modules. Host development loads root `.env` through the API dev script; Docker supplies environment variables through Compose. The `db:check` command also loads root `.env` explicitly.
 
 Neon requires an internet connection for API/database work. Ranger offline collection remains local IndexedDB behavior and synchronizes once the API is reachable. Keep the local PostGIS option for offline development/demo fallback.
 

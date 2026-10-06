@@ -30,6 +30,8 @@ services:
         condition: service_healthy
 
   ranger:
+    environment:
+      API_PROXY_TARGET: http://api:3000
     build:
       context: .
       dockerfile: apps/ranger/Dockerfile

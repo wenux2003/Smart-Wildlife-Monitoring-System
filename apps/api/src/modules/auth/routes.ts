@@ -27,6 +27,12 @@ const registration = credentials
     password: z.string().min(12).max(128),
   })
   .strict();
+const passwordChange = z
+  .object({
+    currentPassword: z.string().min(1).max(128),
+    newPassword: z.string().min(12).max(128),
+  })
+  .strict();
 const SESSION_SECONDS = 60 * 60 * 24 * 7;
 const publicUser = (user: AuthUser) => ({
   ...toSessionUser(user),
@@ -162,6 +168,65 @@ export async function authRoutes(app: FastifyInstance, options: AuthOptions) {
           "This account has been deactivated. Contact your park manager.",
       });
     return startSession(user, request, reply);
+  });
+  app.post("/change-password", async (request, reply) => {
+    const parsed = passwordChange.safeParse(request.body);
+    if (!parsed.success)
+      return reply.code(400).send({
+        code: "VALIDATION_FAILED",
+        message: "Enter your current password and a new password of 12–128 characters.",
+      });
+    if (parsed.data.currentPassword === parsed.data.newPassword)
+      return reply.code(400).send({
+        code: "VALIDATION_FAILED",
+        message: "Choose a new password different from your current password.",
+      });
+
+    const currentToken = readSessionToken(request);
+    const user = currentToken
+      ? await repository!.sessionUser(tokenHash(currentToken), clock.now())
+      : undefined;
+    if (!user || user.disabled_at)
+      return reply
+        .header("Set-Cookie", cookie("", 0))
+        .code(401)
+        .send({ code: "UNAUTHENTICATED", message: "Please sign in to continue." });
+    if (!(await verifyPassword(parsed.data.currentPassword, user.password_hash)))
+      return reply.code(400).send({
+        code: "INVALID_CURRENT_PASSWORD",
+        message: "The current password is incorrect.",
+      });
+
+    const token = sessionToken();
+    const now = clock.now();
+    const changed = await repository!.changePassword({
+      userId: user.id,
+      passwordHash: await hashPassword(parsed.data.newPassword),
+      currentSessionHash: tokenHash(currentToken!),
+      replacementSessionHash: tokenHash(token),
+      expiresAt: new Date(now.getTime() + SESSION_SECONDS * 1000),
+      event: {
+        id: randomUUID(),
+        actorId: user.id,
+        targetUserId: user.id,
+        action: "PASSWORD_CHANGED",
+        oldValue: { mustChangePassword: user.must_change_password },
+        newValue: { mustChangePassword: false },
+      },
+    });
+    if (!changed)
+      return reply
+        .header("Set-Cookie", cookie("", 0))
+        .code(401)
+        .send({ code: "UNAUTHENTICATED", message: "Please sign in to continue." });
+    reply.header("Set-Cookie", cookie(token, SESSION_SECONDS));
+    return {
+      user: publicUser({
+        ...user,
+        password_hash: "",
+        must_change_password: false,
+      }),
+    };
   });
   app.get("/me", async (request, reply) => {
     const token = readSessionToken(request);
