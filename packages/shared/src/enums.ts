@@ -38,3 +38,21 @@ export const SessionStatus = {
 
 export type SessionStatus =
   (typeof SessionStatus)[keyof typeof SessionStatus];
+
+export const SyncStatus = {
+  SYNCED: "SYNCED",
+  PENDING_SYNC: "PENDING_SYNC",
+  FAILED: "FAILED",
+} as const;
+
+export type SyncStatus = (typeof SyncStatus)[keyof typeof SyncStatus];
+
+export const WaypointCategory = {
+  WILDLIFE_SIGN: "WILDLIFE_SIGN",
+  HAZARD_SNARE: "HAZARD_SNARE",
+  TRAIL_MARKER: "TRAIL_MARKER",
+  OTHER: "OTHER",
+} as const;
+
+export type WaypointCategory =
+  (typeof WaypointCategory)[keyof typeof WaypointCategory];

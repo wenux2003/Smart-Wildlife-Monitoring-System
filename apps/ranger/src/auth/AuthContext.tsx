@@ -28,6 +28,21 @@ type AuthState = {
 };
 
 const AuthContext = createContext<AuthState | null>(null);
+const OFFLINE_USER_KEY = "wr:ranger:offline-user";
+
+function readOfflineUser(): RangerUser | null {
+  try {
+    const stored = localStorage.getItem(OFFLINE_USER_KEY);
+    return stored ? JSON.parse(stored) as RangerUser : null;
+  } catch {
+    return null;
+  }
+}
+
+function cacheOfflineUser(user: RangerUser | null) {
+  if (user) localStorage.setItem(OFFLINE_USER_KEY, JSON.stringify(user));
+  else localStorage.removeItem(OFFLINE_USER_KEY);
+}
 
 async function request(path: string, body?: object) {
   let response: Response;
@@ -40,8 +55,9 @@ async function request(path: string, body?: object) {
       body: body ? JSON.stringify(body) : undefined,
     });
   } catch {
-    throw new Error(
-      "We couldn’t reach the server. Check your connection and try again.",
+    throw Object.assign(
+      new Error("We couldn’t reach the server. Check your connection and try again."),
+      { status: 0 },
     );
   }
   const data =
@@ -65,10 +81,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError("");
     try {
-      setUser((await request("me")).user);
+      const currentUser = (await request("me")).user as RangerUser;
+      setUser(currentUser);
+      cacheOfflineUser(currentUser);
     } catch (failure) {
-      setUser(null);
-      if ((failure as { status?: number }).status !== 401)
+      const status = (failure as { status?: number }).status;
+      const cachedUser = status === 0 ? readOfflineUser() : null;
+      setUser(cachedUser);
+      if (status === 401) cacheOfflineUser(null);
+      if (status !== 401)
         setError((failure as Error).message);
     } finally {
       setLoading(false);
@@ -82,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signIn(email: string, password: string) {
     const result = await request("login", { email, password });
     setUser(result.user);
+    cacheOfflineUser(result.user);
     setError("");
   }
 
@@ -93,19 +115,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       currentPassword,
       newPassword,
     });
-    setUser(
-      result.user
+    const nextUser = result.user
         ? { ...result.user, mustChangePassword: false }
         : user
           ? { ...user, mustChangePassword: false }
-          : null,
-    );
+          : null;
+    setUser(nextUser);
+    cacheOfflineUser(nextUser);
     setError("");
   }
 
   async function signOut() {
     await request("logout", {});
     setUser(null);
+    cacheOfflineUser(null);
   }
 
   return (

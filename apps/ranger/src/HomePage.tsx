@@ -4,6 +4,7 @@ import type { PatrolAssignmentSummary } from "@wr/shared";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext.js";
 import { fetchMyPatrolAssignments } from "./lib/patrols.js";
+import { startOfflinePatrol } from "@wr/offline";
 
 function BackIcon() {
   return (
@@ -134,6 +135,7 @@ export function RangerHomePage() {
   const [selectedPatrolId, setSelectedPatrolId] = useState<string>();
   const [error, setError] = useState("");
   const [signingOut, setSigningOut] = useState(false);
+  const [startingPatrol, setStartingPatrol] = useState(false);
 
   useEffect(() => {
     const updateConnection = () => setOnline(navigator.onLine);
@@ -167,6 +169,30 @@ export function RangerHomePage() {
   const selectedPatrol = patrolAssignments.find(
     (patrol) => patrol.id === selectedPatrolId && patrol.status === "ASSIGNED",
   ) ?? patrolAssignments.find((patrol) => patrol.status === "ASSIGNED");
+
+  async function startSelectedPatrol() {
+    if (!selectedPatrol || !user) return;
+    setError("");
+    setStartingPatrol(true);
+    try {
+      await startOfflinePatrol({
+        assignmentId: selectedPatrol.id,
+        rangerId: user.id,
+        route: {
+          id: selectedPatrol.route.id,
+          name: selectedPatrol.route.name,
+          sector: selectedPatrol.route.sector,
+          estimatedDistanceKm: selectedPatrol.route.estimatedDistanceKm,
+          path: selectedPatrol.route.path,
+        },
+      });
+      navigate(`/patrol/${selectedPatrol.id}/active`);
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : "The patrol could not be started.");
+    } finally {
+      setStartingPatrol(false);
+    }
+  }
 
   return (
     <main className="patrol-screen" id="main-content">
@@ -266,12 +292,12 @@ export function RangerHomePage() {
           <button
             className="start-patrol-button"
             type="button"
-            disabled={!selectedPatrol}
-            onClick={() => selectedPatrol && navigate(`/patrol/${selectedPatrol.id}/active`)}
+            disabled={!selectedPatrol || startingPatrol}
+            onClick={() => void startSelectedPatrol()}
           >
             <span className="start-patrol-icon"><StartIcon /></span>
             <span className="start-patrol-copy">
-              <strong>Start patrol</strong>
+              <strong>{startingPatrol ? "Preparing patrol…" : "Start patrol"}</strong>
               <small>
                 {selectedPatrol
                   ? `${selectedPatrol.route.name} · ${selectedPatrol.route.estimatedDistanceKm.toFixed(1)} km`

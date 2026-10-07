@@ -1,5 +1,11 @@
 import type { FastifyInstance } from "fastify";
-import { PatrolAssignmentSummaryListSchema, Role } from "@wr/shared";
+import {
+  PatrolAssignmentSummaryListSchema,
+  PatrolSyncRequestSchema,
+  PatrolSyncResponseSchema,
+  Role,
+  type PatrolSyncRequest,
+} from "@wr/shared";
 import { AppError } from "../../core/errors.js";
 import type { PatrolRepository } from "./repository.js";
 import { createPatrolService } from "./service.js";
@@ -30,5 +36,20 @@ export async function patrolRoutes(
       schema: { response: { 200: PatrolAssignmentSummaryListSchema } },
     },
     async (request) => requireService().listMine(request.user!),
+  );
+
+  app.post(
+    "/patrol-sessions/sync",
+    {
+      preHandler: app.authorize({ roles: [Role.RANGER] }),
+      schema: {
+        body: PatrolSyncRequestSchema,
+        response: { 200: PatrolSyncResponseSchema },
+      },
+    },
+    async (request) => requireService().sync(
+      request.user!,
+      request.body as PatrolSyncRequest,
+    ),
   );
 }

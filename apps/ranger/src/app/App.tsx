@@ -1,11 +1,17 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "../auth/AuthContext.js";
 import { RangerHomePage } from "../HomePage.js";
 import { ChangePasswordPage, LoadingState } from "../pages/ChangePasswordPage.js";
 import { LoginPage } from "../pages/LoginPage.js";
-import { PatrolMapPage } from "../pages/PatrolMapPage.js";
 import { NewWaypointPage } from "../pages/NewWaypointPage.js";
+import { PatrolSummaryPage } from "../pages/PatrolSummaryPage.js";
+import { PatrolSyncCoordinator } from "./PatrolSyncCoordinator.js";
+
+const PatrolMapPage = lazy(async () => {
+  const module = await import("../pages/PatrolMapPage.js");
+  return { default: module.PatrolMapPage };
+});
 
 function ProtectedRanger({ children }: { children: React.ReactNode }) {
   const { user, loading, signOut } = useAuth();
@@ -54,14 +60,23 @@ function RangerRoutes() {
         <Route path="/" element={<ProtectedRanger><RangerHomePage /></ProtectedRanger>} />
         <Route
           path="/patrol/:assignmentId/active"
-          element={<ProtectedRanger><PatrolMapPage /></ProtectedRanger>}
+          element={(
+            <ProtectedRanger>
+              <Suspense fallback={<LoadingState />}><PatrolMapPage /></Suspense>
+            </ProtectedRanger>
+          )}
         />
         <Route
           path="/patrol/:assignmentId/waypoints/new"
           element={<ProtectedRanger><NewWaypointPage /></ProtectedRanger>}
         />
+        <Route
+          path="/patrol/:assignmentId/summary"
+          element={<ProtectedRanger><PatrolSummaryPage /></ProtectedRanger>}
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <PatrolSyncCoordinator />
     </>
   );
 }
