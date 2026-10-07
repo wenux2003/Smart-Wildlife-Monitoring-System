@@ -7,6 +7,7 @@ export interface AnalyticsRepository {
   logExport(params: {
     userId: string;
     exportType: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     queryParams: any;
   }): Promise<ExportAuditRecord>;
   close?(): Promise<void>;

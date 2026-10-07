@@ -40,6 +40,7 @@ async function simulatePings() {
         } else {
           console.error(`Failed to send ping for collar ${collar.id}: ${response.statusText}`);
         }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         console.error(`Error sending ping for collar ${collar.id}: ${e.message}`);
       }

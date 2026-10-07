@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { AlertListSchema, AlertSchema, AlertDispatchSchema, AlertDispatchListSchema, CollarListSchema, CollarPingListSchema, Role } from "@wr/shared";
+import { AlertListSchema, AlertSchema, AlertDispatchSchema, AlertDispatchListSchema, Role } from "@wr/shared";
 import { AppError } from "../../core/errors.js";
 import type { AlertRepository } from "./repository.js";
 import { createAlertService } from "./service.js";
@@ -131,6 +131,7 @@ export async function alertRoutes(
     },
     async (request) => {
       const { id } = request.params as { id: string };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { status, notes } = request.body as { status: any, notes?: string };
       return requireService().updateDispatchStatus(request.user!, id, status, notes);
     },
@@ -156,6 +157,7 @@ export async function alertRoutes(
       if (!repo) throw new AppError("Repository unavailable", 503, "UNAVAILABLE");
       
       const processor = new PingProcessor(repo);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const body = request.body as any;
       await processor.processPing({
         collarId: body.collarId,

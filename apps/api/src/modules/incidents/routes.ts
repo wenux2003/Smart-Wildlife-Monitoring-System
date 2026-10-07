@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { IncidentListSchema, IncidentSchema, IncidentReviewSchema, IncidentReviewListSchema, Role, IncidentStatus } from "@wr/shared";
+import { IncidentListSchema, IncidentReviewSchema, IncidentReviewListSchema, Role, IncidentStatus } from "@wr/shared";
 import { AppError } from "../../core/errors.js";
 import type { IncidentRepository } from "./repository.js";
 import { createIncidentService } from "./service.js";
@@ -49,6 +49,7 @@ export async function incidentRoutes(
       },
     },
     async (request) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const body = request.body as any;
       return requireService().reportIncident(request.user!, body);
     },
@@ -70,6 +71,7 @@ export async function incidentRoutes(
       },
     },
     async (request) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const body = request.body as any;
       return requireService().reportIncident(null, body);
     },

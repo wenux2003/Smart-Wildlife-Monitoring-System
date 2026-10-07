@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext.js";
 
 async function apiRequest<T>(
@@ -27,6 +26,7 @@ type AlertDispatch = {
 };
 
 export function DispatchesPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

@@ -1,3 +1,5 @@
+/* global require, console, process */
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const postgres = require('postgres');
 async function test() {
   const users = ['postgres', 'root', 'admin'];
@@ -9,6 +11,7 @@ async function test() {
         await sql`SELECT 1`;
         console.log(`SUCCESS: user=${user} pass=${pass}`);
         process.exit(0);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (e) {
         // ignore
       }

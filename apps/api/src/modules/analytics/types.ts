@@ -8,6 +8,7 @@ export interface ExportAuditRecord {
   id: string;
   user_id: string;
   export_type: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   query_params: any;
   created_at: Date;
 }

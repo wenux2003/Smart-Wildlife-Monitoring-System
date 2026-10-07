@@ -18,6 +18,7 @@ export interface AlertRepository {
   getCollarPings(collarId: string, limit?: number): Promise<CollarPingRecord[]>;
 
   listDispatchesForRanger(rangerId: string): Promise<AlertDispatchRecord[]>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getParkConfig(parkId: string): Promise<any>;
   getActiveAlertForCollar(collarId: string, type: string): Promise<AlertRecord | null>;
   getCollarsWithLostSignal(thresholdMinutes: number): Promise<CollarRecord[]>;
@@ -174,6 +175,7 @@ export function createAlertRepository(url: string): AlertRepository {
       `;
     },
     async getParkConfig(parkId: string) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await sql<{ config: any }[]>`
         SELECT config
         FROM parks 

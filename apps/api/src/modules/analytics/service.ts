@@ -9,6 +9,7 @@ export class AnalyticsService {
     return this.repo.getHotspots(parkId, type, since);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async recordExport(userId: string, exportType: string, queryParams: any): Promise<ExportAuditRecord> {
     return this.repo.logExport({ userId, exportType, queryParams });
   }

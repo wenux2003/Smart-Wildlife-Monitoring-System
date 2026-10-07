@@ -53,6 +53,7 @@ export class PingProcessor {
     await this.checkBattery(collar, pingData, parkId, alertsConfig);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async checkGeofence(collar: any, ping: any, parkId: string, alertsConfig: any) {
     const center = alertsConfig.geofenceCenter;
     const radius = alertsConfig.geofenceRadiusKm;
@@ -73,6 +74,7 @@ export class PingProcessor {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async checkImmobility(collar: any, ping: any, parkId: string, alertsConfig: any) {
     if (ping.speed !== null && ping.speed <= alertsConfig.immobilitySpeedThreshold) {
       const active = await this.repository.getActiveAlertForCollar(collar.id, AlertType.IMMOBILITY);
@@ -89,6 +91,7 @@ export class PingProcessor {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async checkBattery(collar: any, ping: any, parkId: string, alertsConfig: any) {
     if (ping.battery !== null && ping.battery <= alertsConfig.lowBatteryThreshold) {
       const active = await this.repository.getActiveAlertForCollar(collar.id, AlertType.LOW_BATTERY);

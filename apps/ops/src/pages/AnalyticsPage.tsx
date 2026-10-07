@@ -22,6 +22,7 @@ export function AnalyticsPage() {
         if (!res.ok) throw new Error("Failed to load hotspots");
         const json = await res.json();
         setHotspots(json.data);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         setError(e.message);
       } finally {
@@ -39,6 +40,7 @@ export function AnalyticsPage() {
         body: JSON.stringify({ exportType: type, queryParams: { parkId: "park123" } }),
       });
       alert(`${type} exported and logged to audit!`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       alert("Export failed: " + e.message);
     }

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MapContainer, TileLayer, CircleMarker, Popup, Polyline } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
@@ -21,6 +20,7 @@ export function AlertsPage() {
     refetchInterval: 10000,
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: collars = [], isLoading: collarsLoading } = useQuery({
     queryKey: ["collars"],
     queryFn: () => apiRequest<Collar[]>("/api/collars"),

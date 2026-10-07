@@ -1,3 +1,5 @@
+/* global require, console, process */
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const postgres = require('postgres');
 async function setup() {
   const sql = postgres({ host: 'localhost', port: 5432, user: 'postgres', pass: 'postgres', database: 'postgres', max: 1 });

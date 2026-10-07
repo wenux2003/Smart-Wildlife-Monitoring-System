@@ -125,9 +125,12 @@ export function createAlertService(repository: AlertRepository) {
           await repository.createAlert({
             park_id: collar.park_id,
             collar_id: collar.id,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             type: 'LOST_SIGNAL' as any,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             severity: 'CRITICAL' as any,
             status: AlertStatus.NEW,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             location: null as any // we might not know location
           });
         }

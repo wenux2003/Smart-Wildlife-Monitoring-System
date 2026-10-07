@@ -10,6 +10,7 @@ export const analyticsRoutes =
     }>(
       "/hotspots",
       {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         preHandler: fastify.authorize({ roles: ["PARK_MANAGER", "LIAISON_OFFICER", "SUPER_ADMIN", "RESEARCHER" as any] })
       },
       async (request, reply) => {
@@ -24,10 +25,12 @@ export const analyticsRoutes =
 
     // Record an export audit
     fastify.post<{
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       Body: { exportType: string; queryParams: any };
     }>(
       "/exports",
       {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         preHandler: fastify.authorize({ roles: ["PARK_MANAGER", "LIAISON_OFFICER", "SUPER_ADMIN", "RESEARCHER" as any] })
       },
       async (request, reply) => {

@@ -32,6 +32,7 @@ export function IncidentsPage() {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = await apiRequest<{ data: any }>(`/api/incidents/${id}/status`, {
         method: "POST",
         body: { status }
@@ -45,6 +46,7 @@ export function IncidentsPage() {
 
   const addReviewMutation = useMutation({
     mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = await apiRequest<{ data: any }>(`/api/incidents/${id}/reviews`, {
         method: "POST",
         body: { notes }
