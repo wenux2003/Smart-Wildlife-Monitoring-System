@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-wildlife}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wildlife}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgis-data:/var/lib/postgresql/data
     healthcheck:

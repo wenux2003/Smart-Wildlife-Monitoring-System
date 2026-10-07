@@ -38,3 +38,49 @@ export const SessionStatus = {
 
 export type SessionStatus =
   (typeof SessionStatus)[keyof typeof SessionStatus];
+
+export const AlertStatus = {
+  NEW: "NEW",
+  DISPATCHED: "DISPATCHED",
+  ACCEPTED: "ACCEPTED",
+  ON_SCENE: "ON_SCENE",
+  RESOLVED: "RESOLVED",
+  CANCELLED: "CANCELLED",
+  AUTO_RESOLVED: "AUTO_RESOLVED",
+} as const;
+
+export type AlertStatus =
+  (typeof AlertStatus)[keyof typeof AlertStatus];
+
+export const DispatchStatus = {
+  PENDING: "PENDING",
+  ACCEPTED: "ACCEPTED",
+  REJECTED: "REJECTED",
+  TIMED_OUT: "TIMED_OUT",
+  ARRIVED: "ARRIVED",
+  DONE: "DONE",
+  CANCELLED: "CANCELLED",
+} as const;
+
+export type DispatchStatus =
+  (typeof DispatchStatus)[keyof typeof DispatchStatus];
+
+export const AlertType = {
+  GEOFENCE_BREACH: "GEOFENCE_BREACH",
+  IMMOBILITY: "IMMOBILITY",
+  SIGNAL_LOST: "SIGNAL_LOST",
+  LOW_BATTERY: "LOW_BATTERY",
+} as const;
+
+export type AlertType =
+  (typeof AlertType)[keyof typeof AlertType];
+
+export const Severity = {
+  LOW: "LOW",
+  MEDIUM: "MEDIUM",
+  HIGH: "HIGH",
+  CRITICAL: "CRITICAL",
+} as const;
+
+export type Severity =
+  (typeof Severity)[keyof typeof Severity];

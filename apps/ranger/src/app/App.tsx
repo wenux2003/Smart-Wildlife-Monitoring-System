@@ -6,6 +6,8 @@ import { ChangePasswordPage, LoadingState } from "../pages/ChangePasswordPage.js
 import { LoginPage } from "../pages/LoginPage.js";
 import { PatrolMapPage } from "../pages/PatrolMapPage.js";
 import { NewWaypointPage } from "../pages/NewWaypointPage.js";
+import { DispatchesPage } from "../pages/DispatchesPage.js";
+import { ReportIncidentPage } from "../pages/ReportIncidentPage.js";
 
 function ProtectedRanger({ children }: { children: React.ReactNode }) {
   const { user, loading, signOut } = useAuth();
@@ -60,6 +62,8 @@ function RangerRoutes() {
           path="/patrol/:assignmentId/waypoints/new"
           element={<ProtectedRanger><NewWaypointPage /></ProtectedRanger>}
         />
+        <Route path="/incidents/report" element={<ProtectedRanger><ReportIncidentPage /></ProtectedRanger>} />
+        <Route path="/dispatches" element={<ProtectedRanger><DispatchesPage /></ProtectedRanger>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
