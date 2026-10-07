@@ -1,4 +1,5 @@
 import postgres from "postgres";
+import { randomUUID } from "node:crypto";
 import type { AlertRecord, CollarRecord, CollarPingRecord, AlertDispatchRecord } from "./types.js";
 import { AlertStatus, DispatchStatus } from "@wr/shared";
 
@@ -56,8 +57,9 @@ export function createAlertRepository(url: string): AlertRepository {
     async createAlert(alert) {
       const result = await sql<AlertRecord[]>`
         INSERT INTO alerts (
-          park_id, collar_id, type, severity, status, location
+          id, park_id, collar_id, type, severity, status, location
         ) VALUES (
+          ${randomUUID()},
           ${alert.park_id as string},
           ${alert.collar_id || null},
           ${alert.type as string},
@@ -88,12 +90,14 @@ export function createAlertRepository(url: string): AlertRepository {
     async createPing(ping) {
       const result = await sql<CollarPingRecord[]>`
         INSERT INTO collar_pings (
-          collar_id, location, speed, battery
+          id, collar_id, location, speed, battery, recorded_at
         ) VALUES (
+          ${randomUUID()},
           ${ping.collar_id as string},
           ST_SetSRID(ST_MakePoint(${ping.location![0]}, ${ping.location![1]}), 4326),
           ${ping.speed || null},
-          ${ping.battery || null}
+          ${ping.battery || null},
+          ${ping.recorded_at || new Date()}
         )
         RETURNING 
           id, collar_id, speed, battery, recorded_at,
@@ -112,8 +116,9 @@ export function createAlertRepository(url: string): AlertRepository {
     async createDispatch(dispatch) {
       const result = await sql<AlertDispatchRecord[]>`
         INSERT INTO alert_dispatches (
-          alert_id, ranger_id, status, notes
+          id, alert_id, ranger_id, status, notes
         ) VALUES (
+          ${randomUUID()},
           ${dispatch.alert_id as string},
           ${dispatch.ranger_id as string},
           ${dispatch.status as string},

@@ -23,13 +23,13 @@ export function AccountHeader() {
   }
   return (
     <>
-      <header className="workspace-header content-width">
+      <header className="workspace-header w-full px-8 bg-[#FFFFFF] border-b border-[#DCE5DC]">
         <Brand />
         <div className="signed-in-identity">
           <span>
-            <strong>{user?.name}</strong>
-            <small>{user?.email}</small>
-            <small>{user?.parkName ?? (user?.role === "SUPER_ADMIN" ? "National administration" : "Park access pending")}</small>
+            <strong className="text-[#1F2937]">{user?.name}</strong>
+            <small className="text-[#64748B]">{user?.email}</small>
+            <small className="text-[#64748B]">{user?.parkName ?? (user?.role === "SUPER_ADMIN" ? "National administration" : "Park access pending")}</small>
           </span>
           <button
             className="button button-outline"
@@ -42,7 +42,7 @@ export function AccountHeader() {
         </div>
       </header>
       {error && (
-        <p role="alert" className="form-error account-header-error content-width">
+        <p role="alert" className="form-error account-header-error w-full px-8">
           {error}
         </p>
       )}

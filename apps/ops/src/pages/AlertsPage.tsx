@@ -53,95 +53,152 @@ export function AlertsPage() {
   const zoom = 7;
 
   return (
-    <div className="workspace-page" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="workspace-page flex flex-col h-screen">
       <AccountHeader />
       
-      <main id="main-content" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        <aside style={{ width: '400px', padding: '20px', overflowY: 'auto', borderRight: '1px solid #ccc' }}>
-          <h2>Active Alerts</h2>
+      <main id="main-content" className="flex flex-1 overflow-hidden relative">
+        <aside className="w-[420px] flex-shrink-0 flex flex-col bg-[#14352B] border-r border-[#DCE5DC] z-[500] shadow-[4px_0_24px_rgba(20,53,43,0.06)] relative text-white">
+          <div className="p-6 border-b border-[#DCE5DC]">
+            <p className="section-kicker !mb-2 !text-[#DCE5DC]">MONITORING</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-white">Active Alerts</h1>
+            <p className="text-sm text-gray-300 mt-1.5">Manage and dispatch rangers to live alerts</p>
+          </div>
           
-          {alertsLoading && <p>Loading alerts...</p>}
-          {!alertsLoading && alerts.length === 0 && <p>No active alerts.</p>}
-          
-          {alerts.map(alert => (
-            <div key={alert.id} style={{ padding: '15px', border: '1px solid #ccc', marginBottom: '15px', borderRadius: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <strong>{alert.type.replace('_', ' ')}</strong>
-                <span style={{ 
-                  backgroundColor: alert.severity === 'CRITICAL' ? 'red' : alert.severity === 'HIGH' ? 'orange' : 'yellow', 
-                  color: 'black', padding: '2px 6px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold'
-                }}>{alert.severity}</span>
+          <div className="flex-1 overflow-y-auto p-6 space-y-5">
+            {alertsLoading && (
+              <div className="flex justify-center py-12 text-[var(--muted)] animate-pulse">
+                <p>Loading alerts...</p>
               </div>
-              
-              <p style={{ margin: '5px 0' }}>Status: <strong>{alert.status}</strong></p>
-              {alert.collarId && (
-                <p style={{ margin: '5px 0' }}>
-                  Collar: {collars.find(c => c.id === alert.collarId)?.animalName || alert.collarId}
-                </p>
-              )}
-              <p style={{ margin: '5px 0', fontSize: '12px' }}>{new Date(alert.createdAt).toLocaleString()}</p>
-              
-              
-              {alert.status === 'NEW' && (
-                <button 
-                  className="button button-green" 
-                  style={{ marginTop: '10px', width: '100%' }}
-                  onClick={() => acknowledgeMutation.mutate(alert.id)}
-                  disabled={acknowledgeMutation.isPending}
-                >
-                  Acknowledge
-                </button>
-              )}
-              
-              {alert.status === 'ACCEPTED' && (
-                <div style={{ marginTop: '10px' }}>
-                  <select 
-                    id={`ranger-select-${alert.id}`} 
-                    style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
-                    defaultValue=""
-                  >
-                    <option value="" disabled>Select a ranger...</option>
-                    {staff.filter(s => s.role === 'RANGER').map(r => (
-                      <option key={r.id} value={r.id}>{r.name}</option>
-                    ))}
-                  </select>
-                  <button 
-                    className="button button-green" 
-                    style={{ width: '100%' }}
-                    onClick={() => {
-                      const select = document.getElementById(`ranger-select-${alert.id}`) as HTMLSelectElement;
-                      if (select.value) {
-                        dispatchMutation.mutate({ alertId: alert.id, rangerId: select.value });
-                      }
-                    }}
-                    disabled={dispatchMutation.isPending}
-                  >
-                    Dispatch Ranger
-                  </button>
+            )}
+            
+            {!alertsLoading && alerts.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-16 h-16 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#15803D] mb-4 ring-8 ring-[#15803D]/20">
+                  <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                 </div>
-              )}
-
-              <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '4px', fontSize: '12px' }}>
-                <details>
-                  <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>Advanced Context</summary>
-                  <ul style={{ paddingLeft: '20px', marginTop: '10px' }}>
-                    <li><strong>Nearby Settlements:</strong> Mahiyangana (12km), Bibile (18km)</li>
-                    <li><strong>Camera Images:</strong> No relevant camera trap images in the last 2 hours.</li>
-                    <li><strong>Event History:</strong> 
-                      <ul style={{ paddingLeft: '15px' }}>
-                        <li>{new Date(alert.createdAt).toLocaleString()} - Alert Created</li>
-                        {alert.status !== 'NEW' && <li>Status updated to {alert.status}</li>}
-                      </ul>
-                    </li>
-                  </ul>
-                </details>
+                <h3 className="text-lg font-medium text-white">All Clear</h3>
+                <p className="text-sm text-gray-300 mt-2">There are no active alerts at the moment.</p>
               </div>
-            </div>
-          ))}
+            )}
+            
+            {alerts.map(alert => (
+              <div key={alert.id} className="bg-[#FFFFFF] border border-[#DCE5DC] rounded-[12px] overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-[#D97706] group text-[#1F2937]">
+                <div className="p-5">
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="font-semibold text-[15px] text-[#1F2937] capitalize">
+                      {alert.type.replace('_', ' ').toLowerCase()}
+                    </h3>
+                    <span className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest text-white ${
+                      alert.severity === 'CRITICAL' ? 'bg-[#B91C1C]' : 
+                      alert.severity === 'HIGH' ? 'bg-[#B45309]' : 
+                      'bg-[#1D4ED8]'
+                    }`}>
+                      {alert.severity}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2.5 text-[13px] text-[#64748B]">
+                    <div className="flex justify-between items-center pb-2 border-b border-[#DCE5DC]/50">
+                      <span>Status</span> 
+                      <span className="font-medium text-[#1F2937] bg-[#f6f8f5] px-2 py-0.5 rounded-sm">{alert.status}</span>
+                    </div>
+                    {alert.collarId && (
+                      <div className="flex justify-between items-center pb-2 border-b border-[#DCE5DC]/50">
+                        <span>Collar</span>
+                        <span className="font-medium text-[#1F2937]">
+                          {collars.find(c => c.id === alert.collarId)?.animalName || alert.collarId}
+                        </span>
+                      </div>
+                    )}
+                    <div className="pt-1 flex items-center gap-1.5 text-[11px] text-[#64748B]">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      {new Date(alert.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                    </div>
+                  </div>
+                  
+                  {alert.status === 'NEW' && (
+                    <div className="mt-5">
+                      <button 
+                        className="button button-green w-full !py-2.5 !min-h-0 text-[13px] tracking-wide shadow-sm"
+                        onClick={() => acknowledgeMutation.mutate(alert.id)}
+                        disabled={acknowledgeMutation.isPending}
+                      >
+                        {acknowledgeMutation.isPending ? 'Acknowledging...' : 'Acknowledge Alert'}
+                      </button>
+                    </div>
+                  )}
+                  
+                  {alert.status === 'ACCEPTED' && (
+                    <div className="mt-5 space-y-3">
+                      <div className="relative">
+                        <select 
+                          id={`ranger-select-${alert.id}`} 
+                          className="w-full appearance-none bg-[#FFFFFF] border border-[#DCE5DC] text-[#1F2937] text-[13px] font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-[#166534]/20 focus:border-[#166534] block p-2.5 transition-colors"
+                          defaultValue=""
+                        >
+                          <option value="" disabled>Assign to a ranger...</option>
+                          {staff.filter(s => s.role === 'RANGER').map(r => (
+                            <option key={r.id} value={r.id}>{r.name}</option>
+                          ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#64748B]">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                      </div>
+                      <button 
+                        className="button button-green w-full !py-2.5 !min-h-0 text-[13px] tracking-wide shadow-sm"
+                        onClick={() => {
+                          const select = document.getElementById(`ranger-select-${alert.id}`) as HTMLSelectElement;
+                          if (select.value) {
+                            dispatchMutation.mutate({ alertId: alert.id, rangerId: select.value });
+                          }
+                        }}
+                        disabled={dispatchMutation.isPending}
+                      >
+                        {dispatchMutation.isPending ? 'Dispatching...' : 'Dispatch Ranger'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t border-[#DCE5DC] bg-[#FFFFFF]">
+                  <details className="group/details">
+                    <summary className="cursor-pointer text-[11px] font-semibold tracking-wide uppercase text-[#166534] px-5 py-3 hover:bg-[#f6f8f5] transition-colors list-none flex justify-between items-center select-none">
+                      Advanced Context
+                      <svg className="w-3.5 h-3.5 transition-transform duration-200 group-open/details:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                    </summary>
+                    <div className="px-5 pb-5 pt-1 text-[12px] text-[#64748B] space-y-3.5">
+                      <div>
+                        <strong className="text-[#1F2937] block mb-1">Nearby Settlements</strong>
+                        Mahiyangana (12km), Bibile (18km)
+                      </div>
+                      <div>
+                        <strong className="text-[#1F2937] block mb-1">Camera Images</strong>
+                        No relevant camera trap images in the last 2 hours.
+                      </div>
+                      <div>
+                        <strong className="text-[#1F2937] block mb-1">Event History</strong>
+                        <ul className="space-y-2 mt-2 pl-2 border-l-2 border-[#DCE5DC]">
+                          <li className="pl-3 relative before:absolute before:w-1.5 before:h-1.5 before:bg-[var(--green)] before:rounded-full before:-left-[4px] before:top-1.5">
+                            {new Date(alert.createdAt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })} - Alert Created
+                          </li>
+                          {alert.status !== 'NEW' && (
+                            <li className="pl-3 relative before:absolute before:w-1.5 before:h-1.5 before:bg-[var(--green)] before:rounded-full before:-left-[4px] before:top-1.5">
+                              Status updated to {alert.status}
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </details>
+                </div>
+              </div>
+            ))}
+          </div>
         </aside>
 
-        <div style={{ flex: 1, position: 'relative' }}>
-          <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }}>
+        <div className="flex-1 relative bg-[#bad2e3] z-0">
+          <MapContainer center={center} zoom={zoom} className="absolute inset-0 w-full h-full z-0" style={{ height: '100%', width: '100%', zIndex: 0 }}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             
             {collars.map(collar => {
@@ -154,8 +211,8 @@ export function AlertsPage() {
                   center={[collar.location[1], collar.location[0]]}
                   radius={8}
                   pathOptions={{ 
-                    color: isSelected ? 'blue' : 'black', 
-                    fillColor: isSelected ? 'cyan' : 'green', 
+                    color: isSelected ? '#D97706' : '#1F2937', 
+                    fillColor: isSelected ? '#D97706' : '#166534', 
                     fillOpacity: 1, 
                     weight: 2 
                   }}
@@ -176,7 +233,7 @@ export function AlertsPage() {
             {pings.length > 1 && (
               <Polyline 
                 positions={pings.map(p => [p.location[1], p.location[0]])} 
-                pathOptions={{ color: 'blue', weight: 3, dashArray: '5, 10' }} 
+                pathOptions={{ color: '#D97706', weight: 3, dashArray: '5, 10' }} 
               />
             )}
             
@@ -186,7 +243,7 @@ export function AlertsPage() {
                 center={[alert.location![1], alert.location![0]]}
                 radius={12}
                 pathOptions={{ 
-                  color: 'red', 
+                  color: alert.severity === 'CRITICAL' ? '#B91C1C' : alert.severity === 'HIGH' ? '#B45309' : '#1D4ED8', 
                   fillColor: 'transparent', 
                   fillOpacity: 0, 
                   weight: 3,
@@ -205,3 +262,4 @@ export function AlertsPage() {
     </div>
   );
 }
+

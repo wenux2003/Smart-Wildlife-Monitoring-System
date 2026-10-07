@@ -38,6 +38,8 @@ export function createAlertService(repository: AlertRepository) {
         status: DispatchStatus.PENDING,
       });
 
+      await repository.updateAlertStatus(alertId, AlertStatus.DISPATCHED);
+
       return {
         id: dispatch.id,
         alertId: dispatch.alert_id,
