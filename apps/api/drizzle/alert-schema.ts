@@ -74,7 +74,7 @@ export const alertDispatches = pgTable("alert_dispatches", {
   completedAt: timestamp("completed_at", { withTimezone: true }),
 }, (table) => [
   index("alert_dispatches_alert_status_idx").on(table.alertId, table.status),
-  uniqueIndex("alert_dispatches_one_open_per_alert").on(table.alertId).where(sql`${table.status} IN ('PENDING', 'ACCEPTED', 'ARRIVED')`),
+  uniqueIndex("alert_dispatches_one_open_per_alert").on(table.alertId).where(sql`${table.status} IN ('ACCEPTED', 'ARRIVED')`),
 ]);
 
 export const settlements = pgTable("settlements", {
