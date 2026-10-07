@@ -96,8 +96,12 @@ export function App() {
       "/ranger": "Ranger app access",
       "/alerts": "Wildlife alerts",
     };
-    document.title = `${titles[location.pathname] ?? "Page not found"} | Wana Rakshaka`;
-  }, [location.pathname]);
+    const normalizedPath = location.pathname.toLowerCase();
+    const path = normalizedPath.endsWith("/") && normalizedPath !== "/" 
+      ? normalizedPath.slice(0, -1) 
+      : normalizedPath;
+    document.title = `${titles[path] ?? "Page not found"} | Wana Rakshaka`;
+  });
   return (
     <AuthProvider>
       <a href="#main-content" className="skip-link">

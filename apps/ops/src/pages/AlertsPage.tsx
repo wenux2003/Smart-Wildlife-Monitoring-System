@@ -99,8 +99,8 @@ export function AlertsPage() {
           </div>
         </aside>
 
-        <div className="flex-1 relative bg-[#bad2e3] z-0">
-          <MapContainer center={center} zoom={zoom} className="absolute inset-0 w-full h-full z-0" style={{ height: '100%', width: '100%', zIndex: 0 }}>
+        <div className="flex-1 bg-[#bad2e3]" style={{ zIndex: 0, minHeight: 0 }}>
+          <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%', zIndex: 0 }}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             
             {collars.map(collar => {
