@@ -17,6 +17,7 @@ export function MyIncidentsPage() {
   const [queue, setQueue] = useState<OutboxItem[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [view, setView] = useState<"reported" | "assigned">("reported");
   const list = useQuery({
     queryKey: ["m1-incidents", user?.id],
     queryFn: () => incidentRequest<Incident[]>("/api/incidents"),
@@ -86,6 +87,8 @@ export function MyIncidentsPage() {
       capturedAt: string;
       status: string;
       syncStatus: string;
+      assignedTo?: string | null;
+      reporterId?: string | null;
     }
   >();
   for (const item of local)
@@ -99,6 +102,11 @@ export function MyIncidentsPage() {
   const localSelected = local.find((item) => item.id === id);
   const selected = detail.data?.incident ?? localSelected?.serverRecord;
   const payload = selected ?? localSelected?.payload;
+  const visibleRows = [...rows.values()].filter((item) =>
+    view === "assigned"
+      ? Boolean(user && item.assignedTo === user.id)
+      : item.reporterId === undefined || item.reporterId === user?.id,
+  );
   return (
     <main id="main-content" className="m1-page">
       <nav className="m1-nav">
@@ -106,7 +114,25 @@ export function MyIncidentsPage() {
         <Link to="/incidents/report">Report incident</Link>
         <Link to="/incidents">My incidents</Link>
       </nav>
-      <h1>{id ? "My incident" : "My incidents"}</h1>
+      <h1>{id ? "Incident details" : "My incidents"}</h1>
+      {!id && (
+        <div className="m1-tabs" role="group" aria-label="Incident view">
+          <button
+            className="m1-secondary"
+            aria-pressed={view === "reported"}
+            onClick={() => setView("reported")}
+          >
+            My reports
+          </button>
+          <button
+            className="m1-secondary"
+            aria-pressed={view === "assigned"}
+            onClick={() => setView("assigned")}
+          >
+            Assigned to me
+          </button>
+        </div>
+      )}
       <section className="m1-card">
         <p>
           {queue.filter((item) => item.syncStatus !== "SYNCED").length}{" "}
@@ -144,7 +170,7 @@ export function MyIncidentsPage() {
       )}
       {!id ? (
         <section className="m1-grid">
-          {[...rows.values()].map((item) => (
+          {visibleRows.map((item) => (
             <article className="m1-card" key={item.id}>
               <h2>{item.type.replaceAll("_", " ")}</h2>
               <p>
@@ -155,7 +181,7 @@ export function MyIncidentsPage() {
               <Link to={`/incidents/${item.id}`}>View report</Link>
             </article>
           ))}
-          {!rows.size && (
+          {!visibleRows.length && (
             <p>{list.isLoading ? "Loading reports…" : "No reports yet."}</p>
           )}
         </section>
@@ -176,6 +202,21 @@ export function MyIncidentsPage() {
             Status: {selected?.status ?? "NEW"} ·{" "}
             {localSelected?.syncStatus ?? "SYNCED"}
           </p>
+          {selected?.assignedTo === user?.id && (
+            <p className="m1-notice">
+              Assigned to you. Coordinate the response with your park operator.
+            </p>
+          )}
+          {selected?.photoUrl &&
+            !detail.data?.media.some(
+              (media) => media.dataUrl === selected.photoUrl,
+            ) && (
+              <img
+                className="m1-photo"
+                src={selected.photoUrl}
+                alt="Incident evidence"
+              />
+            )}
           {[
             ...(detail.data?.media ?? []).map((m) => ({
               ...m,

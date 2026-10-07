@@ -119,6 +119,16 @@ export function IncidentDetailPage() {
                 </dd>
               </dl>
               {record.outcomeNotes && <p>Outcome: {record.outcomeNotes}</p>}
+              {record.photoUrl &&
+                !query.data!.media.some(
+                  (media) => media.dataUrl === record.photoUrl,
+                ) && (
+                  <img
+                    className="m1-photo"
+                    src={record.photoUrl}
+                    alt="Incident evidence"
+                  />
+                )}
               {query.data!.media.map((media) => (
                 <img
                   key={media.id}

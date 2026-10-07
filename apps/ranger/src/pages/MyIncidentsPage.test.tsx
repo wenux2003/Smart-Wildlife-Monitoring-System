@@ -70,6 +70,67 @@ function show(id?: string) {
   );
 }
 describe("Ranger saved reports and sync feedback", () => {
+  it("shows legacy evidence when the server has no media records", async () => {
+    state.captureOnly = false;
+    const photoUrl = "https://example.org/legacy.jpg";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => ({
+        ok: true,
+        status: 200,
+        json: async () =>
+          url.endsWith(input.id)
+            ? {
+                incident: {
+                  ...input,
+                  photoUrl,
+                  status: "VERIFIED",
+                  reporterId: state.user.id,
+                  assignedTo: null,
+                },
+                media: [],
+                history: [],
+              }
+            : [],
+      })),
+    );
+    show(input.id);
+    expect(await screen.findByAltText("Incident evidence")).toHaveAttribute(
+      "src",
+      photoUrl,
+    );
+  });
+  it("separates assigned community reports from locally captured reports", async () => {
+    state.captureOnly = false;
+    await saveOfflineIncident(incidentDb, state.user.id, input);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        status: 200,
+        json: async () => [
+          {
+            ...input,
+            id: crypto.randomUUID(),
+            description: "Assigned community incident",
+            reporterId: null,
+            assignedTo: state.user.id,
+            status: "VERIFIED",
+          },
+        ],
+      })),
+    );
+    show();
+    await screen.findByText("Saved snare report");
+    fireEvent.click(screen.getByText("Assigned to me"));
+    await screen.findByText("Assigned community incident");
+    expect(screen.queryByText("Saved snare report")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText("My reports"));
+    expect(screen.getByText("Saved snare report")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Assigned community incident"),
+    ).not.toBeInTheDocument();
+  });
   it("restores pending incidents and local photos after reopening", async () => {
     await saveOfflineIncident(incidentDb, state.user.id, input);
     await saveOfflineMedia(incidentDb, state.user.id, input.id, {

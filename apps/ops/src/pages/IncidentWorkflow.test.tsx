@@ -159,6 +159,24 @@ function show(detail = false, communityOnly = false) {
   );
 }
 describe("Ops M1 incident workflow", () => {
+  it("renders a legacy photo and avoids duplicating matching media", async () => {
+    data.incident.photoUrl = "https://example.org/legacy.jpg";
+    show(true);
+    expect(await screen.findByAltText("Incident evidence")).toHaveAttribute(
+      "src",
+      data.incident.photoUrl,
+    );
+    cleanup();
+    data.media.push({
+      id: crypto.randomUUID(),
+      incidentId: id,
+      dataUrl: data.incident.photoUrl,
+      createdAt: data.incident.createdAt,
+    });
+    show(true);
+    await screen.findByAltText("Incident evidence");
+    expect(screen.getAllByAltText("Incident evidence")).toHaveLength(1);
+  });
   it("renders correctly shaped API lists, filters and incident detail links", async () => {
     show();
     await screen.findByText("Open incident");

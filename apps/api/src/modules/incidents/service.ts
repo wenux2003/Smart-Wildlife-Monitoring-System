@@ -57,8 +57,16 @@ export function createIncidentService(
     if (!record) fail("Incident not found.", "INCIDENT_NOT_FOUND", 404);
     role(user, operational);
     access(user, record);
-    if (user.role === Role.RANGER && record.reporterId !== user.id)
-      fail("You can only view your own reports.", "INCIDENT_FORBIDDEN", 403);
+    if (
+      user.role === Role.RANGER &&
+      record.reporterId !== user.id &&
+      record.assignedTo !== user.id
+    )
+      fail(
+        "You can only view your own or assigned reports.",
+        "INCIDENT_FORBIDDEN",
+        403,
+      );
     return record;
   }
   function revision(record: { revision: number }, expected: number) {
@@ -256,7 +264,13 @@ export function createIncidentService(
       id: string,
       input: { id: string; dataUrl: string },
     ) {
-      await load(user, id);
+      const record = await load(user, id);
+      if (user.role === Role.RANGER && record.reporterId !== user.id)
+        fail(
+          "Only the reporting ranger can attach evidence.",
+          "INCIDENT_FORBIDDEN",
+          403,
+        );
       return repository.addMedia({ ...input, incidentId: id });
     },
     async reviewIncident(user: SessionUser, id: string, notes: string) {

@@ -36,7 +36,7 @@ describe.skipIf(!url)(
       await sql.end({ timeout: 3 });
     });
     async function transaction(
-    work: (fixtures: Awaited<ReturnType<typeof context>>) => Promise<void>,
+      work: (fixtures: Awaited<ReturnType<typeof context>>) => Promise<void>,
     ) {
       const rollback = new Error("M1_TEST_ROLLBACK");
       const parkId = randomUUID();
@@ -101,6 +101,29 @@ describe.skipIf(!url)(
         otherRanger,
       };
     }
+    it("reads legacy reviews with original authors and timestamps alongside new history", async () => {
+      await transaction(async (s) => {
+        const incident = await s.service.reportIncident(s.ranger, s.input());
+        const reviewId = randomUUID();
+        const createdAt = "2026-10-06T08:00:00.000Z";
+        await s.tx`INSERT INTO incident_reviews(id, incident_id, reviewer_id, notes, created_at) VALUES(${reviewId}, ${incident.id}, ${s.liaison.id}, 'Legacy review', ${createdAt})`;
+        await s.service.reviewIncident(s.liaison, incident.id, "New review");
+        const detail = IncidentDetailSchema.parse(
+          await s.repository.detail(incident.id),
+        );
+        expect(
+          detail.history.find((event) => event.id === reviewId),
+        ).toMatchObject({
+          actorId: s.liaison.id,
+          createdAt,
+          notes: "Legacy review",
+          eventType: "REVIEW_NOTE",
+        });
+        expect(
+          detail.history.filter((event) => event.eventType === "REVIEW_NOTE"),
+        ).toHaveLength(2);
+      });
+    });
     it("round-trips named coordinates, writes history atomically and preserves newer status on create retry", async () => {
       await transaction(async (s) => {
         const input = s.input();
@@ -195,9 +218,48 @@ describe.skipIf(!url)(
           ),
         ).toHaveLength(1);
         await s.service.reviewIncident(s.liaison, a.id, "Review note");
+        // PostgreSQL now() is constant inside this rollback transaction;
+        // equal timestamps are ordered by ID, not by insertion order.
         expect(
-          (await s.repository.detail(a.id)).history.at(-1)?.eventType,
-        ).toBe("REVIEW_NOTE");
+          (await s.repository.detail(a.id)).history.filter(
+            (event) => event.eventType === "REVIEW_NOTE",
+          ),
+        ).toEqual([
+          expect.objectContaining({
+            notes: "Review note",
+            actorId: s.liaison.id,
+          }),
+        ]);
+      });
+    });
+    it("lists an assigned community incident for its ranger responder", async () => {
+      await transaction(async (s) => {
+        let incident = await s.service.community({
+          id: randomUUID(),
+          parkId: s.parkId,
+          phone: "0771234567",
+          description: "Assigned crop damage",
+          locationText: "Unknown field",
+          type: "CROP_DAMAGE",
+        });
+        expect(await s.repository.list(s.parkId, s.ranger.id)).toEqual([]);
+        incident = await s.service.updateStatus(s.liaison, incident.id, {
+          expectedRevision: 1,
+          status: "VERIFIED",
+        });
+        await s.service.assign(s.liaison, incident.id, {
+          expectedRevision: incident.revision,
+          responderId: s.ranger.id,
+        });
+        expect(
+          (await s.repository.list(s.parkId, s.ranger.id)).map(
+            (record) => record.id,
+          ),
+        ).toEqual([incident.id]);
+        expect(
+          (await s.service.detail(s.ranger, incident.id)).incident.reporterId,
+        ).toBeNull();
+        expect(await s.repository.list(s.otherPark, s.ranger.id)).toEqual([]);
       });
     });
     it("stores raw community messages, landmark resolution and duplicate-safe mock follow-ups", async () => {

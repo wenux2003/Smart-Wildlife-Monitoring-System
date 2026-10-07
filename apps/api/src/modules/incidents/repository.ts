@@ -142,14 +142,20 @@ export function createIncidentRepository(
     },
     async list(parkId, reporterId) {
       return normalize<Incident[]>(
-        await sql`SELECT ${projection} FROM incidents WHERE park_id = ${parkId} ${reporterId ? sql`AND reporter_id = ${reporterId}` : sql``} ORDER BY reported_at DESC LIMIT 500`,
+        await sql`SELECT ${projection} FROM incidents WHERE park_id = ${parkId} ${reporterId ? sql`AND (reporter_id = ${reporterId} OR assigned_to = ${reporterId})` : sql``} ORDER BY reported_at DESC LIMIT 500`,
       );
     },
     get: (id) => get(sql, id),
     async detail(id) {
       const incident = (await get(sql, id))!;
       const history =
-        await sql`SELECT id, incident_id AS "incidentId", actor_id AS "actorId", event_type AS "eventType", old_status AS "oldStatus", new_status AS "newStatus", notes, created_at AS "createdAt" FROM incident_events WHERE incident_id = ${id} ORDER BY created_at, id`;
+        await sql`SELECT id, incident_id AS "incidentId", actor_id AS "actorId", event_type AS "eventType", old_status AS "oldStatus", new_status AS "newStatus", notes, created_at AS "createdAt"
+          FROM (
+            SELECT id, incident_id, actor_id, event_type, old_status, new_status, notes, created_at FROM incident_events WHERE incident_id = ${id}
+            UNION ALL
+            SELECT r.id, r.incident_id, r.reviewer_id, 'REVIEW_NOTE', NULL, NULL, r.notes, r.created_at FROM incident_reviews r
+            WHERE r.incident_id = ${id} AND NOT EXISTS (SELECT 1 FROM incident_events e WHERE e.id = r.id)
+          ) history ORDER BY created_at, id`;
       const media =
         await sql`SELECT id, incident_id AS "incidentId", data_url AS "dataUrl", created_at AS "createdAt" FROM incident_media WHERE incident_id = ${id}`;
       const messages =

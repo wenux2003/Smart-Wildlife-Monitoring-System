@@ -80,6 +80,89 @@ function setup() {
   return { ...state, server, session, ranger, liaison, input, call, create };
 }
 describe("M1 incident API", () => {
+  it.each(["RANGER", "COMMUNITY", "CAMERA_TRAP"] as const)(
+    "delivers assigned %s reports without granting operator or other-park access",
+    async (source) => {
+      const s = setup();
+      const incident = await s.create();
+      Object.assign(s.incidents.get(incident.id)!, {
+        source,
+        reporterId: source === "RANGER" ? s.ranger.id : null,
+        status: "VERIFIED",
+      });
+      const responder = s.session(Role.RANGER);
+      s.responderList.push({ id: responder.id, name: "Responder" });
+      expect(
+        (
+          await s.call("POST", `/incidents/${incident.id}/assign`, {
+            expectedRevision: 1,
+            responderId: responder.id,
+          })
+        ).statusCode,
+      ).toBe(200);
+      expect(
+        (await s.call("GET", "/incidents", undefined, responder.cookie))
+          .json()
+          .map((r: { id: string }) => r.id),
+      ).toContain(incident.id);
+      for (const suffix of ["", "/history", "/reviews"])
+        expect(
+          (
+            await s.call(
+              "GET",
+              `/incidents/${incident.id}${suffix}`,
+              undefined,
+              responder.cookie,
+            )
+          ).statusCode,
+        ).toBe(200);
+      expect(
+        (
+          await s.call(
+            "POST",
+            `/incidents/${incident.id}/media`,
+            { id: randomUUID(), dataUrl: TEST_IMAGE },
+            responder.cookie,
+          )
+        ).statusCode,
+      ).toBe(403);
+      expect(
+        (
+          await s.call(
+            "POST",
+            `/incidents/${incident.id}/response`,
+            { expectedRevision: 2, action: "START" },
+            responder.cookie,
+          )
+        ).statusCode,
+      ).toBe(403);
+      const outsider = s.session(Role.RANGER);
+      expect(
+        (
+          await s.call(
+            "GET",
+            `/incidents/${incident.id}`,
+            undefined,
+            outsider.cookie,
+          )
+        ).statusCode,
+      ).toBe(403);
+      const crossPark = s.session(Role.RANGER, OTHER_PARK, responder.id);
+      expect(
+        (
+          await s.call(
+            "GET",
+            `/incidents/${incident.id}`,
+            undefined,
+            crossPark.cookie,
+          )
+        ).statusCode,
+      ).toBe(403);
+      expect(
+        (await s.call("GET", "/incidents", undefined, crossPark.cookie)).json(),
+      ).toEqual([]);
+    },
+  );
   it("creates a no-photo report with correct coordinates and filters ranger ownership", async () => {
     const s = setup();
     const r = await s.create();

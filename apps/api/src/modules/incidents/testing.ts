@@ -90,7 +90,10 @@ export function incidentMemoryRepository() {
       return copy(
         [...incidents.values()].filter(
           (i) =>
-            i.parkId === parkId && (!reporterId || i.reporterId === reporterId),
+            i.parkId === parkId &&
+            (!reporterId ||
+              i.reporterId === reporterId ||
+              i.assignedTo === reporterId),
         ),
       );
     },
