@@ -836,6 +836,54 @@ input:focus-visible {
   background: #dce3da;
 }
 
+.offline-patrol-warning,
+.waypoint-offline-notice {
+  position: relative;
+  z-index: 500;
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid #e0b486;
+  color: #70411e;
+  background: #fff2df;
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+
+.offline-patrol-warning.is-error {
+  border-color: #d99a94;
+  color: #74241e;
+  background: #fff0ee;
+}
+
+.patrol-sync-status {
+  position: absolute;
+  z-index: 500;
+  top: 1rem;
+  right: 1rem;
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgb(23 62 43 / 18%);
+  border-radius: 0.65rem;
+  color: #4b6256;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 6px 18px rgb(18 47 34 / 12%);
+  font-size: 0.62rem;
+}
+
+.patrol-sync-status strong {
+  color: #173e2b;
+}
+
+.active-patrol-error {
+  margin: 0;
+  padding: 0.7rem 1rem;
+  color: #74241e;
+  background: #fff0ee;
+  font-size: 0.72rem;
+}
+
 .map-unavailable {
   display: grid;
   height: 100%;
@@ -991,6 +1039,10 @@ input:focus-visible {
   display: grid;
   gap: 1.3rem;
   padding: 1.25rem clamp(1rem, 5vw, 1.75rem) max(1.25rem, env(safe-area-inset-bottom));
+}
+
+.waypoint-offline-notice {
+  border-top: 0;
 }
 
 .waypoint-categories {
@@ -1202,6 +1254,109 @@ input:focus-visible {
   color: #66776d;
   background: #dfe5df;
   box-shadow: none;
+}
+
+.patrol-summary-screen {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 1.25rem;
+  background:
+    radial-gradient(circle at 50% 0%, rgb(205 229 211 / 75%), transparent 26rem),
+    #f3f6f1;
+}
+
+.patrol-summary-card {
+  width: min(100%, 34rem);
+  padding: clamp(1.4rem, 6vw, 2.2rem);
+  border: 1px solid #cbd9ce;
+  border-radius: 1.2rem;
+  background: #fff;
+  box-shadow: 0 18px 50px rgb(23 55 42 / 12%);
+  text-align: center;
+}
+
+.patrol-summary-check {
+  display: grid;
+  width: 3.6rem;
+  height: 3.6rem;
+  margin: 0 auto 1rem;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #2d8554;
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.patrol-summary-card h1 {
+  margin: 0;
+  color: #133524;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.8rem, 8vw, 2.6rem);
+  font-weight: 500;
+}
+
+.patrol-summary-route {
+  margin: 0.5rem 0 1.3rem;
+  color: #64776c;
+  font-size: 0.8rem;
+}
+
+.patrol-summary-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid #d4dfd6;
+  border-radius: 0.8rem;
+}
+
+.patrol-summary-metrics span {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.85rem 0.35rem;
+  color: #173e2b;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.patrol-summary-metrics span + span {
+  border-left: 1px solid #d4dfd6;
+}
+
+.patrol-summary-metrics small {
+  color: #728279;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.patrol-summary-sync {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.65rem;
+  color: #52685c;
+  background: #edf4ed;
+  font-size: 0.7rem;
+}
+
+.patrol-summary-sync span {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.patrol-summary-sync strong {
+  color: #1c5c3c;
+}
+
+.patrol-summary-note {
+  margin: 1rem 0 0;
+  color: #64776c;
+  font-size: 0.72rem;
+  line-height: 1.5;
 }
 
 @media (min-width: 768px) {

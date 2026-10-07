@@ -12,10 +12,102 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { App } from "../app/App.js";
 
-function response(
-  body: object,
-  status = 200,
-): Response {
+vi.mock("@wr/offline", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@wr/offline")>();
+  type Session = {
+    id: string;
+    assignmentId: string;
+    rangerId: string;
+    route: Record<string, unknown>;
+    revision: number;
+    status: "ACTIVE" | "COMPLETED";
+    startedAt: string;
+    endedAt: string | null;
+    distanceM: number;
+    durationSeconds: number;
+    syncStatus: "PENDING_SYNC" | "SYNCED";
+    lastSyncError: null;
+  };
+  const sessions = new Map<string, Session>();
+  const gpsLogs: Record<string, unknown>[] = [];
+  const waypoints: Record<string, unknown>[] = [];
+  const listeners = new Set<() => void>();
+  const notify = () => listeners.forEach((listener) => listener());
+  return {
+    ...actual,
+    startOfflinePatrol: vi.fn(async (input) => {
+      const existing = sessions.get(input.assignmentId);
+      if (existing) return existing;
+      const session: Session = {
+        id: "60000000-0000-4000-8000-000000000002",
+        ...input,
+        revision: 1,
+        status: "ACTIVE",
+        startedAt: new Date().toISOString(),
+        endedAt: null,
+        distanceM: 0,
+        durationSeconds: 0,
+        syncStatus: "PENDING_SYNC",
+        lastSyncError: null,
+      };
+      sessions.set(input.assignmentId, session);
+      notify();
+      return session;
+    }),
+    getPatrolByAssignment: vi.fn(async (assignmentId) =>
+      sessions.get(assignmentId),
+    ),
+    getGpsLogs: vi.fn(async (sessionId) =>
+      gpsLogs.filter((item) => item.sessionId === sessionId),
+    ),
+    getWaypoints: vi.fn(async (sessionId) =>
+      waypoints.filter((item) => item.sessionId === sessionId),
+    ),
+    addGpsLog: vi.fn(async (input) => {
+      const point = {
+        ...input,
+        clientRecordId: crypto.randomUUID(),
+        syncStatus: "PENDING_SYNC",
+      };
+      gpsLogs.push(point);
+      notify();
+      return point;
+    }),
+    addWaypoint: vi.fn(async (input) => {
+      const waypoint = {
+        ...input,
+        clientRecordId: crypto.randomUUID(),
+        syncStatus: "PENDING_SYNC",
+      };
+      waypoints.push(waypoint);
+      notify();
+      return waypoint;
+    }),
+    endOfflinePatrol: vi.fn(async (sessionId) => {
+      const session = [...sessions.values()].find(
+        (item) => item.id === sessionId,
+      )!;
+      session.status = "COMPLETED";
+      session.endedAt = new Date().toISOString();
+      notify();
+      return session;
+    }),
+    countPendingPatrolRecords: vi.fn(
+      async () => gpsLogs.length + waypoints.length + sessions.size,
+    ),
+    subscribeToPatrolChanges: vi.fn((listener) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    }),
+    getPendingSyncBundles: vi.fn(async () => []),
+    markPatrolSynced: vi.fn(),
+    markPatrolSyncFailed: vi.fn(),
+  };
+});
+
+function response(body: object, status = 200): Response {
   return {
     ok: status >= 200 && status < 300,
     status,
@@ -44,7 +136,11 @@ function patrolAssignments() {
     description: `${name} patrol route`,
     estimatedDistanceKm: distance,
     version: 1,
-    path: [[81.516, 6.372], [81.523, 6.365], [81.531, 6.359]],
+    path: [
+      [81.516, 6.372],
+      [81.523, 6.365],
+      [81.531, 6.359],
+    ],
   });
   return [
     {
@@ -83,14 +179,57 @@ beforeEach(() => {
   localStorage.clear();
   vi.stubGlobal(
     "fetch",
-    vi.fn().mockResolvedValue(
-      response({ message: "Please sign in to continue." }, 401),
-    ),
+    vi
+      .fn()
+      .mockResolvedValue(
+        response({ message: "Please sign in to continue." }, 401),
+      ),
   );
+});
+
+describe("Merged offline identity access", () => {
+  const cachedUser = () =>
+    rangerUser({
+      id: "33333333-3333-4333-8333-333333333333",
+      parkId: "11111111-1111-4111-8111-111111111111",
+    });
+  it.each(["/", "/incidents"])(
+    "restores local access to %s from the patrol identity cache",
+    async (path) => {
+      localStorage.setItem(
+        "wr:ranger:offline-user",
+        JSON.stringify(cachedUser()),
+      );
+      vi.mocked(fetch).mockRejectedValue(new Error("Offline"));
+      renderApp(path);
+      await screen.findByRole("heading", {
+        name: path === "/" ? "Patrol" : "My incidents",
+      });
+      expect(localStorage.getItem("wr-ranger-capture-identity")).not.toBeNull();
+    },
+  );
+  it("clears both identities when the server rejects the session", async () => {
+    localStorage.setItem(
+      "wr:ranger:offline-user",
+      JSON.stringify(cachedUser()),
+    );
+    localStorage.setItem(
+      "wr-ranger-capture-identity",
+      JSON.stringify({ user: cachedUser(), savedAt: Date.now() }),
+    );
+    renderApp("/");
+    await screen.findByRole("form", { name: "Ranger sign in" });
+    expect(localStorage.getItem("wr:ranger:offline-user")).toBeNull();
+    expect(localStorage.getItem("wr-ranger-capture-identity")).toBeNull();
+  });
 });
 
 afterEach(() => {
   cleanup();
+  Object.defineProperty(navigator, "onLine", {
+    configurable: true,
+    value: true,
+  });
   vi.unstubAllGlobals();
 });
 
@@ -108,12 +247,14 @@ describe("Ranger account access", () => {
       .mockResolvedValueOnce(response(patrolAssignments()));
     fireEvent.submit(screen.getByRole("form", { name: "Ranger sign in" }));
 
-    expect(await screen.findByRole("heading", { name: "Patrol" }))
-      .toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Patrol" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Yala National Park")).toBeInTheDocument();
     expect(screen.getByText("Synced just now")).toBeInTheDocument();
-    expect(await screen.findByRole("button", { name: /Start patrol/i }))
-      .toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: /Start patrol/i }),
+    ).toBeInTheDocument();
     expect(fetch).toHaveBeenCalledWith(
       "/api/auth/login",
       expect.objectContaining({
@@ -133,21 +274,27 @@ describe("Ranger account access", () => {
       .mockResolvedValueOnce(response(patrolAssignments()));
     renderApp("/");
 
-    expect(await screen.findByRole("button", { name: /Start patrol/i }))
-      .toHaveTextContent("Trail 4B");
+    expect(
+      await screen.findByRole("button", { name: /Start patrol/i }),
+    ).toHaveTextContent("Trail 4B");
 
     fireEvent.click(
       screen.getByRole("button", { name: "Select Trail 4C · Southern Ridge" }),
     );
 
-    expect(screen.getByRole("button", { name: /Start patrol/i }))
-      .toHaveTextContent("Trail 4C");
     expect(
-      screen.getByRole("button", { name: "Selected Trail 4C · Southern Ridge" }),
+      screen.getByRole("button", { name: /Start patrol/i }),
+    ).toHaveTextContent("Trail 4C");
+    expect(
+      screen.getByRole("button", {
+        name: "Selected Trail 4C · Southern Ridge",
+      }),
     ).toHaveAttribute("aria-pressed", "true");
 
     fireEvent.click(screen.getByRole("button", { name: /Start patrol/i }));
-    expect(await screen.findByLabelText("Trail 4C patrol map")).toBeInTheDocument();
+    expect(
+      await screen.findByLabelText("Trail 4C patrol map"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Trail 4C · 4.7 km")).toBeInTheDocument();
   });
 
@@ -198,21 +345,42 @@ describe("Ranger account access", () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce(response({ user: rangerUser() }))
       .mockResolvedValueOnce(response(patrolAssignments()));
-    renderApp("/patrol/50000000-0000-4000-8000-000000000001/active");
+    renderApp("/");
 
-    const markWaypoint = await screen.findByRole("button", { name: /Mark waypoint/i });
+    const startPatrol = await screen.findByRole("button", {
+      name: /Start patrol/i,
+    });
+    fireEvent.click(startPatrol);
+
+    const markWaypoint = await screen.findByRole("button", {
+      name: /Mark waypoint/i,
+    });
     await waitFor(() => expect(markWaypoint).toBeEnabled());
+    Object.defineProperty(navigator, "onLine", {
+      configurable: true,
+      value: false,
+    });
+    window.dispatchEvent(new Event("offline"));
+    expect(
+      await screen.findByText("No Internet Connection"),
+    ).toBeInTheDocument();
     fireEvent.click(markWaypoint);
 
-    expect(await screen.findByRole("heading", { name: "New Waypoint" }))
-      .toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "New Waypoint" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/This waypoint will be stored safely/i),
+    ).toBeInTheDocument();
     fireEvent.click(screen.getByLabelText("Sign of wildlife"));
     fireEvent.change(screen.getByLabelText(/Note/i), {
       target: { value: "Fresh elephant tracks near the watering point." },
     });
     fireEvent.click(screen.getByRole("button", { name: "Save waypoint" }));
 
-    expect(await screen.findByLabelText("Trail 4B patrol map")).toBeInTheDocument();
+    expect(
+      await screen.findByLabelText("Trail 4B patrol map"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Waypoints").parentElement).toHaveTextContent("1");
     expect(clearWatch).toHaveBeenCalled();
   });
@@ -252,8 +420,9 @@ describe("Ranger account access", () => {
       screen.getByRole("form", { name: "Change temporary password" }),
     );
 
-    expect(await screen.findByRole("heading", { name: "Patrol" }))
-      .toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Patrol" }),
+    ).toBeInTheDocument();
     expect(fetch).toHaveBeenCalledWith(
       "/api/auth/change-password",
       expect.objectContaining({
@@ -276,11 +445,14 @@ describe("Ranger account access", () => {
       await screen.findByRole("heading", { name: "This app is for rangers." }),
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
-    await waitFor(() => expect(fetch).toHaveBeenLastCalledWith(
-      "/api/auth/logout",
-      expect.objectContaining({ method: "POST" }),
-    ));
-    expect(screen.queryByRole("heading", { name: "Patrol" }))
-      .not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(fetch).toHaveBeenLastCalledWith(
+        "/api/auth/logout",
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+    expect(
+      screen.queryByRole("heading", { name: "Patrol" }),
+    ).not.toBeInTheDocument();
   });
 });

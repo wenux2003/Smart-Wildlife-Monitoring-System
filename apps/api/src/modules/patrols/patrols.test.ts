@@ -53,6 +53,17 @@ function setup(role: Role = Role.RANGER) {
         completed_at: null,
       }];
     },
+    async syncPatrol(rangerId, parkId, payload) {
+      expect(rangerId).toBe(id);
+      expect(parkId).toBe(YALA);
+      return {
+        sessionId: payload.patrolSession.id,
+        clientRevision: payload.patrolSession.clientRevision,
+        syncedGpsRecordIds: payload.gpsLogs.map((point) => point.clientRecordId),
+        syncedWaypointRecordIds: payload.waypoints.map((waypoint) => waypoint.clientRecordId),
+        status: payload.patrolSession.status,
+      };
+    },
   };
   const server = createServer({
     repository: auth.repository,
@@ -100,5 +111,56 @@ describe("ranger patrol assignments", () => {
     });
     expect(response.statusCode).toBe(403);
     expect(response.json().code).toBe("FORBIDDEN");
+  });
+
+  it("syncs a client-generated session and child records as one batch", async () => {
+    const { server, cookie } = setup();
+    const sessionId = "60000000-0000-4000-8000-000000000002";
+    const gpsId = "70000000-0000-4000-8000-000000000001";
+    const waypointId = "80000000-0000-4000-8000-000000000001";
+    const response = await server.inject({
+      method: "POST",
+      url: "/api/patrol-sessions/sync",
+      headers: { cookie },
+      payload: {
+        patrolSession: {
+          id: sessionId,
+          assignmentId: "50000000-0000-4000-8000-000000000001",
+          routeId: "40000000-0000-4000-8000-000000000001",
+          rangerId: "10000000-0000-4000-8000-000000000001",
+          clientRevision: 1,
+          status: "ACTIVE",
+          startedAt: "2026-10-07T10:00:00.000Z",
+          endedAt: null,
+          distanceM: 22,
+          durationSeconds: 300,
+        },
+        gpsLogs: [{
+          clientRecordId: gpsId,
+          latitude: 6.365,
+          longitude: 81.523,
+          accuracyM: 8,
+          recordedAt: "2026-10-07T10:05:00.000Z",
+        }],
+        waypoints: [{
+          clientRecordId: waypointId,
+          category: "WILDLIFE_SIGN",
+          note: "Fresh tracks",
+          photoName: null,
+          latitude: 6.365,
+          longitude: 81.523,
+          accuracyM: 8,
+          observedAt: "2026-10-07T10:05:00.000Z",
+        }],
+      },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({
+      sessionId,
+      clientRevision: 1,
+      syncedGpsRecordIds: [gpsId],
+      syncedWaypointRecordIds: [waypointId],
+      status: "ACTIVE",
+    });
   });
 });

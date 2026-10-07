@@ -37,6 +37,25 @@ type AuthState = {
 };
 
 const AuthContext = createContext<AuthState | null>(null);
+const OFFLINE_USER_KEY = "wr:ranger:offline-user";
+
+function readOfflineUser(): RangerUser | null {
+  try {
+    const stored = localStorage.getItem(OFFLINE_USER_KEY);
+    return stored ? (JSON.parse(stored) as RangerUser) : null;
+  } catch {
+    return null;
+  }
+}
+
+function cacheOfflineUser(user: RangerUser | null) {
+  try {
+    if (user) localStorage.setItem(OFFLINE_USER_KEY, JSON.stringify(user));
+    else localStorage.removeItem(OFFLINE_USER_KEY);
+  } catch {
+    /* Unavailable storage must not interrupt online authentication. */
+  }
+}
 
 async function request(path: string, body?: object) {
   let response: Response;
@@ -49,8 +68,11 @@ async function request(path: string, body?: object) {
       body: body ? JSON.stringify(body) : undefined,
     });
   } catch {
-    throw new Error(
-      "We couldn’t reach the server. Check your connection and try again.",
+    throw Object.assign(
+      new Error(
+        "We couldn’t reach the server. Check your connection and try again.",
+      ),
+      { status: 0 },
     );
   }
   const data =
@@ -79,13 +101,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(current);
       setCaptureOnly(false);
       rememberCaptureIdentity(current);
+      cacheOfflineUser(current);
     } catch (failure) {
       const status = (failure as { status?: number }).status;
       if (status === 401 || status === 403) {
         setUser(null);
         setCaptureOnly(false);
         forgetCaptureIdentity();
+        cacheOfflineUser(null);
       } else {
+        if (!readCaptureIdentity() && status === 0) {
+          const cached = readOfflineUser();
+          if (cached) rememberCaptureIdentity(cached);
+        }
         const remembered = readCaptureIdentity();
         setUser(remembered);
         setCaptureOnly(Boolean(remembered));
@@ -109,6 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(result.user);
     setCaptureOnly(false);
     rememberCaptureIdentity(result.user);
+    cacheOfflineUser(result.user);
     setError("");
   }
 
@@ -117,13 +146,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       currentPassword,
       newPassword,
     });
-    setUser(
-      result.user
-        ? { ...result.user, mustChangePassword: false }
-        : user
-          ? { ...user, mustChangePassword: false }
-          : null,
-    );
+    const nextUser = result.user
+      ? { ...result.user, mustChangePassword: false }
+      : user
+        ? { ...user, mustChangePassword: false }
+        : null;
+    setUser(nextUser);
+    cacheOfflineUser(nextUser);
+    setCaptureOnly(false);
+    if (nextUser) rememberCaptureIdentity(nextUser);
     setError("");
   }
 
@@ -132,6 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setCaptureOnly(false);
     forgetCaptureIdentity();
+    cacheOfflineUser(null);
   }
 
   return (

@@ -82,3 +82,32 @@ export const patrolSessions = pgTable(
   },
   (table) => [index("patrol_sessions_status_idx").on(table.status, table.startedAt)],
 );
+
+export const patrolGpsPoints = pgTable(
+  "patrol_gps_points",
+  {
+    clientRecordId: uuid("client_record_id").primaryKey(),
+    sessionId: uuid("session_id").notNull().references(() => patrolSessions.id, { onDelete: "cascade" }),
+    position: geometry("position", { type: "Point" }).notNull(),
+    accuracyM: doublePrecision("accuracy_m"),
+    recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("patrol_gps_points_session_time_idx").on(table.sessionId, table.recordedAt)],
+);
+
+export const patrolWaypoints = pgTable(
+  "patrol_waypoints",
+  {
+    clientRecordId: uuid("client_record_id").primaryKey(),
+    sessionId: uuid("session_id").notNull().references(() => patrolSessions.id, { onDelete: "cascade" }),
+    category: text("category").notNull(),
+    note: varchar("note", { length: 500 }).notNull().default(""),
+    photoName: varchar("photo_name", { length: 255 }),
+    position: geometry("position", { type: "Point" }).notNull(),
+    accuracyM: doublePrecision("accuracy_m"),
+    observedAt: timestamp("observed_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("patrol_waypoints_session_time_idx").on(table.sessionId, table.observedAt)],
+);

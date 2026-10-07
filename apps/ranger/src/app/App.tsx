@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "../auth/AuthContext.js";
 import { RangerHomePage } from "../HomePage.js";
@@ -6,14 +6,20 @@ import {
   ChangePasswordPage,
   LoadingState,
 } from "../pages/ChangePasswordPage.js";
-import { LoginPage } from "../pages/LoginPage.js";
-import { PatrolMapPage } from "../pages/PatrolMapPage.js";
-import { NewWaypointPage } from "../pages/NewWaypointPage.js";
 import { DispatchesPage } from "../pages/DispatchesPage.js";
+import { LoginPage } from "../pages/LoginPage.js";
+import { NewWaypointPage } from "../pages/NewWaypointPage.js";
+import { PatrolSummaryPage } from "../pages/PatrolSummaryPage.js";
 import { ReportIncidentPage } from "../pages/ReportIncidentPage.js";
 import { MyIncidentsPage } from "../pages/MyIncidentsPage.js";
 import { IncidentSync } from "../components/IncidentSync.js";
 import { CommunityReportPage } from "../pages/CommunityReportPage.js";
+import { PatrolSyncCoordinator } from "./PatrolSyncCoordinator.js";
+
+const PatrolMapPage = lazy(async () => {
+  const module = await import("../pages/PatrolMapPage.js");
+  return { default: module.PatrolMapPage };
+});
 
 function ProtectedRanger({
   children,
@@ -58,6 +64,8 @@ function RangerRoutes() {
       "/": "Patrol",
       "/login": "Ranger sign in",
       "/change-password": "Change password",
+      "/dispatches": "Dispatches",
+      "/incidents/report": "Report incident",
       ...(location.pathname.startsWith("/patrol/")
         ? { [location.pathname]: "Active patrol" }
         : {}),
@@ -77,7 +85,7 @@ function RangerRoutes() {
         <Route
           path="/"
           element={
-            <ProtectedRanger>
+            <ProtectedRanger allowCapture>
               <RangerHomePage />
             </ProtectedRanger>
           }
@@ -85,15 +93,17 @@ function RangerRoutes() {
         <Route
           path="/patrol/:assignmentId/active"
           element={
-            <ProtectedRanger>
-              <PatrolMapPage />
+            <ProtectedRanger allowCapture>
+              <Suspense fallback={<LoadingState />}>
+                <PatrolMapPage />
+              </Suspense>
             </ProtectedRanger>
           }
         />
         <Route
           path="/patrol/:assignmentId/waypoints/new"
           element={
-            <ProtectedRanger>
+            <ProtectedRanger allowCapture>
               <NewWaypointPage />
             </ProtectedRanger>
           }
@@ -130,8 +140,17 @@ function RangerRoutes() {
             </ProtectedRanger>
           }
         />
+        <Route
+          path="/patrol/:assignmentId/summary"
+          element={
+            <ProtectedRanger allowCapture>
+              <PatrolSummaryPage />
+            </ProtectedRanger>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <PatrolSyncCoordinator />
     </>
   );
 }
