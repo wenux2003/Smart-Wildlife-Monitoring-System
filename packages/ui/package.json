@@ -14,6 +14,8 @@
     "react": "^18.3.1"
   },
   "dependencies": {
+    "@fontsource/plus-jakarta-sans": "^5.3.0",
+    "@wr/shared": "workspace:*",
     "leaflet": "^1.9.4",
     "react-leaflet": "^4.2.1"
   },

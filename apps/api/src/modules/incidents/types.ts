@@ -1,23 +1,49 @@
-import type { IncidentStatus } from "@wr/shared";
-
-export type IncidentRecord = {
-  id: string;
-  park_id: string;
-  reporter_id: string | null;
-  type: string;
-  status: IncidentStatus;
-  description: string;
-  location: [number, number] | null;
-  photo_url: string | null;
-  reported_at: Date;
-  created_at: Date;
-  updated_at: Date;
-};
-
-export type IncidentReviewRecord = {
-  id: string;
-  incident_id: string;
-  reviewer_id: string;
-  notes: string;
-  created_at: Date;
-};
+import type {
+  Incident,
+  IncidentEvent,
+  CommunityMessage,
+  CameraImage,
+} from "@wr/shared";
+export type IncidentInsert = Omit<
+  Incident,
+  | "revision"
+  | "photoUrl"
+  | "createdAt"
+  | "updatedAt"
+  | "receivedAt"
+  | "reportedAt"
+  | "assignedTo"
+  | "assignedAt"
+  | "firstResponseAt"
+  | "resolvedAt"
+  | "outcomeNotes"
+> & { creationHash: string };
+export type IncidentChanges = Partial<
+  Pick<
+    Incident,
+    | "status"
+    | "location"
+    | "locationStatus"
+    | "assignedTo"
+    | "assignedAt"
+    | "firstResponseAt"
+    | "resolvedAt"
+    | "outcomeNotes"
+  >
+>;
+export type EventInput = Pick<
+  IncidentEvent,
+  "actorId" | "eventType" | "oldStatus" | "newStatus" | "notes"
+>;
+export type MessageInsert = Omit<
+  CommunityMessage,
+  "createdAt" | "incidentId"
+> & { creationHash: string };
+export type CameraInsert = Omit<
+  CameraImage,
+  | "classification"
+  | "reviewerId"
+  | "reviewedAt"
+  | "resultingIncidentId"
+  | "revision"
+> & { creationHash: string };
