@@ -70,6 +70,14 @@ export class PingProcessor {
           status: AlertStatus.NEW,
           location: ping.location
         });
+
+        // M3.2 Auto-trigger incident creation for severe alerts
+        await this.repository.autoCreateIncident(
+          parkId,
+          'AUTOMATED_ALERT',
+          `Geofence Breach detected for ${collar.animal_name || 'Animal'} (Collar ${collar.id}). Distance: ${distance.toFixed(2)}km from center.`,
+          ping.location
+        );
       }
     }
   }

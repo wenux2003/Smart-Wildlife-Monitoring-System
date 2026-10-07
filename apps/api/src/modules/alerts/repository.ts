@@ -24,6 +24,7 @@ export interface AlertRepository {
   getActiveAlertForCollar(collarId: string, type: string): Promise<AlertRecord | null>;
   getCollarsWithLostSignal(thresholdMinutes: number): Promise<CollarRecord[]>;
   getTimedOutDispatches(timeoutMinutes: number): Promise<AlertDispatchRecord[]>;
+  autoCreateIncident(parkId: string, type: string, description: string, location: [number, number] | null): Promise<void>;
 
   close?(): Promise<void>;
 }
@@ -224,6 +225,20 @@ export function createAlertRepository(url: string): AlertRepository {
         FROM alert_dispatches
         WHERE status IN ('PENDING', 'ACCEPTED')
           AND COALESCE(responded_at, sent_at) < NOW() - interval '1 minute' * ${timeoutMinutes}
+      `;
+    },
+    async autoCreateIncident(parkId, type, description, location) {
+      await sql`
+        INSERT INTO incidents (
+          id, park_id, type, status, description, location
+        ) VALUES (
+          ${randomUUID()},
+          ${parkId},
+          ${type},
+          'NEW',
+          ${description},
+          ${location ? sql`ST_SetSRID(ST_MakePoint(${location[0]}, ${location[1]}), 4326)` : null}
+        )
       `;
     },
     async close() {
