@@ -32,7 +32,7 @@ export async function alertRoutes(
         await service.checkLostSignals();
         await service.checkTimeouts();
       } catch (e) {
-        app.log.error("Error in background alert jobs:", e);
+        app.log.error(e, "Error in background alert jobs:");
       }
     }, 60000); // every minute
 
