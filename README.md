@@ -23,8 +23,9 @@ Malabe). Reviewed design: Group 39.
 | Server-side access checks (`app.authorize()`, `assertParkAccess()`) | ✅ Done |
 | Migrations, seed, demo accounts and required CI checks on `main` | ✅ Done |
 | Ranger patrol route/assignment database, authenticated API and assignment UI (M2 foundation) | ✅ Done |
-| Patrol start/GPS/waypoints/sync, incidents (M1), alerts (M3), analytics and reports (M4) | ⏳ Not started |
-| Offline storage and sync, shared map, simulator tools | ⏳ Not started |
+| Ranger patrol start/GPS/waypoints/end and idempotent sync (M2) | ✅ Done |
+| Patrol offline storage/recovery and shared patrol map | ✅ Done |
+| Incidents (M1), patrol coverage/manager tools, alerts (M3), analytics and reports (M4) | ⏳ Not started |
 
 Details: [web authentication](./docs/web-auth.md), [user groups](./docs/User_groups.md)
 and [demo accounts](./docs/Demo_Accounts.md).
@@ -251,8 +252,9 @@ park's access for Researchers.
 When creating an account or resetting its password, the administrator enters a
 temporary password of 12–128 characters and gives it to the user directly.
 There is no email delivery. At the user's first sign-in, Ops or Ranger requires
-them to choose a different password before proceeding. Ranger sign-in requires
-an internet connection; offline authentication is not supported. Deactivated
+them to choose a different password before proceeding. Initial Ranger sign-in
+requires an internet connection; a previously authenticated Ranger can resume
+an IndexedDB-backed active patrol after an offline reload. Deactivated
 accounts are not deleted, and their existing sessions are revoked immediately.
 
 **Common seed messages**

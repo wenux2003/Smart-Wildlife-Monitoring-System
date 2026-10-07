@@ -12,6 +12,79 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { App } from "../app/App.js";
 
+vi.mock("@wr/offline", () => {
+  type Session = {
+    id: string;
+    assignmentId: string;
+    rangerId: string;
+    route: Record<string, unknown>;
+    revision: number;
+    status: "ACTIVE" | "COMPLETED";
+    startedAt: string;
+    endedAt: string | null;
+    distanceM: number;
+    durationSeconds: number;
+    syncStatus: "PENDING_SYNC" | "SYNCED";
+    lastSyncError: null;
+  };
+  const sessions = new Map<string, Session>();
+  const gpsLogs: Record<string, unknown>[] = [];
+  const waypoints: Record<string, unknown>[] = [];
+  const listeners = new Set<() => void>();
+  const notify = () => listeners.forEach((listener) => listener());
+  return {
+    startOfflinePatrol: vi.fn(async (input) => {
+      const existing = sessions.get(input.assignmentId);
+      if (existing) return existing;
+      const session: Session = {
+        id: "60000000-0000-4000-8000-000000000002",
+        ...input,
+        revision: 1,
+        status: "ACTIVE",
+        startedAt: new Date().toISOString(),
+        endedAt: null,
+        distanceM: 0,
+        durationSeconds: 0,
+        syncStatus: "PENDING_SYNC",
+        lastSyncError: null,
+      };
+      sessions.set(input.assignmentId, session);
+      notify();
+      return session;
+    }),
+    getPatrolByAssignment: vi.fn(async (assignmentId) => sessions.get(assignmentId)),
+    getGpsLogs: vi.fn(async (sessionId) => gpsLogs.filter((item) => item.sessionId === sessionId)),
+    getWaypoints: vi.fn(async (sessionId) => waypoints.filter((item) => item.sessionId === sessionId)),
+    addGpsLog: vi.fn(async (input) => {
+      const point = { ...input, clientRecordId: crypto.randomUUID(), syncStatus: "PENDING_SYNC" };
+      gpsLogs.push(point);
+      notify();
+      return point;
+    }),
+    addWaypoint: vi.fn(async (input) => {
+      const waypoint = { ...input, clientRecordId: crypto.randomUUID(), syncStatus: "PENDING_SYNC" };
+      waypoints.push(waypoint);
+      notify();
+      return waypoint;
+    }),
+    endOfflinePatrol: vi.fn(async (sessionId) => {
+      const session = [...sessions.values()].find((item) => item.id === sessionId)!;
+      session.status = "COMPLETED";
+      session.endedAt = new Date().toISOString();
+      notify();
+      return session;
+    }),
+    countPendingPatrolRecords: vi.fn(async () => gpsLogs.length + waypoints.length + sessions.size),
+    subscribeToPatrolChanges: vi.fn((listener) => {
+      listeners.add(listener);
+      return () => { listeners.delete(listener); };
+    }),
+    getPendingSyncBundles: vi.fn(async () => []),
+    markPatrolSynced: vi.fn(),
+    markPatrolSyncFailed: vi.fn(),
+  };
+});
+
 function response(
   body: object,
   status = 200,
@@ -91,6 +164,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  Object.defineProperty(navigator, "onLine", { configurable: true, value: true });
   vi.unstubAllGlobals();
 });
 
@@ -198,14 +272,21 @@ describe("Ranger account access", () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce(response({ user: rangerUser() }))
       .mockResolvedValueOnce(response(patrolAssignments()));
-    renderApp("/patrol/50000000-0000-4000-8000-000000000001/active");
+    renderApp("/");
+
+    const startPatrol = await screen.findByRole("button", { name: /Start patrol/i });
+    fireEvent.click(startPatrol);
 
     const markWaypoint = await screen.findByRole("button", { name: /Mark waypoint/i });
     await waitFor(() => expect(markWaypoint).toBeEnabled());
+    Object.defineProperty(navigator, "onLine", { configurable: true, value: false });
+    window.dispatchEvent(new Event("offline"));
+    expect(await screen.findByText("No Internet Connection")).toBeInTheDocument();
     fireEvent.click(markWaypoint);
 
     expect(await screen.findByRole("heading", { name: "New Waypoint" }))
       .toBeInTheDocument();
+    expect(screen.getByText(/This waypoint will be stored safely/i)).toBeInTheDocument();
     fireEvent.click(screen.getByLabelText("Sign of wildlife"));
     fireEvent.change(screen.getByLabelText(/Note/i), {
       target: { value: "Fresh elephant tracks near the watering point." },

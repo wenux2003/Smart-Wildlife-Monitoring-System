@@ -14,6 +14,7 @@ export type LongitudeLatitude = readonly [longitude: number, latitude: number];
 type PatrolMapProps = {
   routePath: readonly LongitudeLatitude[];
   currentPosition?: LongitudeLatitude;
+  trackedPositions?: readonly LongitudeLatitude[];
   waypointPositions?: readonly LongitudeLatitude[];
   className?: string;
 };
@@ -43,6 +44,7 @@ function FitPatrolBounds({
 export function PatrolMap({
   routePath,
   currentPosition,
+  trackedPositions = [],
   waypointPositions = [],
   className,
 }: PatrolMapProps) {
@@ -63,6 +65,12 @@ export function PatrolMap({
       />
       {line.length > 1 && (
         <Polyline positions={line} pathOptions={{ color: "#173e2b", weight: 6 }} />
+      )}
+      {trackedPositions.length > 1 && (
+        <Polyline
+          positions={trackedPositions.map(toLeafletPosition)}
+          pathOptions={{ color: "#2477d4", weight: 5, opacity: 0.9 }}
+        />
       )}
       {routePath[0] && (
         <CircleMarker

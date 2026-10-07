@@ -17,7 +17,7 @@
     "dev:all": "corepack pnpm --parallel --filter @wr/api --filter @wr/ranger --filter @wr/ops dev",
     "build": "corepack pnpm -r build",
     "test": "vitest run",
-    "typecheck": "tsc -b packages/shared packages/ui && corepack pnpm -r typecheck",
+    "typecheck": "tsc -b packages/shared packages/ui packages/offline && corepack pnpm -r typecheck",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

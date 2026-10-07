@@ -1,31 +1,38 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { WaypointCategory, type WaypointCategory as WaypointCategoryValue } from "@wr/shared";
 import {
-  savePatrolWaypoint,
-  waypointCategories,
-  type WaypointCategory,
-} from "../lib/patrolWaypoints.js";
+  addWaypoint,
+  getPatrolByAssignment,
+  type OfflinePatrolSession,
+} from "@wr/offline";
+import { useNavigate, useParams } from "react-router-dom";
 import { useGpsPosition } from "../lib/useGpsPosition.js";
+import { useNetworkStatus } from "../lib/useNetworkStatus.js";
+
+const categories: readonly { value: WaypointCategoryValue; label: string }[] = [
+  { value: WaypointCategory.WILDLIFE_SIGN, label: "Sign of wildlife" },
+  { value: WaypointCategory.HAZARD_SNARE, label: "Hazard / snare" },
+  { value: WaypointCategory.TRAIL_MARKER, label: "Trail marker" },
+  { value: WaypointCategory.OTHER, label: "Other" },
+];
 
 export function NewWaypointPage() {
   const { assignmentId } = useParams();
   const navigate = useNavigate();
   const gps = useGpsPosition();
-  const [online, setOnline] = useState(() => navigator.onLine);
-  const [category, setCategory] = useState<WaypointCategory>();
+  const network = useNetworkStatus();
+  const [session, setSession] = useState<OfflinePatrolSession>();
+  const [category, setCategory] = useState<WaypointCategoryValue>();
   const [note, setNote] = useState("");
   const [photo, setPhoto] = useState<File>();
   const [photoPreview, setPhotoPreview] = useState<string>();
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const updateConnection = () => setOnline(navigator.onLine);
-    window.addEventListener("online", updateConnection);
-    window.addEventListener("offline", updateConnection);
-    return () => {
-      window.removeEventListener("online", updateConnection);
-      window.removeEventListener("offline", updateConnection);
-    };
-  }, []);
+    if (assignmentId)
+      void getPatrolByAssignment(assignmentId).then(setSession);
+  }, [assignmentId]);
 
   useEffect(() => () => {
     if (photoPreview) URL.revokeObjectURL(photoPreview);
@@ -38,21 +45,29 @@ export function NewWaypointPage() {
     setPhotoPreview(nextPhoto ? URL.createObjectURL(nextPhoto) : undefined);
   }
 
-  function save(event: FormEvent) {
+  async function save(event: FormEvent) {
     event.preventDefault();
-    if (!assignmentId || !category || gps.status !== "ready") return;
-
-    savePatrolWaypoint({
-      id: crypto.randomUUID(),
-      assignmentId,
-      category,
-      note: note.trim(),
-      photoName: photo?.name ?? null,
-      position: gps.position,
-      accuracyM: gps.accuracy,
-      observedAt: new Date().toISOString(),
-    });
-    navigate(`/patrol/${assignmentId}/active`, { replace: true });
+    if (!session || !category || gps.status !== "ready") return;
+    setSaving(true);
+    setError("");
+    try {
+      await addWaypoint({
+        sessionId: session.id,
+        category,
+        note: note.trim(),
+        photoName: photo?.name ?? null,
+        photo,
+        longitude: gps.position[0],
+        latitude: gps.position[1],
+        accuracyM: gps.accuracy,
+        observedAt: new Date(gps.timestamp).toISOString(),
+      });
+      navigate(`/patrol/${session.assignmentId}/active`, { replace: true });
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : "The waypoint could not be saved.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   const gpsMessage = gps.status === "ready"
@@ -72,26 +87,32 @@ export function NewWaypointPage() {
         <p className="patrol-kicker">FIELD OBSERVATION</p>
         <h1>New Waypoint</h1>
         <div className="waypoint-status-row">
-          <span className={online ? "is-online" : "is-offline"}>
-            {online ? "Online · saves locally" : "Offline · saves locally"}
+          <span className={network === "ONLINE" ? "is-online" : "is-offline"}>
+            {network === "ONLINE" ? "Online" : "Offline · saves locally"}
           </span>
           <span className={gps.status === "ready" ? "is-ready" : "is-waiting"}>{gpsMessage}</span>
         </div>
       </header>
 
-      <form className="waypoint-form" aria-label="New waypoint" onSubmit={save}>
+      {network === "OFFLINE" && (
+        <aside className="waypoint-offline-notice" role="status">
+          No Internet Connection. This waypoint will be stored safely and synchronized later.
+        </aside>
+      )}
+
+      <form className="waypoint-form" aria-label="New waypoint" onSubmit={(event) => void save(event)}>
         <fieldset className="waypoint-categories">
           <legend>Observation type</legend>
-          {waypointCategories.map((option) => (
-            <label key={option} className={category === option ? "is-selected" : ""}>
+          {categories.map((option) => (
+            <label key={option.value} className={category === option.value ? "is-selected" : ""}>
               <input
                 type="radio"
                 name="waypoint-category"
-                value={option}
-                checked={category === option}
-                onChange={() => setCategory(option)}
+                value={option.value}
+                checked={category === option.value}
+                onChange={() => setCategory(option.value)}
               />
-              <span>{option}</span>
+              <span>{option.label}</span>
             </label>
           ))}
         </fieldset>
@@ -124,16 +145,17 @@ export function NewWaypointPage() {
 
         {gps.status === "unavailable" && (
           <p className="waypoint-gps-warning" role="alert">
-            A valid GPS position is required. Enable location access and try again.
+            A valid GPS position is required. Network access is not required.
           </p>
         )}
+        {error && <p className="waypoint-gps-warning" role="alert">{error}</p>}
 
         <button
           className="save-waypoint-button"
           type="submit"
-          disabled={!category || gps.status !== "ready"}
+          disabled={!session || !category || gps.status !== "ready" || saving}
         >
-          Save waypoint
+          {saving ? "Saving safely…" : "Save waypoint"}
         </button>
       </form>
     </main>
