@@ -7,6 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      workbox: { globPatterns: ["**/*.{js,css,html,woff2}"] },
       manifest: {
         name: "Wildlife Guardian",
         short_name: "Wildlife",

@@ -88,16 +88,23 @@ export async function startOfflinePatrol(input: {
   rangerId: string;
   route: OfflineRouteSnapshot;
 }): Promise<OfflinePatrolSession> {
-  const existing = await db.sessions.where("assignmentId").equals(input.assignmentId).first();
+  const existing = await db.sessions
+    .where("assignmentId")
+    .equals(input.assignmentId)
+    .first();
   if (existing) {
     if (existing.status === SessionStatus.ACTIVE) return existing;
-    throw new Error("This patrol is already complete and waiting to synchronize.");
+    throw new Error(
+      "This patrol is already complete and waiting to synchronize.",
+    );
   }
   const active = await db.sessions
-    .where("rangerId").equals(input.rangerId)
+    .where("rangerId")
+    .equals(input.rangerId)
     .and((session) => session.status === SessionStatus.ACTIVE)
     .first();
-  if (active) throw new Error("Finish the active patrol before starting another route.");
+  if (active)
+    throw new Error("Finish the active patrol before starting another route.");
 
   const session: OfflinePatrolSession = {
     id: crypto.randomUUID(),
@@ -127,7 +134,9 @@ export const getGpsLogs = (sessionId: string) =>
 export const getWaypoints = (sessionId: string) =>
   db.waypoints.where("sessionId").equals(sessionId).sortBy("observedAt");
 
-export async function addGpsLog(input: Omit<OfflineGpsLog, "clientRecordId" | "syncStatus">) {
+export async function addGpsLog(
+  input: Omit<OfflineGpsLog, "clientRecordId" | "syncStatus">,
+) {
   const point: OfflineGpsLog = {
     ...input,
     clientRecordId: crypto.randomUUID(),
@@ -146,7 +155,9 @@ export async function addGpsLog(input: Omit<OfflineGpsLog, "clientRecordId" | "s
   return point;
 }
 
-export async function addWaypoint(input: Omit<OfflineWaypoint, "clientRecordId" | "syncStatus">) {
+export async function addWaypoint(
+  input: Omit<OfflineWaypoint, "clientRecordId" | "syncStatus">,
+) {
   const waypoint: OfflineWaypoint = {
     ...input,
     clientRecordId: crypto.randomUUID(),
@@ -165,18 +176,22 @@ export async function addWaypoint(input: Omit<OfflineWaypoint, "clientRecordId" 
   return waypoint;
 }
 
-const toRadians = (degrees: number) => degrees * Math.PI / 180;
+const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
-export function calculateTrackDistanceM(points: readonly Pick<OfflineGpsLog, "latitude" | "longitude">[]) {
+export function calculateTrackDistanceM(
+  points: readonly Pick<OfflineGpsLog, "latitude" | "longitude">[],
+) {
   let distance = 0;
   for (let index = 1; index < points.length; index += 1) {
     const previous = points[index - 1]!;
     const current = points[index]!;
     const deltaLatitude = toRadians(current.latitude - previous.latitude);
     const deltaLongitude = toRadians(current.longitude - previous.longitude);
-    const a = Math.sin(deltaLatitude / 2) ** 2
-      + Math.cos(toRadians(previous.latitude)) * Math.cos(toRadians(current.latitude))
-      * Math.sin(deltaLongitude / 2) ** 2;
+    const a =
+      Math.sin(deltaLatitude / 2) ** 2 +
+      Math.cos(toRadians(previous.latitude)) *
+        Math.cos(toRadians(current.latitude)) *
+        Math.sin(deltaLongitude / 2) ** 2;
     distance += 6_371_000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
   return distance;
@@ -193,9 +208,12 @@ export async function endOfflinePatrol(sessionId: string) {
     status: SessionStatus.COMPLETED,
     endedAt: endedAt.toISOString(),
     distanceM: calculateTrackDistanceM(points),
-    durationSeconds: Math.max(0, Math.round(
-      (endedAt.getTime() - new Date(session.startedAt).getTime()) / 1000,
-    )),
+    durationSeconds: Math.max(
+      0,
+      Math.round(
+        (endedAt.getTime() - new Date(session.startedAt).getTime()) / 1000,
+      ),
+    ),
     syncStatus: SyncStatus.PENDING_SYNC,
     lastSyncError: null,
   };
@@ -204,86 +222,140 @@ export async function endOfflinePatrol(sessionId: string) {
   return { ...session, ...completed } as OfflinePatrolSession;
 }
 
-export async function getPendingSyncBundles(rangerId?: string): Promise<PatrolSyncRequest[]> {
+export async function getPendingSyncBundles(
+  rangerId?: string,
+): Promise<PatrolSyncRequest[]> {
   const sessions = await db.sessions
-    .filter((session) =>
-      session.syncStatus !== SyncStatus.SYNCED
-      && (!rangerId || session.rangerId === rangerId),
+    .filter(
+      (session) =>
+        session.syncStatus !== SyncStatus.SYNCED &&
+        (!rangerId || session.rangerId === rangerId),
     )
     .toArray();
-  const bundles = await Promise.all(sessions.map(async (session) => {
-    const [gpsLogs, waypoints] = await Promise.all([
-      getGpsLogs(session.id),
-      getWaypoints(session.id),
-    ]);
-    const pendingGps = gpsLogs.filter((point) => point.syncStatus !== SyncStatus.SYNCED);
-    const pendingWaypoints = waypoints.filter(
-      (waypoint) => waypoint.syncStatus !== SyncStatus.SYNCED,
-    );
-    const batchCount = Math.max(
-      1,
-      Math.ceil(pendingGps.length / 500),
-      Math.ceil(pendingWaypoints.length / 100),
-    );
-    const patrolSession = {
-      id: session.id,
-      assignmentId: session.assignmentId,
-      routeId: session.route.id,
-      rangerId: session.rangerId,
-      clientRevision: session.revision,
-      status: session.status,
-      startedAt: session.startedAt,
-      endedAt: session.endedAt,
-      distanceM: session.distanceM,
-      durationSeconds: session.durationSeconds,
-    };
-    // The session accompanies every child batch so a retry remains standalone.
-    return Array.from({ length: batchCount }, (_, batchIndex) => ({
-      patrolSession,
-      gpsLogs: pendingGps
-        .slice(batchIndex * 500, (batchIndex + 1) * 500)
-        .map(({ clientRecordId, latitude, longitude, accuracyM, recordedAt }) => ({
-          clientRecordId, latitude, longitude, accuracyM, recordedAt,
-        })),
-      waypoints: pendingWaypoints
-        .slice(batchIndex * 100, (batchIndex + 1) * 100)
-        .map(({ clientRecordId, category, note, photoName, latitude, longitude, accuracyM, observedAt }) => ({
-          clientRecordId, category, note, photoName, latitude, longitude, accuracyM, observedAt,
-        })),
-    } satisfies PatrolSyncRequest));
-  }));
+  const bundles = await Promise.all(
+    sessions.map(async (session) => {
+      const [gpsLogs, waypoints] = await Promise.all([
+        getGpsLogs(session.id),
+        getWaypoints(session.id),
+      ]);
+      const pendingGps = gpsLogs.filter(
+        (point) => point.syncStatus !== SyncStatus.SYNCED,
+      );
+      const pendingWaypoints = waypoints.filter(
+        (waypoint) => waypoint.syncStatus !== SyncStatus.SYNCED,
+      );
+      const batchCount = Math.max(
+        1,
+        Math.ceil(pendingGps.length / 500),
+        Math.ceil(pendingWaypoints.length / 100),
+      );
+      const patrolSession = {
+        id: session.id,
+        assignmentId: session.assignmentId,
+        routeId: session.route.id,
+        rangerId: session.rangerId,
+        clientRevision: session.revision,
+        status: session.status,
+        startedAt: session.startedAt,
+        endedAt: session.endedAt,
+        distanceM: session.distanceM,
+        durationSeconds: session.durationSeconds,
+      };
+      // The session accompanies every child batch so a retry remains standalone.
+      return Array.from(
+        { length: batchCount },
+        (_, batchIndex) =>
+          ({
+            patrolSession,
+            gpsLogs: pendingGps
+              .slice(batchIndex * 500, (batchIndex + 1) * 500)
+              .map(
+                ({
+                  clientRecordId,
+                  latitude,
+                  longitude,
+                  accuracyM,
+                  recordedAt,
+                }) => ({
+                  clientRecordId,
+                  latitude,
+                  longitude,
+                  accuracyM,
+                  recordedAt,
+                }),
+              ),
+            waypoints: pendingWaypoints
+              .slice(batchIndex * 100, (batchIndex + 1) * 100)
+              .map(
+                ({
+                  clientRecordId,
+                  category,
+                  note,
+                  photoName,
+                  latitude,
+                  longitude,
+                  accuracyM,
+                  observedAt,
+                }) => ({
+                  clientRecordId,
+                  category,
+                  note,
+                  photoName,
+                  latitude,
+                  longitude,
+                  accuracyM,
+                  observedAt,
+                }),
+              ),
+          }) satisfies PatrolSyncRequest,
+      );
+    }),
+  );
   return bundles.flat();
 }
 
 export async function markPatrolSynced(result: PatrolSyncResponse) {
-  await db.transaction("rw", db.sessions, db.gpsLogs, db.waypoints, async () => {
-    await db.gpsLogs.bulkUpdate(result.syncedGpsRecordIds.map((clientRecordId) => ({
-      key: clientRecordId,
-      changes: { syncStatus: SyncStatus.SYNCED },
-    })));
-    await db.waypoints.bulkUpdate(result.syncedWaypointRecordIds.map((clientRecordId) => ({
-      key: clientRecordId,
-      changes: { syncStatus: SyncStatus.SYNCED },
-    })));
-    const session = await db.sessions.get(result.sessionId);
-    if (session) {
-      const pendingChildren = await db.gpsLogs
-        .where("sessionId").equals(result.sessionId)
-        .and((item) => item.syncStatus !== SyncStatus.SYNCED)
-        .count()
-        + await db.waypoints
-          .where("sessionId").equals(result.sessionId)
-          .and((item) => item.syncStatus !== SyncStatus.SYNCED)
-          .count();
-      await db.sessions.update(result.sessionId, {
-        syncStatus:
-          session.revision === result.clientRevision && pendingChildren === 0
-            ? SyncStatus.SYNCED
-            : SyncStatus.PENDING_SYNC,
-        lastSyncError: null,
-      });
-    }
-  });
+  await db.transaction(
+    "rw",
+    db.sessions,
+    db.gpsLogs,
+    db.waypoints,
+    async () => {
+      await db.gpsLogs.bulkUpdate(
+        result.syncedGpsRecordIds.map((clientRecordId) => ({
+          key: clientRecordId,
+          changes: { syncStatus: SyncStatus.SYNCED },
+        })),
+      );
+      await db.waypoints.bulkUpdate(
+        result.syncedWaypointRecordIds.map((clientRecordId) => ({
+          key: clientRecordId,
+          changes: { syncStatus: SyncStatus.SYNCED },
+        })),
+      );
+      const session = await db.sessions.get(result.sessionId);
+      if (session) {
+        const pendingChildren =
+          (await db.gpsLogs
+            .where("sessionId")
+            .equals(result.sessionId)
+            .and((item) => item.syncStatus !== SyncStatus.SYNCED)
+            .count()) +
+          (await db.waypoints
+            .where("sessionId")
+            .equals(result.sessionId)
+            .and((item) => item.syncStatus !== SyncStatus.SYNCED)
+            .count());
+        await db.sessions.update(result.sessionId, {
+          syncStatus:
+            session.revision === result.clientRevision && pendingChildren === 0
+              ? SyncStatus.SYNCED
+              : SyncStatus.PENDING_SYNC,
+          lastSyncError: null,
+        });
+      }
+    },
+  );
   notify();
 }
 
@@ -302,15 +374,28 @@ export async function countPendingPatrolRecords(rangerId?: string) {
       .primaryKeys()) as string[],
   );
   const [sessions, gpsLogs, waypoints] = await Promise.all([
-    db.sessions.filter((item) =>
-      item.syncStatus !== SyncStatus.SYNCED && sessionIds.has(item.id),
-    ).count(),
-    db.gpsLogs.filter((item) =>
-      item.syncStatus !== SyncStatus.SYNCED && sessionIds.has(item.sessionId),
-    ).count(),
-    db.waypoints.filter((item) =>
-      item.syncStatus !== SyncStatus.SYNCED && sessionIds.has(item.sessionId),
-    ).count(),
+    db.sessions
+      .filter(
+        (item) =>
+          item.syncStatus !== SyncStatus.SYNCED && sessionIds.has(item.id),
+      )
+      .count(),
+    db.gpsLogs
+      .filter(
+        (item) =>
+          item.syncStatus !== SyncStatus.SYNCED &&
+          sessionIds.has(item.sessionId),
+      )
+      .count(),
+    db.waypoints
+      .filter(
+        (item) =>
+          item.syncStatus !== SyncStatus.SYNCED &&
+          sessionIds.has(item.sessionId),
+      )
+      .count(),
   ]);
   return sessions + gpsLogs + waypoints;
 }
+
+export * from "./incidents.js";

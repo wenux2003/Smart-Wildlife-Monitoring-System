@@ -134,8 +134,9 @@ export function createServer(authOptions: ServerOptions = {}) {
   server.register(incidentRoutes, {
     prefix: "/api",
     repository: incidentRepository,
+    clock: authOptions.clock,
   });
-  
+
   if (analyticsRepository) {
     const analyticsService = new AnalyticsService(analyticsRepository);
     server.register(analyticsRoutes(analyticsService), {
