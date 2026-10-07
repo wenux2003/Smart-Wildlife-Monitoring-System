@@ -258,6 +258,7 @@ export function RangerHomePage() {
             </div>
             <nav className="patrol-menu-links" aria-label="Ranger tools">
               <Link to="/incidents/report">Report incident</Link>
+              <Link to="/incidents">My incidents / sync</Link>
               <Link to="/dispatches">View dispatches</Link>
             </nav>
             <button
