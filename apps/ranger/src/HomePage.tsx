@@ -232,7 +232,6 @@ export function RangerHomePage() {
                 : `${patrolAssignments.length} ${patrolAssignments.length === 1 ? "route" : "routes"}`}
             </span>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <Link to="/incidents/report" className="button" style={{ fontSize: '14px', textDecoration: 'underline' }}>Report Incident</Link>
               <Link to="/dispatches" className="button" style={{ fontSize: '14px', textDecoration: 'underline' }}>View Dispatches</Link>
             </div>
           </div>

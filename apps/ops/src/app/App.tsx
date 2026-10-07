@@ -11,8 +11,7 @@ import { StaffPage } from "../pages/StaffPage.js";
 import { ChangePasswordPage } from "../pages/ChangePasswordPage.js";
 import { AccessDeniedPage } from "../pages/AccessDeniedPage.js";
 import { AlertsPage } from "../pages/AlertsPage.js";
-import { IncidentsPage } from "../pages/IncidentsPage.js";
-import { AnalyticsPage } from "../pages/AnalyticsPage.js";
+
 import { AccountHeader } from "../components/AccountHeader.js";
 
 type RoleName = "SUPER_ADMIN" | "PARK_MANAGER" | "RANGER" | "LIAISON_OFFICER" | "RESEARCHER";
@@ -116,8 +115,7 @@ export function App() {
         <Route path="/admin" element={<RoleRoute roles={["SUPER_ADMIN"]}><AdminPage /></RoleRoute>} />
         <Route path="/staff" element={<RoleRoute roles={["PARK_MANAGER"]}><StaffPage /></RoleRoute>} />
         <Route path="/alerts" element={<RoleRoute roles={["PARK_MANAGER", "LIAISON_OFFICER"]}><AlertsPage /></RoleRoute>} />
-        <Route path="/incidents" element={<RoleRoute roles={["PARK_MANAGER", "LIAISON_OFFICER", "RESEARCHER"]}><IncidentsPage /></RoleRoute>} />
-        <Route path="/analytics" element={<RoleRoute roles={["PARK_MANAGER", "LIAISON_OFFICER", "RESEARCHER"]}><AnalyticsPage /></RoleRoute>} />
+
         <Route path="/ranger" element={<RoleRoute roles={["RANGER"]}><RangerNoticePage /></RoleRoute>} />
         <Route path="/change-password" element={<AnySignedInRoute><ChangePasswordPage /></AnySignedInRoute>} />
         <Route path="/access-denied" element={<AnySignedInRoute><AccessDeniedPage /></AnySignedInRoute>} />

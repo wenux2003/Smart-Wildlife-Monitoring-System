@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { AlertListSchema, AlertSchema, AlertDispatchSchema, AlertDispatchListSchema, Role } from "@wr/shared";
+import { AlertListSchema, AlertSchema, AlertDispatchSchema, AlertDispatchListSchema, CollarListSchema, CollarPingListSchema, Role, AlertContextSchema, RangerDistanceSchema } from "@wr/shared";
 import { AppError } from "../../core/errors.js";
 import type { AlertRepository } from "./repository.js";
 import { createAlertService } from "./service.js";
@@ -27,20 +27,23 @@ export async function alertRoutes(
   };
 
   if (service) {
-    const interval = setInterval(async () => {
-      try {
-        await service.checkLostSignals();
-        await service.checkTimeouts();
-      } catch (e) {
-        app.log.error(e, "Error in background alert jobs:");
-      }
-    }, 60000); // every minute
+    // Isolate each job so one failure does not prevent the other from running (M3-5)
+    const interval = setInterval(() => {
+      service.checkLostSignals().catch((e: unknown) =>
+        app.log.error(e, "checkLostSignals failed:")
+      );
+      service.checkTimeouts().catch((e: unknown) =>
+        app.log.error(e, "checkTimeouts failed:")
+      );
+    }, 60_000); // every minute
 
     app.addHook("onClose", (instance, done) => {
       clearInterval(interval);
       done();
     });
   }
+
+  // ── Ops: alert management ────────────────────────────────────────────────
 
   app.get(
     "/alerts",
@@ -82,12 +85,83 @@ export async function alertRoutes(
       return requireService().dispatchRanger(request.user!, id, rangerId);
     },
   );
+  app.get(
+    "/alerts/config",
+    {
+      preHandler: app.authorize({ roles: [Role.PARK_MANAGER] }),
+    },
+    async (request) => requireService().getParkAlertConfig(request.user!),
+  );
+
+  app.patch(
+    "/alerts/config",
+    {
+      preHandler: app.authorize({ roles: [Role.PARK_MANAGER] }),
+      schema: {
+        body: z.object({
+          geofenceCenter: z.array(z.number()).length(2).optional(),
+          geofenceRadiusKm: z.number().optional(),
+          immobilitySpeedThreshold: z.number().optional(),
+          lowBatteryThreshold: z.number().optional(),
+        }),
+      },
+    },
+    async (request) => requireService().updateParkAlertConfig(request.user!, request.body),
+  );
+
+  app.get(
+    "/alerts/:id/context",
+    {
+      preHandler: app.authorize({ roles: [Role.PARK_MANAGER] }),
+      schema: {
+        params: z.object({ id: z.string().uuid() }),
+        response: { 200: AlertContextSchema },
+      },
+    },
+    async (request) => {
+      const { id } = request.params as { id: string };
+      return requireService().getAlertContext(id, request.user!.parkId!);
+    },
+  );
+
+  app.get(
+    "/alerts/:id/rangers",
+    {
+      preHandler: app.authorize({ roles: [Role.PARK_MANAGER] }),
+      schema: {
+        params: z.object({ id: z.string().uuid() }),
+        response: { 200: z.array(RangerDistanceSchema) },
+      },
+    },
+    async (request) => {
+      const { id } = request.params as { id: string };
+      return requireService().getAvailableRangers(id, request.user!.parkId!);
+    },
+  );
+
+  app.post(
+    "/alerts/:id/broadcast",
+    {
+      preHandler: app.authorize({ roles: [Role.PARK_MANAGER] }),
+      schema: {
+        params: z.object({ id: z.string().uuid() }),
+        response: { 200: z.object({ success: z.boolean() }) },
+      },
+    },
+    async (request) => {
+      const { id } = request.params as { id: string };
+      await requireService().broadcastAlert(id, request.user!.parkId!);
+      return { success: true };
+    },
+  );
+
+  // ── Collar telemetry ─────────────────────────────────────────────────────
 
   app.get(
     "/collars",
     {
       preHandler: app.authorize({ roles: [Role.PARK_MANAGER, Role.RANGER] }),
-      schema: { response: { 200: z.array(z.any()) } }, // FIXME use proper schema CollarListSchema
+      schema: { response: { 200: CollarListSchema } },
     },
     async (request) => requireService().listCollars(request.user!),
   );
@@ -98,7 +172,7 @@ export async function alertRoutes(
       preHandler: app.authorize({ roles: [Role.PARK_MANAGER, Role.RANGER] }),
       schema: {
         params: z.object({ id: z.string().uuid() }),
-        response: { 200: z.array(z.any()) },
+        response: { 200: CollarPingListSchema },
       },
     },
     async (request) => {
@@ -107,8 +181,14 @@ export async function alertRoutes(
     },
   );
 
+  // ── Ranger dispatches ────────────────────────────────────────────────────
+  // Routes are registered under /api prefix in server.ts, so the full URLs are:
+  //   GET  /api/alerts/dispatches/mine
+  //   POST /api/alerts/dispatches/:id/status
+  // The ranger app calls /api/alerts/dispatches/... to match these routes.
+
   app.get(
-    "/dispatches/mine",
+    "/alerts/dispatches/mine",
     {
       preHandler: app.authorize({ roles: [Role.RANGER] }),
       schema: { response: { 200: AlertDispatchListSchema } },
@@ -117,14 +197,14 @@ export async function alertRoutes(
   );
 
   app.post(
-    "/dispatches/:id/status",
+    "/alerts/dispatches/:id/status",
     {
       preHandler: app.authorize({ roles: [Role.RANGER] }),
       schema: {
         params: z.object({ id: z.string().uuid() }),
-        body: z.object({ 
-          status: z.enum(['PENDING', 'ACCEPTED', 'REJECTED', 'TIMED_OUT', 'ARRIVED', 'DONE', 'CANCELLED']), 
-          notes: z.string().optional() 
+        body: z.object({
+          status: z.enum(["ACCEPTED", "REJECTED", "ARRIVED", "DONE", "CANCELLED"]),
+          notes: z.string().optional(),
         }),
         response: { 200: AlertDispatchSchema },
       },
@@ -132,15 +212,18 @@ export async function alertRoutes(
     async (request) => {
       const { id } = request.params as { id: string };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { status, notes } = request.body as { status: any, notes?: string };
+      const { status, notes } = request.body as { status: any; notes?: string };
       return requireService().updateDispatchStatus(request.user!, id, status, notes);
     },
   );
 
+  // ── Telemetry ping intake ─────────────────────────────────────────────────
+  // This endpoint should only be reachable in development; in production it must
+  // be protected by a device secret checked via the PING_SECRET env variable.
+
   app.post(
     "/pings",
     {
-      // No auth required for the simulator (or we could require a specific API key)
       schema: {
         body: z.object({
           collarId: z.string().uuid(),
@@ -152,10 +235,19 @@ export async function alertRoutes(
         response: { 200: z.object({ success: z.boolean() }) },
       },
     },
-    async (request) => {
+    async (request, reply) => {
+      // Require a shared secret in non-development environments (M3-9)
+      const pingSecret = process.env.PING_SECRET;
+      if (pingSecret) {
+        const provided = request.headers["x-ping-secret"];
+        if (provided !== pingSecret) {
+          throw new AppError("Invalid device secret.", 401, "UNAUTHORIZED");
+        }
+      }
+
       const repo = options.repository;
       if (!repo) throw new AppError("Repository unavailable", 503, "UNAVAILABLE");
-      
+
       const processor = new PingProcessor(repo);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const body = request.body as any;

@@ -5,6 +5,8 @@ import type { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 import { AccountHeader } from "../components/AccountHeader.js";
+import { AlertCard } from "../components/AlertCard.js";
+import { AlertSettings } from "../components/AlertSettings.js";
 import { apiRequest } from "../api.js";
 import type { Alert, Collar, CollarPing } from "@wr/shared";
 
@@ -13,6 +15,7 @@ type Account = { id: string; name: string; role: string; email: string; parkId: 
 export function AlertsPage() {
   const queryClient = useQueryClient();
   const [selectedCollar, setSelectedCollar] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   const { data: alerts = [], isLoading: alertsLoading } = useQuery({
     queryKey: ["alerts"],
@@ -58,10 +61,19 @@ export function AlertsPage() {
       
       <main id="main-content" className="flex flex-1 overflow-hidden relative">
         <aside className="w-[420px] flex-shrink-0 flex flex-col bg-[#14352B] border-r border-[#DCE5DC] z-[500] shadow-[4px_0_24px_rgba(20,53,43,0.06)] relative text-white">
-          <div className="p-6 border-b border-[#DCE5DC]">
-            <p className="section-kicker !mb-2 !text-[#DCE5DC]">MONITORING</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-white">Active Alerts</h1>
-            <p className="text-sm text-gray-300 mt-1.5">Manage and dispatch rangers to live alerts</p>
+          <div className="p-6 border-b border-[#DCE5DC] flex justify-between items-start">
+            <div>
+              <p className="section-kicker !mb-2 !text-[#DCE5DC]">MONITORING</p>
+              <h1 className="text-3xl font-semibold tracking-tight text-white">Active Alerts</h1>
+              <p className="text-sm text-gray-300 mt-1.5">Manage and dispatch rangers to live alerts</p>
+            </div>
+            <button 
+              onClick={() => setShowSettings(true)}
+              className="p-2 bg-[#1F4D3C] hover:bg-[#2A6550] rounded-md transition-colors"
+              title="Alert Settings"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            </button>
           </div>
           
           <div className="flex-1 overflow-y-auto p-6 space-y-5">
@@ -82,117 +94,7 @@ export function AlertsPage() {
             )}
             
             {alerts.map(alert => (
-              <div key={alert.id} className="bg-[#FFFFFF] border border-[#DCE5DC] rounded-[12px] overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-[#D97706] group text-[#1F2937]">
-                <div className="p-5">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="font-semibold text-[15px] text-[#1F2937] capitalize">
-                      {alert.type.replace('_', ' ').toLowerCase()}
-                    </h3>
-                    <span className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest text-white ${
-                      alert.severity === 'CRITICAL' ? 'bg-[#B91C1C]' : 
-                      alert.severity === 'HIGH' ? 'bg-[#B45309]' : 
-                      'bg-[#1D4ED8]'
-                    }`}>
-                      {alert.severity}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-2.5 text-[13px] text-[#64748B]">
-                    <div className="flex justify-between items-center pb-2 border-b border-[#DCE5DC]/50">
-                      <span>Status</span> 
-                      <span className="font-medium text-[#1F2937] bg-[#f6f8f5] px-2 py-0.5 rounded-sm">{alert.status}</span>
-                    </div>
-                    {alert.collarId && (
-                      <div className="flex justify-between items-center pb-2 border-b border-[#DCE5DC]/50">
-                        <span>Collar</span>
-                        <span className="font-medium text-[#1F2937]">
-                          {collars.find(c => c.id === alert.collarId)?.animalName || alert.collarId}
-                        </span>
-                      </div>
-                    )}
-                    <div className="pt-1 flex items-center gap-1.5 text-[11px] text-[#64748B]">
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      {new Date(alert.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
-                    </div>
-                  </div>
-                  
-                  {alert.status === 'NEW' && (
-                    <div className="mt-5">
-                      <button 
-                        className="button button-green w-full !py-2.5 !min-h-0 text-[13px] tracking-wide shadow-sm"
-                        onClick={() => acknowledgeMutation.mutate(alert.id)}
-                        disabled={acknowledgeMutation.isPending}
-                      >
-                        {acknowledgeMutation.isPending ? 'Acknowledging...' : 'Acknowledge Alert'}
-                      </button>
-                    </div>
-                  )}
-                  
-                  {alert.status === 'ACCEPTED' && (
-                    <div className="mt-5 space-y-3">
-                      <div className="relative">
-                        <select 
-                          id={`ranger-select-${alert.id}`} 
-                          className="w-full appearance-none bg-[#FFFFFF] border border-[#DCE5DC] text-[#1F2937] text-[13px] font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-[#166534]/20 focus:border-[#166534] block p-2.5 transition-colors"
-                          defaultValue=""
-                        >
-                          <option value="" disabled>Assign to a ranger...</option>
-                          {staff.filter(s => s.role === 'RANGER').map(r => (
-                            <option key={r.id} value={r.id}>{r.name}</option>
-                          ))}
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#64748B]">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </div>
-                      </div>
-                      <button 
-                        className="button button-green w-full !py-2.5 !min-h-0 text-[13px] tracking-wide shadow-sm"
-                        onClick={() => {
-                          const select = document.getElementById(`ranger-select-${alert.id}`) as HTMLSelectElement;
-                          if (select.value) {
-                            dispatchMutation.mutate({ alertId: alert.id, rangerId: select.value });
-                          }
-                        }}
-                        disabled={dispatchMutation.isPending}
-                      >
-                        {dispatchMutation.isPending ? 'Dispatching...' : 'Dispatch Ranger'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <div className="border-t border-[#DCE5DC] bg-[#FFFFFF]">
-                  <details className="group/details">
-                    <summary className="cursor-pointer text-[11px] font-semibold tracking-wide uppercase text-[#166534] px-5 py-3 hover:bg-[#f6f8f5] transition-colors list-none flex justify-between items-center select-none">
-                      Advanced Context
-                      <svg className="w-3.5 h-3.5 transition-transform duration-200 group-open/details:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
-                    </summary>
-                    <div className="px-5 pb-5 pt-1 text-[12px] text-[#64748B] space-y-3.5">
-                      <div>
-                        <strong className="text-[#1F2937] block mb-1">Nearby Settlements</strong>
-                        Mahiyangana (12km), Bibile (18km)
-                      </div>
-                      <div>
-                        <strong className="text-[#1F2937] block mb-1">Camera Images</strong>
-                        No relevant camera trap images in the last 2 hours.
-                      </div>
-                      <div>
-                        <strong className="text-[#1F2937] block mb-1">Event History</strong>
-                        <ul className="space-y-2 mt-2 pl-2 border-l-2 border-[#DCE5DC]">
-                          <li className="pl-3 relative before:absolute before:w-1.5 before:h-1.5 before:bg-[var(--green)] before:rounded-full before:-left-[4px] before:top-1.5">
-                            {new Date(alert.createdAt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })} - Alert Created
-                          </li>
-                          {alert.status !== 'NEW' && (
-                            <li className="pl-3 relative before:absolute before:w-1.5 before:h-1.5 before:bg-[var(--green)] before:rounded-full before:-left-[4px] before:top-1.5">
-                              Status updated to {alert.status}
-                            </li>
-                          )}
-                        </ul>
-                      </div>
-                    </div>
-                  </details>
-                </div>
-              </div>
+              <AlertCard key={alert.id} alert={alert} collars={collars} />
             ))}
           </div>
         </aside>
@@ -259,6 +161,8 @@ export function AlertsPage() {
           </MapContainer>
         </div>
       </main>
+      
+      {showSettings && <AlertSettings onClose={() => setShowSettings(false)} />}
     </div>
   );
 }

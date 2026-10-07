@@ -54,8 +54,24 @@ export const AlertSchema = z.object({
   location: z.tuple([z.number(), z.number()]).nullable(),
   createdAt: z.string().datetime(),
   resolvedAt: z.string().datetime().nullable(),
+  resolutionReason: z.string().nullable().optional(),
+  isBroadcast: z.boolean().optional(),
 });
 export type Alert = z.infer<typeof AlertSchema>;
+
+export const AlertContextSchema = z.object({
+  settlements: z.array(z.object({ name: z.string(), distanceM: z.number() })),
+  cameras: z.array(z.object({ name: z.string(), distanceM: z.number() })),
+  history: z.array(z.object({ timestamp: z.string().datetime(), event: z.string() })),
+});
+
+export const RangerDistanceSchema = z.object({
+  rangerId: z.string().uuid(),
+  name: z.string(),
+  distanceM: z.number().nullable(),
+});
+export const RangerDistanceListSchema = z.array(RangerDistanceSchema);
+
 
 export const CollarPingSchema = z.object({
   id: z.string().uuid(),

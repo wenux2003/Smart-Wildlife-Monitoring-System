@@ -20,6 +20,8 @@ export interface AlertRecord {
   location: [number, number] | null; // [lon, lat] from GeoJSON
   created_at: Date;
   resolved_at: Date | null;
+  resolution_reason: string | null;
+  is_broadcast: boolean;
 }
 
 export interface CollarPingRecord {

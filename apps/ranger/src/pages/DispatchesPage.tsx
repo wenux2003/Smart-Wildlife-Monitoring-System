@@ -37,13 +37,13 @@ export function DispatchesPage() {
 
   const { data: dispatches = [], isLoading } = useQuery({
     queryKey: ["dispatches"],
-    queryFn: () => apiRequest<AlertDispatch[]>("/api/dispatches/mine"),
+    queryFn: () => apiRequest<AlertDispatch[]>("/api/alerts/dispatches/mine"),
     refetchInterval: 10000,
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, status, notes }: { id: string; status: string; notes?: string }) => 
-      apiRequest(`/api/dispatches/${id}/status`, { method: "POST", body: { status, notes } }),
+      apiRequest(`/api/alerts/dispatches/${id}/status`, { method: "POST", body: { status, notes } }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dispatches"] }),
   });
 

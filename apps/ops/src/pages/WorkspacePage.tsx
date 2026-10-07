@@ -69,10 +69,10 @@ export function WorkspacePage() {
         </h2>
         <div className="workspace-modules">
           {[
-            { icon: Binoculars, name: "Incident reporting", link: "/incidents" },
+            { icon: Binoculars, name: "Incident reporting", link: undefined },
             { icon: Footprints, name: "Ranger patrols", link: undefined },
             { icon: Radio, name: "Wildlife alerts", link: "/alerts" },
-            { icon: ChartNoAxesCombined, name: "Conservation analytics", link: "/analytics" },
+            { icon: ChartNoAxesCombined, name: "Conservation analytics", link: undefined },
           ].map(({ icon: Icon, name, link }) => (
             <article key={name}>
               <Icon size={27} />

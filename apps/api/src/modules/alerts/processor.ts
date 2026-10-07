@@ -70,21 +70,14 @@ export class PingProcessor {
           status: AlertStatus.NEW,
           location: ping.location
         });
-
-        // M3.2 Auto-trigger incident creation for severe alerts
-        await this.repository.autoCreateIncident(
-          parkId,
-          'AUTOMATED_ALERT',
-          `Geofence Breach detected for ${collar.animal_name || 'Animal'} (Collar ${collar.id}). Distance: ${distance.toFixed(2)}km from center.`,
-          ping.location
-        );
       }
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async checkImmobility(collar: any, ping: any, parkId: string, alertsConfig: any) {
-    if (ping.speed !== null && ping.speed <= alertsConfig.immobilitySpeedThreshold) {
+    // Treat speed exactly zero as a valid zero value (not null)
+    if (ping.speed !== null && ping.speed !== undefined && ping.speed <= alertsConfig.immobilitySpeedThreshold) {
       const active = await this.repository.getActiveAlertForCollar(collar.id, AlertType.IMMOBILITY);
       if (!active) {
         await this.repository.createAlert({
