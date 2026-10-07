@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AssignmentStatus, IncidentStatus } from "./enums.js";
+import { AssignmentStatus } from "./enums.js";
 
 export const HealthResponseSchema = z.object({
   status: z.literal("ok"),
@@ -18,7 +18,10 @@ export const PatrolAssignmentSummarySchema = z.object({
     description: z.string(),
     estimatedDistanceKm: z.number().positive(),
     version: z.number().int().positive(),
-    path: z.array(z.tuple([z.number(), z.number()])).min(2).nullable(),
+    path: z
+      .array(z.tuple([z.number(), z.number()]))
+      .min(2)
+      .nullable(),
   }),
   coveragePercentage: z.number().min(0).max(100),
   completedAt: z.string().datetime().nullable(),
@@ -84,22 +87,6 @@ export const AlertListSchema = z.array(AlertSchema);
 export const CollarListSchema = z.array(CollarSchema);
 export const CollarPingListSchema = z.array(CollarPingSchema);
 export const AlertDispatchListSchema = z.array(AlertDispatchSchema);
-
-export const IncidentSchema = z.object({
-  id: z.string().uuid(),
-  parkId: z.string().uuid(),
-  reporterId: z.string().uuid().nullable(),
-  type: z.string(),
-  status: z.nativeEnum(IncidentStatus),
-  description: z.string(),
-  location: z.tuple([z.number(), z.number()]).nullable(),
-  photoUrl: z.string().nullable(),
-  reportedAt: z.string().datetime(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
-});
-export type Incident = z.infer<typeof IncidentSchema>;
-export const IncidentListSchema = z.array(IncidentSchema);
 
 export const IncidentReviewSchema = z.object({
   id: z.string().uuid(),

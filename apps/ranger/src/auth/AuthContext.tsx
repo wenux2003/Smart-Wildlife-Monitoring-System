@@ -6,6 +6,11 @@ import {
   useState,
 } from "react";
 import type { ReactNode } from "react";
+import {
+  rememberCaptureIdentity,
+  readCaptureIdentity,
+  forgetCaptureIdentity,
+} from "./offlineIdentity.js";
 
 export type RangerUser = {
   id: string;
@@ -18,12 +23,16 @@ export type RangerUser = {
 };
 
 type AuthState = {
+  captureOnly: boolean;
   user: RangerUser | null;
   loading: boolean;
   error: string;
   refresh: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
-  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  changePassword: (
+    currentPassword: string,
+    newPassword: string,
+  ) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -60,16 +69,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<RangerUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [captureOnly, setCaptureOnly] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      setUser((await request("me")).user);
+      const current = (await request("me")).user as RangerUser;
+      setUser(current);
+      setCaptureOnly(false);
+      rememberCaptureIdentity(current);
     } catch (failure) {
-      setUser(null);
-      if ((failure as { status?: number }).status !== 401)
-        setError((failure as Error).message);
+      const status = (failure as { status?: number }).status;
+      if (status === 401 || status === 403) {
+        setUser(null);
+        setCaptureOnly(false);
+        forgetCaptureIdentity();
+      } else {
+        const remembered = readCaptureIdentity();
+        setUser(remembered);
+        setCaptureOnly(Boolean(remembered));
+        if (!remembered) setError((failure as Error).message);
+      }
     } finally {
       setLoading(false);
     }
@@ -79,16 +100,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refresh();
   }, [refresh]);
 
+  useEffect(() => {
+    if (user && !captureOnly) rememberCaptureIdentity(user);
+  }, [user, captureOnly]);
+
   async function signIn(email: string, password: string) {
     const result = await request("login", { email, password });
     setUser(result.user);
+    setCaptureOnly(false);
+    rememberCaptureIdentity(result.user);
     setError("");
   }
 
-  async function changePassword(
-    currentPassword: string,
-    newPassword: string,
-  ) {
+  async function changePassword(currentPassword: string, newPassword: string) {
     const result = await request("change-password", {
       currentPassword,
       newPassword,
@@ -106,11 +130,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signOut() {
     await request("logout", {});
     setUser(null);
+    setCaptureOnly(false);
+    forgetCaptureIdentity();
   }
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, error, refresh, signIn, changePassword, signOut }}
+      value={{
+        user,
+        loading,
+        error,
+        captureOnly,
+        refresh,
+        signIn,
+        changePassword,
+        signOut,
+      }}
     >
       {children}
     </AuthContext.Provider>
