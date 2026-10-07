@@ -38,7 +38,7 @@ export function DispatchesPage() {
   const { data: dispatches = [], isLoading } = useQuery({
     queryKey: ["dispatches"],
     queryFn: () => apiRequest<AlertDispatch[]>("/api/alerts/dispatches/mine"),
-    refetchInterval: 10000,
+    refetchInterval: 3000,
   });
 
   const updateMutation = useMutation({

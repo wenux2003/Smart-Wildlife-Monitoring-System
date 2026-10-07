@@ -20,7 +20,7 @@ export function AlertsPage() {
   const { data: alerts = [], isLoading: alertsLoading } = useQuery({
     queryKey: ["alerts"],
     queryFn: () => apiRequest<Alert[]>("/api/alerts"),
-    refetchInterval: 10000,
+    refetchInterval: 3000,
   });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

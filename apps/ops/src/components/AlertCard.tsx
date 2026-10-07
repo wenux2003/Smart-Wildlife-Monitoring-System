@@ -21,12 +21,14 @@ export function AlertCard({ alert, collars }: { alert: Alert; collars: any[] }) 
   const { data: context } = useQuery({
     queryKey: ["alerts", alert.id, "context"],
     queryFn: () => apiRequest<AlertContextData>(`/api/alerts/${alert.id}/context`),
+    refetchInterval: 3000,
   });
 
   const { data: rangers = [] } = useQuery({
     queryKey: ["alerts", alert.id, "rangers"],
     queryFn: () => apiRequest<RangerDistanceData[]>(`/api/alerts/${alert.id}/rangers`),
     enabled: alert.status === "ACCEPTED" || alert.status === "TIMED_OUT",
+    refetchInterval: 3000,
   });
 
   const acknowledgeMutation = useMutation({
