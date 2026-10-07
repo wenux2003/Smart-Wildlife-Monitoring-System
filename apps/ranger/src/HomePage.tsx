@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { PatrolAssignmentSummary } from "@wr/shared";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext.js";
 import { fetchMyPatrolAssignments } from "./lib/patrols.js";
 import { startOfflinePatrol } from "@wr/offline";
@@ -251,11 +251,17 @@ export function RangerHomePage() {
             <p className="section-date">Today</p>
             <h2 id="today-patrols">{user?.parkName ?? "Yala West"}</h2>
           </div>
-          <span>
-            {patrolQuery.isLoading
-              ? "Loading routes"
-              : `${patrolAssignments.length} ${patrolAssignments.length === 1 ? "route" : "routes"}`}
-          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+            <span>
+              {patrolQuery.isLoading
+                ? "Loading routes"
+                : `${patrolAssignments.length} ${patrolAssignments.length === 1 ? "route" : "routes"}`}
+            </span>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Link to="/incidents/report" className="button" style={{ fontSize: '14px', textDecoration: 'underline' }}>Report Incident</Link>
+              <Link to="/dispatches" className="button" style={{ fontSize: '14px', textDecoration: 'underline' }}>View Dispatches</Link>
+            </div>
+          </div>
         </div>
 
         {patrolQuery.isLoading ? (

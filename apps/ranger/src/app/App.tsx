@@ -3,9 +3,11 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "../auth/AuthContext.js";
 import { RangerHomePage } from "../HomePage.js";
 import { ChangePasswordPage, LoadingState } from "../pages/ChangePasswordPage.js";
+import { DispatchesPage } from "../pages/DispatchesPage.js";
 import { LoginPage } from "../pages/LoginPage.js";
 import { NewWaypointPage } from "../pages/NewWaypointPage.js";
 import { PatrolSummaryPage } from "../pages/PatrolSummaryPage.js";
+import { ReportIncidentPage } from "../pages/ReportIncidentPage.js";
 import { PatrolSyncCoordinator } from "./PatrolSyncCoordinator.js";
 
 const PatrolMapPage = lazy(async () => {
@@ -46,6 +48,8 @@ function RangerRoutes() {
       "/": "Patrol",
       "/login": "Ranger sign in",
       "/change-password": "Change password",
+      "/dispatches": "Dispatches",
+      "/incidents/report": "Report incident",
       ...(location.pathname.startsWith("/patrol/") ? { [location.pathname]: "Active patrol" } : {}),
     };
     document.title = `${titles[location.pathname] ?? "Ranger access"} | Wildlife Guardian`;
@@ -74,6 +78,8 @@ function RangerRoutes() {
           path="/patrol/:assignmentId/summary"
           element={<ProtectedRanger><PatrolSummaryPage /></ProtectedRanger>}
         />
+        <Route path="/incidents/report" element={<ProtectedRanger><ReportIncidentPage /></ProtectedRanger>} />
+        <Route path="/dispatches" element={<ProtectedRanger><DispatchesPage /></ProtectedRanger>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <PatrolSyncCoordinator />

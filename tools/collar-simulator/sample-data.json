@@ -1,0 +1,23 @@
+[
+  {
+    "collarId": "5c9b986b-a25e-4c74-a690-36b043213568",
+    "location": [80.5, 7.5],
+    "speed": 2.5,
+    "battery": 85,
+    "recordedAt": "2026-10-07T10:00:00Z"
+  },
+  {
+    "collarId": "5c9b986b-a25e-4c74-a690-36b043213568",
+    "location": [80.51, 7.51],
+    "speed": 0.05,
+    "battery": 84,
+    "recordedAt": "2026-10-07T10:05:00Z"
+  },
+  {
+    "collarId": "5c9b986b-a25e-4c74-a690-36b043213568",
+    "location": [80.1, 7.1],
+    "speed": 10.5,
+    "battery": 15,
+    "recordedAt": "2026-10-07T10:10:00Z"
+  }
+]
