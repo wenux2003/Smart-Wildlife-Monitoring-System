@@ -94,6 +94,7 @@ export function App() {
       "/staff": "Staff accounts",
       "/change-password": "Change password",
       "/ranger": "Ranger app access",
+      "/alerts": "Wildlife alerts",
     };
     document.title = `${titles[location.pathname] ?? "Page not found"} | Wana Rakshaka`;
   }, [location.pathname]);
