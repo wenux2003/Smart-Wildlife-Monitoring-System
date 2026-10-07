@@ -87,6 +87,11 @@ export function createAlertService(repository: AlertRepository) {
         respondedAt: dispatch.responded_at?.toISOString() ?? null,
         arrivedAt: dispatch.arrived_at?.toISOString() ?? null,
         completedAt: dispatch.completed_at?.toISOString() ?? null,
+        // Joined fields
+        alertType: dispatch.alert_type,
+        alertSeverity: dispatch.alert_severity,
+        alertLocation: dispatch.alert_location,
+        animalName: dispatch.animal_name,
       }));
     },
     async updateDispatchStatus(user: SessionUser, dispatchId: string, status: DispatchStatus, notes?: string) {

@@ -23,6 +23,10 @@ type AlertDispatch = {
   status: string;
   notes: string | null;
   sentAt: string;
+  alertType?: string;
+  alertSeverity?: string;
+  alertLocation?: [number, number];
+  animalName?: string;
 };
 
 export function DispatchesPage() {
@@ -69,9 +73,26 @@ export function DispatchesPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {dispatches.map(dispatch => (
               <div key={dispatch.id} style={{ padding: '15px', border: '1px solid #ccc', borderRadius: '8px' }}>
-                <p>Status: <strong>{dispatch.status}</strong></p>
-                <p>Sent: {new Date(dispatch.sentAt).toLocaleString()}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '18px' }}>{dispatch.alertType?.replace('_', ' ')}</h3>
+                  <span style={{ 
+                    padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', color: 'white',
+                    backgroundColor: dispatch.alertSeverity === 'CRITICAL' ? '#B91C1C' : dispatch.alertSeverity === 'HIGH' ? '#B45309' : '#1D4ED8'
+                  }}>
+                    {dispatch.alertSeverity}
+                  </span>
+                </div>
                 
+                <div style={{ fontSize: '14px', marginBottom: '10px', color: '#4a4a4a' }}>
+                  {dispatch.animalName && <p style={{ margin: '2px 0' }}><strong>Animal:</strong> {dispatch.animalName}</p>}
+                  {dispatch.alertLocation && (
+                    <p style={{ margin: '2px 0' }}>
+                      <strong>Location:</strong> {dispatch.alertLocation[0].toFixed(4)}, {dispatch.alertLocation[1].toFixed(4)}
+                    </p>
+                  )}
+                  <p style={{ margin: '2px 0' }}><strong>Status:</strong> {dispatch.status}</p>
+                  <p style={{ margin: '2px 0' }}><strong>Sent:</strong> {new Date(dispatch.sentAt).toLocaleString()}</p>
+                </div>
                 {dispatch.status === 'PENDING' && (
                   <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                     <button className="primary-button" onClick={() => updateMutation.mutate({ id: dispatch.id, status: 'ACCEPTED' })}>Accept</button>

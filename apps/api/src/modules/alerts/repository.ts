@@ -171,12 +171,19 @@ export function createAlertRepository(url: string): AlertRepository {
       `;
     },
     async listDispatchesForRanger(rangerId: string) {
-      return sql<AlertDispatchRecord[]>`
+      // Return type widened to include joined fields
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return sql<any[]>`
         SELECT 
-          id, alert_id, ranger_id, status, notes, sent_at, responded_at, arrived_at, completed_at
-        FROM alert_dispatches 
-        WHERE ranger_id = ${rangerId}
-        ORDER BY sent_at DESC
+          d.id, d.alert_id, d.ranger_id, d.status, d.notes, d.sent_at, d.responded_at, d.arrived_at, d.completed_at,
+          a.type as alert_type, a.severity as alert_severity, 
+          (ST_AsGeoJSON(a.location)::jsonb -> 'coordinates') AS alert_location,
+          c.animal_name
+        FROM alert_dispatches d
+        JOIN alerts a ON a.id = d.alert_id
+        LEFT JOIN collars c ON c.id = a.collar_id
+        WHERE d.ranger_id = ${rangerId}
+        ORDER BY d.sent_at DESC
       `;
     },
     async getParkConfig(parkId: string) {
