@@ -93,6 +93,10 @@ export const AlertDispatchSchema = z.object({
   respondedAt: z.string().datetime().nullable(),
   arrivedAt: z.string().datetime().nullable(),
   completedAt: z.string().datetime().nullable(),
+  alertType: z.string().optional(),
+  alertSeverity: z.string().optional(),
+  alertLocation: z.tuple([z.number(), z.number()]).nullable().optional(),
+  animalName: z.string().nullable().optional(),
 });
 export type AlertDispatch = z.infer<typeof AlertDispatchSchema>;
 

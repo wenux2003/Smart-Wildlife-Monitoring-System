@@ -46,6 +46,8 @@ export interface AlertRepository {
   getAlertContext(alertId: string, parkId: string): Promise<{ settlements: any[], cameras: any[], history: any[] }>;
   getAvailableRangers(alertId: string, parkId: string): Promise<{ rangerId: string, name: string, distanceM: number | null }[]>;
   broadcastAlert(alertId: string, parkId: string): Promise<void>;
+  cancelOtherPendingDispatches(alertId: string, acceptedDispatchId: string): Promise<void>;
+  hasActiveDispatches(alertId: string): Promise<boolean>;
 
   close?(): Promise<void>;
 }
@@ -411,11 +413,38 @@ export function createAlertRepository(url: string): AlertRepository {
       }
     },
     async broadcastAlert(alertId, parkId) {
+      // Mark as broadcast and set status to DISPATCHED (since dispatches are being created)
       await sql`
         UPDATE alerts
-        SET is_broadcast = true, status = 'NEW'
+        SET is_broadcast = true, status = 'DISPATCHED'
         WHERE id = ${alertId} AND park_id = ${parkId}
       `;
+      // Create pending dispatches for all active rangers in the park
+      await sql`
+        INSERT INTO alert_dispatches (id, alert_id, ranger_id, status)
+        SELECT gen_random_uuid(), ${alertId}, id, 'PENDING'
+        FROM auth_users
+        WHERE park_id = ${parkId} AND role = 'RANGER' AND disabled_at IS NULL
+      `;
+    },
+    async cancelOtherPendingDispatches(alertId, acceptedDispatchId) {
+      // When one ranger accepts a broadcast, cancel the other pending ones
+      await sql`
+        UPDATE alert_dispatches
+        SET status = 'CANCELLED', responded_at = NOW()
+        WHERE alert_id = ${alertId} 
+          AND id != ${acceptedDispatchId}
+          AND status = 'PENDING'
+      `;
+    },
+    async hasActiveDispatches(alertId) {
+      const res = await sql`
+        SELECT 1 FROM alert_dispatches 
+        WHERE alert_id = ${alertId} 
+          AND status IN ('PENDING', 'ACCEPTED', 'ARRIVED') 
+        LIMIT 1
+      `;
+      return res.length > 0;
     },
     async close() {
       await sql.end();

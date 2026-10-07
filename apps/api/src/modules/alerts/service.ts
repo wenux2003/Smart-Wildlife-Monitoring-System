@@ -192,8 +192,18 @@ export function createAlertService(repository: AlertRepository) {
         await repository.updateAlertStatus(dispatch.alert_id, AlertStatus.ON_SCENE);
       } else if (status === DispatchStatus.ACCEPTED) {
         await repository.updateAlertStatus(dispatch.alert_id, AlertStatus.DISPATCHED);
+        if (repository.cancelOtherPendingDispatches) {
+          await repository.cancelOtherPendingDispatches(dispatch.alert_id, dispatch.id);
+        }
       } else if (status === DispatchStatus.REJECTED || status === DispatchStatus.CANCELLED) {
-        await repository.updateAlertStatus(dispatch.alert_id, AlertStatus.ACCEPTED);
+        if (repository.hasActiveDispatches) {
+          const hasActive = await repository.hasActiveDispatches(dispatch.alert_id);
+          if (!hasActive) {
+            await repository.updateAlertStatus(dispatch.alert_id, AlertStatus.ACCEPTED);
+          }
+        } else {
+          await repository.updateAlertStatus(dispatch.alert_id, AlertStatus.ACCEPTED);
+        }
       }
 
       return mapDispatch(dispatch);
@@ -228,8 +238,15 @@ export function createAlertService(repository: AlertRepository) {
         try {
           // Use the system timeout path that bypasses ranger ownership check
           await repository.markDispatchTimedOut(dispatch.id);
-          // Reset alert so ops staff can re-dispatch
-          await repository.updateAlertStatus(dispatch.alert_id, AlertStatus.ACCEPTED);
+          // Reset alert so ops staff can re-dispatch ONLY IF NO OTHER DISPATCHES ARE ACTIVE
+          if (repository.hasActiveDispatches) {
+            const hasActive = await repository.hasActiveDispatches(dispatch.alert_id);
+            if (!hasActive) {
+              await repository.updateAlertStatus(dispatch.alert_id, AlertStatus.ACCEPTED);
+            }
+          } else {
+            await repository.updateAlertStatus(dispatch.alert_id, AlertStatus.ACCEPTED);
+          }
         } catch {
           // Log and continue; don't let one failure block others
         }
