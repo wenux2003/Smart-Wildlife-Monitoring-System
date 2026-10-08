@@ -4,7 +4,7 @@
 **Use case:** M4 — Analytics and export
 **Preserved use case:** Group 039, "Analyze Conservation Data & Generate Reports" (G39 pp. 4–10)
 **Owner :** Wenura Kavinda
-**Status:** ✅ P0 complete: contracts tested and migrations verified twice on isolated local PostGIS. ✅ P1 complete: domain implementation passes 12 tests with 100% coverage. ✅ P2 seed/grid implemented and verified on isolated local PostGIS. P3 is next.
+**Status:** ✅ P0 complete: contracts tested and migrations verified twice on isolated local PostGIS. ✅ P1 complete: domain implementation passes 12 tests with 100% coverage. ✅ P2 seed/grid implemented and verified on isolated local PostGIS. ✅ P3 report/audit repositories validated locally. P4 is next.
 **Supersedes:** the short M4 notes in [Implementation plan §7 M4](./Group037_Implementation_Plan.md#m4-analytics-and-export) and the endpoint rows in its §5. Where this plan is more specific, this plan wins; update those sections to link here.
 
 ---
@@ -1281,7 +1281,7 @@ The implementation plan requires "six months of labeled synthetic analytics data
 | P0 Contracts | `shared/analytics.ts` + tests; `0009_analytics.sql`; `analytics-schema.ts` | 1 | Migrate twice on a local PostGIS; shared tests green | ✅ Complete — 7 contract tests; full migrations applied then rerun cleanly on isolated local PostGIS |
 | P1 Domain | `filter.ts`, `metrics.ts`, `report-code.ts`, `report-assembler.ts`, `narrative.ts` + tests | 1 | 100% domain coverage | ✅ Complete — 12 tests; 100% lines, statements, branches and functions; lint/typecheck pass |
 | P2 Seed | Boundary, sectors, grid build, demo incidents, patrols, alerts | 1 | Seed twice, no duplicates; counts as specified | ✅ Complete — local repeat-seed and grid DB tests pass; 270 incidents, 90 patrols, 66 alerts |
-| P3 Repository | Read SQL for KPIs, trend, breakdown, hotspots, gaps, conflicts; audit repository; DB tests | 1 | DB tests green on an isolated database; query < 2 s on the seed | ⏳ Not started |
+| P3 Repository | Read SQL for KPIs, trend, breakdown, hotspots, gaps, conflicts; audit repository; DB tests | 1 | DB tests green on an isolated database; query < 2 s on the seed | ✅ Complete — seeded report and spatial/GPS/audit isolation checks pass locally |
 | P4 Service + routes | E1–E5, errors, access, timeout, rate limit, server registration | 1 | `routes.test.ts` and `service.test.ts` green | ⏳ Not started |
 | P5 Exports | CSV writer and exporter, PDF exporter + SVG charts | 1 | PDF text and CSV value tests green; files open correctly | ⏳ Not started |
 | P6 UI core | Layout, filters, overview page, export bar, all states | 1 | UI tests green; manual keyboard pass | ⏳ Not started |
@@ -1422,3 +1422,8 @@ All Appendix A flows: ⏳ Not started. A flow is marked ✅ only after its liste
 - ✅ P2: deterministic UUID-v5 fixtures, guarded CLI, bounded metric grid and three passing seed/grid tests. Repeated local seeding preserves counts: 270 incidents, 90 patrol sessions, 60 breaches plus 6 diagnostics; 967 grid cells total.
 - P2 fixture refinement: use clearly synthetic rectangular boundaries and five interior/four boundary sectors per park, one dedicated demo route per park, deterministic distributed observations instead of a Gaussian generator. Reference geometry/config remains on `--remove`; only namespaced operational fixtures are deleted. Existing boundaries/settings are preserved. Shared/demo accounts remain untouched by the M4 seed.
 - P2 validation uses isolated local PostgreSQL 17/PostGIS; no shared Neon changes.
+
+- ✅ P3: repeatable-read, read-only report transaction; bounded statement timeout; aggregate-only incident SQL; deterministic cell-edge assignment; GPS quality/gap limits; separate conflict sources; append-only run/export audit writes.
+- ✅ P3 checks: seeded report under 2 seconds, privacy field exclusions, audit park/user isolation, Colombo midnight, unresolved/outside points, grid-edge ties, metric area, dropped GPS and long-gap rejection; PostgreSQL 57014 timeout observed.
+- P3 correction: JSON writes cast serialized text through `text::jsonb` to avoid a JSON-string value. Fixed P2 settings write; repaired only the disposable local fixtures, then reran the seed idempotency tests.
+- Boundary tie-break uses nearest polygon centroid then ID: the schema has polygon bands but no centreline. This is an explicit prototype approximation. Collar breaches are excluded when the selected category/type group has no HWC type; incident-source filters apply to incident series, not device alerts.

@@ -116,7 +116,7 @@ export async function seedAnalytics(url: string, remove = false) {
           continue;
         }
         await tx`UPDATE parks SET boundary=COALESCE(boundary,ST_Multi(ST_MakeEnvelope(${p.lon - 0.06},${p.lat - 0.05},${p.lon + 0.06},${p.lat + 0.05},4326))),
-    config=COALESCE(config,'{}'::jsonb) || jsonb_build_object('analytics',COALESCE(config->'analytics',${JSON.stringify({ gridCellMeters: p.size, trackBufferMeters: p.code === "YALA" ? 75 : p.code === "SINHARAJA" ? 25 : 50, gapNeglectDays: p.code === "SINHARAJA" ? 21 : 14 })}::jsonb), 'analyticsDemo',jsonb_build_object('since','2026-04-11','boundaryLabel','Approximate synthetic demo boundary')) WHERE id=${park.id}`;
+    config=COALESCE(config,'{}'::jsonb) || jsonb_build_object('analytics',COALESCE(config->'analytics',${JSON.stringify({ gridCellMeters: p.size, trackBufferMeters: p.code === "YALA" ? 75 : p.code === "SINHARAJA" ? 25 : 50, gapNeglectDays: p.code === "SINHARAJA" ? 21 : 14 })}::text::jsonb), 'analyticsDemo',jsonb_build_object('since','2026-04-11','boundaryLabel','Approximate synthetic demo boundary')) WHERE id=${park.id}`;
         for (let i = 0; i < 5; i++)
           await tx`INSERT INTO analysis_sectors(id,park_id,code,name,kind,area) VALUES(${id("sector", i)},${park.id},${"M4_DEMO_" + i},${p.code === "YALA" ? sectorNames[i] : p.code + " sector " + (i + 1)},'SECTOR',ST_Multi(ST_MakeEnvelope(${p.lon - 0.06 + i * 0.024},${p.lat - 0.05},${p.lon - 0.036 + i * 0.024},${p.lat + 0.05},4326))) ON CONFLICT DO NOTHING`;
         const stretchNames = [
