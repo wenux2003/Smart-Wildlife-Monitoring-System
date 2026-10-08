@@ -13,7 +13,8 @@
     "db:seed:demo": "tsx --env-file=../../.env src/seed-demo-data.ts",
     "auth:check": "node --env-file=../../.env scripts/check-auth.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "db:seed:analytics": "tsx --env-file=../../.env src/seed-analytics.ts"
   },
   "dependencies": {
     "fastify-type-provider-zod": "4.0.2",
