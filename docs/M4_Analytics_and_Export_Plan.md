@@ -4,7 +4,7 @@
 **Use case:** M4 — Analytics and export
 **Preserved use case:** Group 039, "Analyze Conservation Data & Generate Reports" (G39 pp. 4–10)
 **Owner :** Wenura Kavinda
-**Status:** Plan only (8 October 2026). Nothing in this document is implemented yet.
+**Status:** ✅ P0 complete: contracts tested and migrations verified twice on isolated local PostGIS. P1 domain implementation is in progress.
 **Supersedes:** the short M4 notes in [Implementation plan §7 M4](./Group037_Implementation_Plan.md#m4-analytics-and-export) and the endpoint rows in its §5. Where this plan is more specific, this plan wins; update those sections to link here.
 
 ---
@@ -1276,18 +1276,18 @@ The implementation plan requires "six months of labeled synthetic analytics data
 
 ### 16.1 Phases
 
-| Phase | Deliverable | Tier | Exit check |
-|---|---|---|---|
-| P0 Contracts | `shared/analytics.ts` + tests; `0009_analytics.sql`; `analytics-schema.ts` | 1 | Migrate twice on a local PostGIS; shared tests green |
-| P1 Domain | `filter.ts`, `metrics.ts`, `report-code.ts`, `report-assembler.ts`, `narrative.ts` + tests | 1 | 100% domain coverage |
-| P2 Seed | Boundary, sectors, grid build, demo incidents, patrols, alerts | 1 | Seed twice, no duplicates; counts as specified |
-| P3 Repository | Read SQL for KPIs, trend, breakdown, hotspots, gaps, conflicts; audit repository; DB tests | 1 | DB tests green on an isolated database; query < 2 s on the seed |
-| P4 Service + routes | E1–E5, errors, access, timeout, rate limit, server registration | 1 | `routes.test.ts` and `service.test.ts` green |
-| P5 Exports | CSV writer and exporter, PDF exporter + SVG charts | 1 | PDF text and CSV value tests green; files open correctly |
-| P6 UI core | Layout, filters, overview page, export bar, all states | 1 | UI tests green; manual keyboard pass |
-| P7 UI spatial and conflicts | Map page, patrol gaps page, conflict page, history page | 1 | UI tests green |
-| P8 Polish | Motion, count-up, stamp, skeletons, insight sentences, a11y fixes | 1 (motion is small) | Reduced-motion check |
-| P9 Evidence | `vitest.m4.config.ts` ≥ 85%, screenshots, traceability rows, docs updates, AI prompt log | 1 | Coverage report saved; README status updated |
+| Phase | Deliverable | Tier | Exit check | Status |
+|---|---|---|---|---|
+| P0 Contracts | `shared/analytics.ts` + tests; `0009_analytics.sql`; `analytics-schema.ts` | 1 | Migrate twice on a local PostGIS; shared tests green | ✅ Complete — 7 contract tests; full migrations applied then rerun cleanly on isolated local PostGIS |
+| P1 Domain | `filter.ts`, `metrics.ts`, `report-code.ts`, `report-assembler.ts`, `narrative.ts` + tests | 1 | 100% domain coverage | 🟡 In progress — implementation prepared; phase validation recorded in next commit |
+| P2 Seed | Boundary, sectors, grid build, demo incidents, patrols, alerts | 1 | Seed twice, no duplicates; counts as specified | ⏳ Not started |
+| P3 Repository | Read SQL for KPIs, trend, breakdown, hotspots, gaps, conflicts; audit repository; DB tests | 1 | DB tests green on an isolated database; query < 2 s on the seed | ⏳ Not started |
+| P4 Service + routes | E1–E5, errors, access, timeout, rate limit, server registration | 1 | `routes.test.ts` and `service.test.ts` green | ⏳ Not started |
+| P5 Exports | CSV writer and exporter, PDF exporter + SVG charts | 1 | PDF text and CSV value tests green; files open correctly | ⏳ Not started |
+| P6 UI core | Layout, filters, overview page, export bar, all states | 1 | UI tests green; manual keyboard pass | ⏳ Not started |
+| P7 UI spatial and conflicts | Map page, patrol gaps page, conflict page, history page | 1 | UI tests green | ⏳ Not started |
+| P8 Polish | Motion, count-up, stamp, skeletons, insight sentences, a11y fixes | 1 (motion is small) | Reduced-motion check | ⏳ Not started |
+| P9 Evidence | `vitest.m4.config.ts` ≥ 85%, screenshots, traceability rows, docs updates, AI prompt log | 1 | Coverage report saved; README status updated | ⏳ Not started |
 | T2 extras | Median response time KPI (K5), Getis-Ord clustering, minimum covered-fraction coverage, Sinhala/Tamil PDF fonts, LO read access to conflict view | 2 | Only if Tier 1 is done and green |
 
 ### 16.2 Pull requests
@@ -1354,34 +1354,36 @@ Each PR passes `lint`, `typecheck`, `test` and both builds before merging. If th
 
 ## Appendix A — Flow traceability
 
-| # | G39 source | Flow step | Implementation | Test |
-|---|---|---|---|---|
-| A1 | p. 4 main | Select analytics module | Workspace tile → `/analytics`; route guard | `App.test` route; Workspace tile test |
-| A2 | p. 4 main | System prompts filters | `FilterBar` with defaults from E1 | `FilterBar.test` |
-| A3 | p. 5 main | User sets park / timeframe / category, clicks Generate | URL filters → `POST /reports/runs` | `AnalyticsOverviewPage.test`, `routes.test` |
-| A4 | p. 5 main | System validates filters | Zod + `normalizeFilter` + clock check | `analytics.test`, `filter.test`, `service.test` |
-| A5 | p. 5 main | Search incidents and patrol data | Repository read-only transaction | `repository.db.test` |
-| A6 | p. 5 main | Compute frequency, gaps, hotspots | §4 metrics, §8 algorithms | `metrics.test`, DB tests |
-| A7 | p. 5 main | Show report with tables and charts | Overview page sections | `AnalyticsOverviewPage.test` |
-| A8 | p. 5 main | Click Export, file compiled | E4 + exporters | `pdf-exporter.test`, `csv-exporter.test`, `routes.test` |
-| A9 | p. 5 main | User downloads file | Blob download, server filename | `ExportBar.test` |
-| A10 | p. 5 alt | Toggle spatial heatmap | `/analytics/map` from the same snapshot | `AnalyticsMapPage.test` |
-| A11 | p. 5 alt | Hotspots + patrol breadcrumbs on map | Hotspot + coverage layers | `AnalyticsMapPage.test`, DB tests |
-| A12 | p. 5 alt | Review clusters to reallocate patrols | Priority cells list | `metrics.test` (score), page test |
-| A13 | p. 5 alt | Select HWC category | Conflict page / category group | `ConflictTrendsPage.test` |
-| A14 | p. 5 alt | Aggregate collar alerts + villager reports | Separate series | DB tests (source separation), page test (caption) |
-| A15 | p. 5 alt | Plot recurring boundary conflict trends | Month × stretch matrix | `StretchMatrix` test, DB nearest-stretch test |
-| A16 | p. 6 alt | Export skipped | Run audited with no export | `service.test`, history page test |
-| A17 | p. 6 post | Analysis rendered on dashboard | SUCCEEDED state | Page test |
-| A18 | p. 6 post | Query logged in audit history | `report_runs` + `/reports` | `service.test`, `ReportHistoryPage.test` |
-| A19 | p. 6 post (changed, C9) | Document downloaded **if requested** | Conditional export | `service.test` |
-| A20 | p. 6 exc | No records → notify, suggest widening | EMPTY + suggestions | `service.test`, page test |
-| A21 | p. 6 exc | Timeout → abort, keep filters, retry | 504 + banner + Retry | `service.test`, `routes.test`, page test, DB timeout test |
-| A22 | p. 7 exc | Export failure → notify, keep report | FAILED export + toast | `service.test`, page test |
-| A23 | p. 7 seq | `ConservationReport` created | Snapshot in `report_runs` | `report-assembler.test` |
-| A24 | Our critique | Remove "confidence %"; add sample sizes | Data-quality strip | Page test |
-| A25 | Case study p. 2 | Park flexibility | `config.analytics` per park | `analytics.test` (config), seed differences shown |
-| A26 | User groups §4.5 | Researcher read-only, no contact details | Access matrix §7.7; SQL never selects them | `routes.test`, `csv-exporter.test` |
+| # | G39 source | Flow step | Implementation | Test | Status |
+|---|---|---|---|---|---|
+| A1 | p. 4 main | Select analytics module | Workspace tile → `/analytics`; route guard | `App.test` route; Workspace tile test | ⏳ |
+| A2 | p. 4 main | System prompts filters | `FilterBar` with defaults from E1 | `FilterBar.test` | ⏳ |
+| A3 | p. 5 main | User sets park / timeframe / category, clicks Generate | URL filters → `POST /reports/runs` | `AnalyticsOverviewPage.test`, `routes.test` | ⏳ |
+| A4 | p. 5 main | System validates filters | Zod + `normalizeFilter` + clock check | `analytics.test`, `filter.test`, `service.test` | ⏳ |
+| A5 | p. 5 main | Search incidents and patrol data | Repository read-only transaction | `repository.db.test` | ⏳ |
+| A6 | p. 5 main | Compute frequency, gaps, hotspots | §4 metrics, §8 algorithms | `metrics.test`, DB tests | ⏳ |
+| A7 | p. 5 main | Show report with tables and charts | Overview page sections | `AnalyticsOverviewPage.test` | ⏳ |
+| A8 | p. 5 main | Click Export, file compiled | E4 + exporters | `pdf-exporter.test`, `csv-exporter.test`, `routes.test` | ⏳ |
+| A9 | p. 5 main | User downloads file | Blob download, server filename | `ExportBar.test` | ⏳ |
+| A10 | p. 5 alt | Toggle spatial heatmap | `/analytics/map` from the same snapshot | `AnalyticsMapPage.test` | ⏳ |
+| A11 | p. 5 alt | Hotspots + patrol breadcrumbs on map | Hotspot + coverage layers | `AnalyticsMapPage.test`, DB tests | ⏳ |
+| A12 | p. 5 alt | Review clusters to reallocate patrols | Priority cells list | `metrics.test` (score), page test | ⏳ |
+| A13 | p. 5 alt | Select HWC category | Conflict page / category group | `ConflictTrendsPage.test` | ⏳ |
+| A14 | p. 5 alt | Aggregate collar alerts + villager reports | Separate series | DB tests (source separation), page test (caption) | ⏳ |
+| A15 | p. 5 alt | Plot recurring boundary conflict trends | Month × stretch matrix | `StretchMatrix` test, DB nearest-stretch test | ⏳ |
+| A16 | p. 6 alt | Export skipped | Run audited with no export | `service.test`, history page test | ⏳ |
+| A17 | p. 6 post | Analysis rendered on dashboard | SUCCEEDED state | Page test | ⏳ |
+| A18 | p. 6 post | Query logged in audit history | `report_runs` + `/reports` | `service.test`, `ReportHistoryPage.test` | ⏳ |
+| A19 | p. 6 post (changed, C9) | Document downloaded **if requested** | Conditional export | `service.test` | ⏳ |
+| A20 | p. 6 exc | No records → notify, suggest widening | EMPTY + suggestions | `service.test`, page test | ⏳ |
+| A21 | p. 6 exc | Timeout → abort, keep filters, retry | 504 + banner + Retry | `service.test`, `routes.test`, page test, DB timeout test | ⏳ |
+| A22 | p. 7 exc | Export failure → notify, keep report | FAILED export + toast | `service.test`, page test | ⏳ |
+| A23 | p. 7 seq | `ConservationReport` created | Snapshot in `report_runs` | `report-assembler.test` | ⏳ |
+| A24 | Our critique | Remove "confidence %"; add sample sizes | Data-quality strip | Page test | ⏳ |
+| A25 | Case study p. 2 | Park flexibility | `config.analytics` per park | `analytics.test` (config), seed differences shown | ⏳ |
+| A26 | User groups §4.5 | Researcher read-only, no contact details | Access matrix §7.7; SQL never selects them | `routes.test`, `csv-exporter.test` | ⏳ |
+
+All Appendix A flows: ⏳ Not started. A flow is marked ✅ only after its listed test exists and passes.
 
 ## Appendix B — Edge-case checklist
 
@@ -1407,3 +1409,8 @@ Each PR passes `lint`, `typecheck`, `test` and both builds before merging. If th
 - [ ] Browser refresh during compile → URL filters restore; no orphan state.
 - [ ] Two tabs generating at once → two independent runs and codes (sequence-backed).
 - [ ] Very large park + 500 m cells → grid stays under 20k cells (check on build; reject the config otherwise).
+
+### Continuation log — 2026-10-08
+
+- ✅ P0: all migrations including 0009 applied to an isolated local PostgreSQL 17/PostGIS database; second run returned already up to date. Seven shared contract tests pass. The installed local image was used after the planned PostgreSQL 16 image download stalled. CI remains the PostgreSQL 16 compatibility check.
+- No Neon migrations or shared database seed executed.
