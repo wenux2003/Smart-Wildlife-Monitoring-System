@@ -11,6 +11,7 @@ function mapAlert(alert: {
   location: [number, number] | null;
   created_at: Date; resolved_at: Date | null;
   resolution_reason: string | null; is_broadcast: boolean;
+  has_active_dispatch?: boolean;
 }) {
   return {
     id: alert.id,
@@ -24,6 +25,7 @@ function mapAlert(alert: {
     resolvedAt: alert.resolved_at?.toISOString() ?? null,
     resolutionReason: alert.resolution_reason,
     isBroadcast: alert.is_broadcast,
+    hasActiveDispatch: alert.has_active_dispatch,
   };
 }
 

@@ -56,6 +56,7 @@ export const AlertSchema = z.object({
   resolvedAt: z.string().datetime().nullable(),
   resolutionReason: z.string().nullable().optional(),
   isBroadcast: z.boolean().optional(),
+  hasActiveDispatch: z.boolean().optional(),
 });
 export type Alert = z.infer<typeof AlertSchema>;
 

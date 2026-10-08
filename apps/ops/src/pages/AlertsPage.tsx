@@ -60,16 +60,16 @@ export function AlertsPage() {
       <AccountHeader />
       
       <main id="main-content" className="flex flex-1 overflow-hidden relative">
-        <aside className="w-[420px] flex-shrink-0 flex flex-col bg-[#14352B] border-r border-[#DCE5DC] z-[500] shadow-[4px_0_24px_rgba(20,53,43,0.06)] relative text-white">
+        <aside className="w-[420px] flex-shrink-0 flex flex-col bg-[#F4F6F1] border-r border-[#DCE5DC] z-[500] shadow-[4px_0_24px_rgba(0,0,0,0.06)] relative text-[#1F2937]">
           <div className="p-6 border-b border-[#DCE5DC] flex justify-between items-start">
             <div>
-              <p className="section-kicker !mb-2 !text-[#DCE5DC]">MONITORING</p>
-              <h1 className="text-3xl font-semibold tracking-tight text-white">Active Alerts</h1>
-              <p className="text-sm text-gray-300 mt-1.5">Manage and dispatch rangers to live alerts</p>
+              <p className="section-kicker !mb-2 text-[#14352B]">MONITORING</p>
+              <h1 className="text-3xl font-semibold tracking-tight text-[#1F2937]">Active Alerts</h1>
+              <p className="text-sm text-[#4B5563] mt-1.5">Manage and dispatch rangers to live alerts</p>
             </div>
             <button 
               onClick={() => setShowSettings(true)}
-              className="p-2 bg-[#1F4D3C] hover:bg-[#2A6550] rounded-md transition-colors"
+              className="p-2 bg-[#E8EDE4] text-[#14352B] hover:bg-[#DCE5DC] rounded-md transition-colors"
               title="Alert Settings"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -85,11 +85,11 @@ export function AlertsPage() {
             
             {!alertsLoading && alerts.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-16 h-16 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#15803D] mb-4 ring-8 ring-[#15803D]/20">
+                <div className="w-16 h-16 rounded-full bg-[#E8EDE4] flex items-center justify-center text-[#15803D] mb-4 ring-8 ring-[#15803D]/10">
                   <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                 </div>
-                <h3 className="text-lg font-medium text-white">All Clear</h3>
-                <p className="text-sm text-gray-300 mt-2">There are no active alerts at the moment.</p>
+                <h3 className="text-lg font-medium text-[#1F2937]">All Clear</h3>
+                <p className="text-sm text-[#4B5563] mt-2">There are no active alerts at the moment.</p>
               </div>
             )}
             
@@ -154,7 +154,9 @@ export function AlertsPage() {
               >
                 <Popup>
                   <strong>{alert.type}</strong> ({alert.severity})<br/>
-                  Status: {alert.status}
+                  Status: {alert.status === 'ACCEPTED' ? 'REQUIRES DISPATCH' : 
+                           alert.status === 'DISPATCHED' ? (alert.hasActiveDispatch ? 'RANGER DISPATCHED' : <span className="loading-dots">DISPATCHING</span>) :
+                           alert.status}
                 </Popup>
               </CircleMarker>
             ))}

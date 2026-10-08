@@ -61,7 +61,11 @@ export function createAlertRepository(url: string): AlertRepository {
         SELECT 
           id, park_id, collar_id, type, severity, status, 
           (ST_AsGeoJSON(location)::jsonb -> 'coordinates') AS location,
-          created_at, resolved_at, resolution_reason, is_broadcast
+          created_at, resolved_at, resolution_reason, is_broadcast,
+          EXISTS (
+            SELECT 1 FROM alert_dispatches 
+            WHERE alert_id = alerts.id AND status IN ('ACCEPTED', 'ARRIVED')
+          ) AS has_active_dispatch
         FROM alerts 
         WHERE park_id = ${parkId}
         ORDER BY created_at DESC
@@ -72,7 +76,11 @@ export function createAlertRepository(url: string): AlertRepository {
         SELECT 
           id, park_id, collar_id, type, severity, status, 
           (ST_AsGeoJSON(location)::jsonb -> 'coordinates') AS location,
-          created_at, resolved_at, resolution_reason, is_broadcast
+          created_at, resolved_at, resolution_reason, is_broadcast,
+          EXISTS (
+            SELECT 1 FROM alert_dispatches 
+            WHERE alert_id = alerts.id AND status IN ('ACCEPTED', 'ARRIVED')
+          ) AS has_active_dispatch
         FROM alerts 
         WHERE id = ${alertId}
       `;
@@ -83,7 +91,11 @@ export function createAlertRepository(url: string): AlertRepository {
         SELECT 
           id, park_id, collar_id, type, severity, status, 
           (ST_AsGeoJSON(location)::jsonb -> 'coordinates') AS location,
-          created_at, resolved_at, resolution_reason, is_broadcast
+          created_at, resolved_at, resolution_reason, is_broadcast,
+          EXISTS (
+            SELECT 1 FROM alert_dispatches 
+            WHERE alert_id = alerts.id AND status IN ('ACCEPTED', 'ARRIVED')
+          ) AS has_active_dispatch
         FROM alerts 
         WHERE id = ${alertId} AND park_id = ${parkId}
       `;
@@ -109,7 +121,8 @@ export function createAlertRepository(url: string): AlertRepository {
         RETURNING 
           id, park_id, collar_id, type, severity, status, 
           (ST_AsGeoJSON(location)::jsonb -> 'coordinates') AS location,
-          created_at, resolved_at, resolution_reason, is_broadcast
+          created_at, resolved_at, resolution_reason, is_broadcast,
+          false AS has_active_dispatch
       `;
       return result[0];
     },
@@ -122,7 +135,11 @@ export function createAlertRepository(url: string): AlertRepository {
         RETURNING 
           id, park_id, collar_id, type, severity, status, 
           (ST_AsGeoJSON(location)::jsonb -> 'coordinates') AS location,
-          created_at, resolved_at, resolution_reason, is_broadcast
+          created_at, resolved_at, resolution_reason, is_broadcast,
+          EXISTS (
+            SELECT 1 FROM alert_dispatches 
+            WHERE alert_id = alerts.id AND status IN ('ACCEPTED', 'ARRIVED')
+          ) AS has_active_dispatch
       `;
       return result.length > 0 ? result[0] : null;
     },
@@ -303,7 +320,11 @@ export function createAlertRepository(url: string): AlertRepository {
         SELECT 
           id, park_id, collar_id, type, severity, status, 
           (ST_AsGeoJSON(location)::jsonb -> 'coordinates') AS location,
-          created_at, resolved_at, resolution_reason, is_broadcast
+          created_at, resolved_at, resolution_reason, is_broadcast,
+          EXISTS (
+            SELECT 1 FROM alert_dispatches 
+            WHERE alert_id = alerts.id AND status IN ('ACCEPTED', 'ARRIVED')
+          ) AS has_active_dispatch
         FROM alerts 
         WHERE collar_id = ${collarId} 
           AND type = ${type} 

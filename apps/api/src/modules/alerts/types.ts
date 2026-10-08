@@ -22,6 +22,7 @@ export interface AlertRecord {
   resolved_at: Date | null;
   resolution_reason: string | null;
   is_broadcast: boolean;
+  has_active_dispatch?: boolean;
 }
 
 export interface CollarPingRecord {
