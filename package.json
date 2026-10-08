@@ -11,6 +11,7 @@
     "db:migrate": "corepack pnpm --filter @wr/api db:migrate",
     "db:seed": "corepack pnpm --filter @wr/api db:seed",
     "db:seed:patrols": "corepack pnpm --filter @wr/api db:seed:patrols",
+    "db:seed:demo": "corepack pnpm --filter @wr/api db:seed:demo",
     "auth:check": "corepack pnpm --filter @wr/api auth:check",
     "dev:ranger": "corepack pnpm --filter @wr/ranger dev",
     "dev:ops": "corepack pnpm --filter @wr/ops dev",

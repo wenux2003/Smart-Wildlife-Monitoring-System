@@ -10,6 +10,7 @@
     "db:migrate": "node --env-file=../../.env scripts/migrate.mjs",
     "db:seed": "tsx --env-file=../../.env src/seed.ts",
     "db:seed:patrols": "tsx --env-file=../../.env src/seed-patrols.ts",
+    "db:seed:demo": "tsx --env-file=../../.env src/seed-demo-data.ts",
     "auth:check": "node --env-file=../../.env scripts/check-auth.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
