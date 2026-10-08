@@ -159,3 +159,51 @@ At the user's request, checked the configured database and applied pending migra
 - Verified production builds for Ops and Ranger: pass. Ops retains a non-blocking large-chunk warning.
 - Full test run: 148 passed, 2 failed, 7 skipped; targeted rerun after fixing the two expectations: 10/10 passed across both affected files. Database-dependent skipped tests were not enabled.
 - This change closes lint and the two historical test failures, not the separate patrol/dispatch/telemetry functional findings. No additional migration was needed.
+
+## 8) Viva preparation findings — 2026-10-08
+
+Found while preparing the [viva notes](./Viva_Notes_Simulated_Parts_and_Prototype_Limits.md) and the sample data. Each point was checked in the source; none has been fixed yet. Re-check before the viva, because teammates may change these files.
+
+### Medium — M3 thresholds in the code differ from the agreed plan
+
+| Setting | Code | [Implementation plan §7 M3](./Group037_Implementation_Plan.md#m3-collars-alerts-and-dispatch) |
+|---|---|---|
+| Signal lost | 60 minutes without a ping ([alerts/service.ts](../apps/api/src/modules/alerts/service.ts), `checkLostSignals`) | 6 hours |
+| Dispatch acknowledgement timeout | 15 minutes ([alerts/service.ts](../apps/api/src/modules/alerts/service.ts)) | 2 minutes |
+| Low battery | below 20% default ([alerts/processor.ts](../apps/api/src/modules/alerts/processor.ts)) | below 15% |
+| Immobility | speed ≤ 0.1 on a single ping ([alerts/processor.ts](../apps/api/src/modules/alerts/processor.ts)) | within 50 m across a full 2-hour window, only with adequate telemetry |
+
+Impact: the report, demo and code would contradict each other. The immobility rule is also weaker than designed, because one slow ping can raise an alert.
+
+Required fix: choose one value per setting, then make the code (preferably park configuration) and the report agree. Implement the 2-hour movement window or document the simplification as a justified change.
+
+### Medium — M3 "nearest available ranger" has no live data source
+
+[alerts/repository.ts](../apps/api/src/modules/alerts/repository.ts) `getAvailableRangers` reads `ranger_locations`, but no API route or Ranger app code writes to that table. Distances shown when dispatching come only from seeded sample data, and a ranger with no row sorts last with no distance.
+
+Required fix: have the Ranger app send its position while signed in or on patrol (for example with each patrol sync), store it with a timestamp, and exclude positions older than the agreed freshness limit, as the plan requires.
+
+### Medium — M2 low-battery partial ending is not implemented
+
+The Ranger app has no battery detection. [offline/index.ts](../packages/offline/src/index.ts) always ends a session as `COMPLETED`; `PARTIAL` with a termination reason exists only in the database contract and sample data. Group 039's low-battery flow and Implementation plan §6 item 1 are therefore not demonstrable.
+
+Required fix: add an "End early" path with a reason, plus a simulated low-battery trigger for the demo (the Battery Status API is unavailable in most browsers), saving the session as `PARTIAL`. Test it.
+
+### Medium — M2 patrol coverage is never calculated on the server
+
+`patrol_sessions.coverage_percent` is never written by sync ([patrols/repository.ts](../apps/api/src/modules/patrols/repository.ts)), so every real patrol shows 0% coverage. The Ranger summary and any coverage claim in the report depend on it.
+
+Required fix: compute coverage on the server after ingest (route-distance ratio as the M2 plan's first version, or the spatial method in [M4 plan §8.2](./M4_Analytics_and_Export_Plan.md#82-patrol-coverage-and-gaps)), or remove coverage claims from the M2 screens and report.
+
+### Low — one collar simulator does not work; two tool folders are placeholders
+
+- [tools/simulator/collar_simulator.ts](../tools/simulator/collar_simulator.ts) calls `GET /api/collars` without a session, receives 401 and therefore sends no pings. The working simulator is [tools/collar-simulator/index.mjs](../tools/collar-simulator/index.mjs) with `sample-data.json`. Delete or fix the broken one so nobody demos it.
+- `tools/sms-gateway-mock` and `tools/camera-trap-feeder` contain only a README. Their roles are covered in the apps (the "Use mock SMS gateway" option on the Ranger app's community page and the upload form with "Mock person flag" on Camera review). Update both READMEs to point there.
+
+### Low — real-time updates use polling, not the planned server events
+
+Alerts and dispatches refresh every 3 seconds and collars every 30 seconds (`refetchInterval` in [AlertsPage.tsx](../apps/ops/src/pages/AlertsPage.tsx), [AlertCard.tsx](../apps/ops/src/components/AlertCard.tsx) and [DispatchesPage.tsx](../apps/ranger/src/pages/DispatchesPage.tsx)). Implementation plan §5 describes SSE. Acceptable for the prototype, but the report must say polling.
+
+### Information — synthetic sample data added to the shared database
+
+On 8 October `corepack pnpm db:seed:demo` ([seed-demo-data.ts](../apps/api/src/seed-demo-data.ts)) added labelled synthetic data to every business table: six months for Yala and a smaller set for Wilpattu and Sinharaja. It also sent six villager SMS through the real `POST /api/community/sms` endpoint. Accounts, sessions and account events were not changed; Yala and Wilpattu received alert geofence zones because they had none. The script is idempotent, and `corepack pnpm db:seed:demo --remove` deletes exactly its rows. See [Demo accounts → Sample data](./Demo_Accounts.md#sample-data).
