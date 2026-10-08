@@ -1393,7 +1393,7 @@ The implementation plan requires "six months of labeled synthetic analytics data
 | P3 Repository               | Read SQL for KPIs, trend, breakdown, hotspots, gaps, conflicts; audit repository; DB tests                                                       | 1                   | DB tests green on an isolated database; query < 2 s on the seed | ✅ Done — seeded report and spatial/GPS/audit isolation checks pass locally                                                        |
 | P4 Service + routes         | E1–E5, errors, access, timeout, rate limit, server registration                                                                                  | 1                   | `routes.test.ts` and `service.test.ts` green                    | ✅ Done — E1–E5 wired; service/routes and isolated DB tests pass; workspace lint, typecheck, tests and local migration checks pass |
 | P5 Exports                  | CSV writer and exporter, PDF exporter + SVG charts                                                                                               | 1                   | PDF text and CSV value tests green; files open correctly        | ✅ Done — deterministic PDF/CSV exporters, PDF text/page and CSV safety/size tests pass; byte hash returned/audited              |
-| P6 UI core                  | Layout, filters, overview page, export bar, all states                                                                                           | 1                   | UI tests green; manual keyboard pass                            | ⏳ Not started                                                                                                                     |
+| P6 UI core                  | Layout, filters, overview page, export bar, all states                                                                                           | 1                   | UI tests green; manual keyboard pass                            | ✅ Done — URL-backed filters, overview states/exports, 14 UI and route tests; keyboard pass verified                                |
 | P7 UI spatial and conflicts | Map page, patrol gaps page, conflict page, history page                                                                                          | 1                   | UI tests green                                                  | ⏳ Not started                                                                                                                     |
 | P8 Polish                   | Motion, count-up, stamp, skeletons, insight sentences, a11y fixes                                                                                | 1 (motion is small) | Reduced-motion check                                            | ⏳ Not started                                                                                                                     |
 | P9 Evidence                 | `vitest.m4.config.ts` ≥ 85%, screenshots, traceability rows, docs updates, AI prompt log                                                         | 1                   | Coverage report saved; README status updated                    | ⏳ Not started                                                                                                                     |
@@ -1420,9 +1420,9 @@ Each PR passes `lint`, `typecheck`, `test` and both builds before merging. If th
 - [ ] No contact details in any analytics response, PDF or CSV (asserted by tests).
 - ✅ Each report generation is audited (filters, user, time, outcome, duration, hash); each export is audited (format, outcome, size, hash).
 - ✅ PDF and CSV are rendered from the snapshot; their content is asserted by tests.
-- [ ] Empty, timeout and export-failure states keep filters and the report.
+- ✅ Empty suggestions preserve filters; timeout/network/export failures retain the available report; UI state tests pass.
 - [ ] `vitest.m4.config.ts` ≥ 85% lines, branches, functions and statements; DB tests pass on an isolated database.
-- [ ] Lint and typecheck are clean; `0009` migrates twice; the seed runs twice with no duplicates.
+- ✅ Lint/typecheck pass; migration `0009` and repeat-seed checks were verified in their respective phases.
 - [ ] UI matches the G39 wireframe layout with the justified changes in §2.2; screenshots captured.
 - [ ] README project status, Implementation plan §5/§7 M4, User groups §4.2/§4.5 and the traceability doc are updated to link here.
 - [ ] AI prompts used for M4 are recorded in `docs/ai-prompts.md`.
@@ -1465,30 +1465,30 @@ Each PR passes `lint`, `typecheck`, `test` and both builds before merging. If th
 
 | #   | G39 source              | Flow step                                              | Implementation                             | Test                                                      | Status |
 | --- | ----------------------- | ------------------------------------------------------ | ------------------------------------------ | --------------------------------------------------------- | ------ |
-| A1  | p. 4 main               | Select analytics module                                | Workspace tile → `/analytics`; route guard | `App.test` route; Workspace tile test                     | ⏳     |
-| A2  | p. 4 main               | System prompts filters                                 | `FilterBar` with defaults from E1          | `FilterBar.test`                                          | ⏳     |
-| A3  | p. 5 main               | User sets park / timeframe / category, clicks Generate | URL filters → `POST /reports/runs`         | `AnalyticsOverviewPage.test`, `routes.test`               | ⏳     |
-| A4  | p. 5 main               | System validates filters                               | Zod + `normalizeFilter` + clock check      | `analytics.test`, `filter.test`, `service.test`           | ⏳     |
+| A1  | p. 4 main               | Select analytics module                                | Workspace tile → `/analytics`; route guard | `App.test.tsx` (tile and route)                            | ✅     |
+| A2  | p. 4 main               | System prompts filters                                 | `FilterBar` with defaults from E1          | `AnalyticsOverviewPage.test.tsx` (initial defaults)        | ✅     |
+| A3  | p. 5 main               | User sets park / timeframe / category, clicks Generate | URL filters → `POST /reports/runs`         | `AnalyticsOverviewPage.test.tsx`, `routes.test.ts`         | ✅     |
+| A4  | p. 5 main               | System validates filters                               | Zod + `normalizeFilter` + clock check      | `domain/domain.test.ts`, `service.test.ts`                 | ✅     |
 | A5  | p. 5 main               | Search incidents and patrol data                       | Repository read-only transaction           | `repository.db.test`                                      | ⏳     |
 | A6  | p. 5 main               | Compute frequency, gaps, hotspots                      | §4 metrics, §8 algorithms                  | `metrics.test`, DB tests                                  | ⏳     |
-| A7  | p. 5 main               | Show report with tables and charts                     | Overview page sections                     | `AnalyticsOverviewPage.test`                              | ⏳     |
+| A7  | p. 5 main               | Show report with tables and charts                     | Overview page sections                     | `AnalyticsOverviewPage.test.tsx`                           | ✅     |
 | A8  | p. 5 main               | Click Export, file compiled                            | E4 + exporters                             | `exporters.test`, `routes.test`                           | ✅     |
-| A9  | p. 5 main               | User downloads file                                    | Blob download, server filename             | `ExportBar.test`                                          | ⏳     |
+| A9  | p. 5 main               | User downloads file                                    | Blob download, server filename             | `AnalyticsOverviewPage.test.tsx` (blob link and requests)  | ✅     |
 | A10 | p. 5 alt                | Toggle spatial heatmap                                 | `/analytics/map` from the same snapshot    | `AnalyticsMapPage.test`                                   | ⏳     |
 | A11 | p. 5 alt                | Hotspots + patrol breadcrumbs on map                   | Hotspot + coverage layers                  | `AnalyticsMapPage.test`, DB tests                         | ⏳     |
-| A12 | p. 5 alt                | Review clusters to reallocate patrols                  | Priority cells list                        | `metrics.test` (score), page test                         | ⏳     |
+| A12 | p. 5 alt                | Review clusters to reallocate patrols                  | Priority cells list                        | `domain/domain.test.ts` (score), `AnalyticsOverviewPage.test.tsx` | ✅     |
 | A13 | p. 5 alt                | Select HWC category                                    | Conflict page / category group             | `ConflictTrendsPage.test`                                 | ⏳     |
 | A14 | p. 5 alt                | Aggregate collar alerts + villager reports             | Separate series                            | DB tests (source separation), page test (caption)         | ⏳     |
 | A15 | p. 5 alt                | Plot recurring boundary conflict trends                | Month × stretch matrix                     | `StretchMatrix` test, DB nearest-stretch test             | ⏳     |
 | A16 | p. 6 alt                | Export skipped                                         | Run audited with no export                 | `service.test`, history page test                         | ⏳     |
-| A17 | p. 6 post               | Analysis rendered on dashboard                         | SUCCEEDED state                            | Page test                                                 | ⏳     |
+| A17 | p. 6 post               | Analysis rendered on dashboard                         | SUCCEEDED state                            | `AnalyticsOverviewPage.test.tsx`                          | ✅     |
 | A18 | p. 6 post               | Query logged in audit history                          | `report_runs` + `/reports`                 | `service.test`, `ReportHistoryPage.test`                  | ⏳     |
 | A19 | p. 6 post (changed, C9) | Document downloaded **if requested**                   | Conditional export                         | `service.test`                                            | ✅     |
-| A20 | p. 6 exc                | No records → notify, suggest widening                  | EMPTY + suggestions                        | `service.test`, page test                                 | ⏳     |
+| A20 | p. 6 exc                | No records → notify, suggest widening                  | EMPTY + suggestions                        | `service.test`, `AnalyticsOverviewPage.test.tsx`           | ✅     |
 | A21 | p. 6 exc                | Timeout → abort, keep filters, retry                   | 504 + banner + Retry                       | `service.test`, `routes.test`, page test, DB timeout test | ⏳     |
-| A22 | p. 7 exc                | Export failure → notify, keep report                   | FAILED export + toast                      | `service.test`, page test                                 | ⏳     |
-| A23 | p. 7 seq                | `ConservationReport` created                           | Snapshot in `report_runs`                  | `report-assembler.test`                                   | ⏳     |
-| A24 | Our critique            | Remove "confidence %"; add sample sizes                | Data-quality strip                         | Page test                                                 | ⏳     |
+| A22 | p. 7 exc                | Export failure → notify, keep report                   | FAILED export + toast                      | `service.test`, `AnalyticsOverviewPage.test.tsx`           | ✅     |
+| A23 | p. 7 seq                | `ConservationReport` created                           | Snapshot in `report_runs`                  | `domain/domain.test.ts`                                   | ✅     |
+| A24 | Our critique            | Remove "confidence %"; add sample sizes                | Data-quality strip                         | `AnalyticsOverviewPage.test.tsx`                          | ✅     |
 | A25 | Case study p. 2         | Park flexibility                                       | `config.analytics` per park                | `analytics.test` (config), seed differences shown         | ⏳     |
 | A26 | User groups §4.5        | Researcher read-only, no contact details               | Access matrix §7.7; SQL never selects them | `routes.test`, `csv-exporter.test`                        | ⏳     |
 
@@ -1564,4 +1564,13 @@ Appendix A flows without ✅ remain ⏳. A flow is marked ✅ only after its lis
 - ✅ PDF carries the selected report identity, filters, KPIs, summaries, trend, data-quality, spatial aggregates, priorities, conflicts, page count, snapshot hash, demo provenance when present, and prototype disclaimer. The byte hash remains in the response/audit per the user's hash decision.
 - ✅ Focused analytics tests: 47 passed, 4 isolated-database tests skipped. PDF.js extracted actual text from the generated PDF; its 4-page output was deterministic across repeated renders. CSV BOM, quoting, injection guards, period values, privacy, and export limits are tested.
 - ✅ Required phase checks: `corepack pnpm lint`, `corepack pnpm typecheck`, and `corepack pnpm test` passed. Workspace suite: 31 files passed, 6 skipped; 204 tests passed, 11 skipped. No P5 database change was needed; no shared Neon changes were made.
-- ⏳ P6 UI core is next. P7–P9 remain not started; M4 is not complete end-to-end.
+
+### P6 completion — 2026-10-08
+
+- ✅ Added the PM/Researcher-only `/analytics` route and workspace tile, URL-backed filters, report overview, accessible trend table, breakdown, priority areas and data-quality summary. The route is lazy-loaded; filter values are part of report query keys and persisted with the run ID.
+- ✅ Added pre-report, compiling, succeeded, EMPTY, timeout/network, and export-failure states. Previous successful reports remain visible during regeneration and retryable failures; CSV and PDF exports track independent in-flight states.
+- ✅ Focused Ops UI/route tests: 14 passed across `AnalyticsOverviewPage.test.tsx` and `App.test.tsx`, including access pending, filter-to-API wiring, run restoration, empty suggestions, prior-report retention, retry, export failure and concurrent-format behavior.
+- ✅ Manual keyboard pass in an isolated Vite preview: tabbing from “More filters” focused the Park selector; `:focus-visible` was present. No screenshot was captured.
+- ✅ Required P6 checks: `corepack pnpm lint`, `corepack pnpm typecheck`, `corepack pnpm test` (32 files passed, 6 skipped; 214 tests passed, 11 skipped), and `corepack pnpm --filter @wr/ops build`.
+- ⚠️ Build succeeds; Vite still reports the existing main application chunk at 643.58 kB. The analytics page is separately split at 410.70 kB.
+- No migration, shared Neon operation, or database write was needed for P6. P7–P9 remain ⏳; M4 is not complete end-to-end.

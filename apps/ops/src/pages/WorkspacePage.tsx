@@ -90,11 +90,15 @@ export function WorkspacePage() {
                 ]),
             { icon: Footprints, name: "Ranger patrols", link: undefined },
             { icon: Radio, name: "Wildlife alerts", link: "/alerts" },
-            {
-              icon: ChartNoAxesCombined,
-              name: "Conservation analytics",
-              link: "/analytics",
-            },
+            ...(user.role === "PARK_MANAGER" || user.role === "RESEARCHER"
+              ? [
+                  {
+                    icon: ChartNoAxesCombined,
+                    name: "Conservation analytics",
+                    link: "/analytics",
+                  },
+                ]
+              : []),
           ].map(({ icon: Icon, name, link }) => (
             <article key={name}>
               <Icon size={27} />
@@ -109,10 +113,12 @@ export function WorkspacePage() {
             </article>
           ))}
         </div>
-        <p className="workspace-footnote">
-          These modules are not available yet. Your account does not grant
-          access to operational park data until permissions are assigned.
-        </p>
+        {user.role !== "PARK_MANAGER" && user.role !== "RESEARCHER" && (
+          <p className="workspace-footnote">
+            Operational park data is available only to authorized park staff
+            and researchers.
+          </p>
+        )}
         <Link className="inline-link" to="/">
           Explore our mission <ArrowRight size={16} />
         </Link>

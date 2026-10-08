@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import type { ReactNode } from "react";
 import { AuthProvider } from "../auth/AuthContext.js";
 import { useAuth } from "../auth/AuthContext.js";
@@ -15,6 +16,12 @@ import { IncidentsPage } from "../pages/IncidentsPage.js";
 import { IncidentDetailPage } from "../pages/IncidentDetailPage.js";
 import { CameraReviewPage } from "../pages/CameraReviewPage.js";
 import { AccountHeader } from "../components/AccountHeader.js";
+
+const AnalyticsOverviewPage = lazy(() =>
+  import("../features/analytics/pages/AnalyticsOverviewPage.js").then(
+    ({ AnalyticsOverviewPage: page }) => ({ default: page }),
+  ),
+);
 
 type RoleName =
   "SUPER_ADMIN" | "PARK_MANAGER" | "RANGER" | "LIAISON_OFFICER" | "RESEARCHER";
@@ -135,6 +142,7 @@ export function App() {
       "/staff": "Staff accounts",
       "/change-password": "Change password",
       "/ranger": "Ranger app access",
+      "/analytics": "Conservation analytics",
     };
     document.title = `${titles[location.pathname] ?? "Page not found"} | Wana Rakshaka`;
   }, [location.pathname]);
@@ -216,6 +224,22 @@ export function App() {
             <RoleRoute roles={["PARK_MANAGER", "LIAISON_OFFICER"]}>
               <CameraReviewPage />
             </RoleRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <Suspense
+              fallback={
+                <main className="center-state" role="status">
+                  Loading analytics…
+                </main>
+              }
+            >
+              <RoleRoute roles={["PARK_MANAGER", "RESEARCHER"]}>
+                <AnalyticsOverviewPage />
+              </RoleRoute>
+            </Suspense>
           }
         />
         <Route

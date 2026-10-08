@@ -13,6 +13,9 @@ vi.mock("../pages/HomePage.js", () => ({
 vi.mock("../components/Reveal.js", () => ({
   Reveal: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
+vi.mock("../features/analytics/pages/AnalyticsOverviewPage.js", () => ({
+  AnalyticsOverviewPage: () => <main><h1>Analytics overview</h1></main>,
+}));
 
 afterEach(() => {
   cleanup();
@@ -61,6 +64,17 @@ describe("role-aware Ops routes", () => {
     expect(await screen.findByRole("heading", { name: "Parks & accounts" })).toBeInTheDocument();
     expect(screen.getByText(/Operational park data is not available/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
+  });
+
+  it("opens the analytics module from a Park Manager workspace", async () => {
+    mountApp("/dashboard", account({ role: "PARK_MANAGER" }));
+    expect(await screen.findByRole("heading", { name: /Welcome, Test/ })).toBeInTheDocument();
+    const analyticsLink = screen
+      .getAllByRole("link", { name: "Open" })
+      .find((link) => link.getAttribute("href") === "/analytics");
+    expect(analyticsLink).toBeTruthy();
+    fireEvent.click(analyticsLink!);
+    expect(await screen.findByRole("heading", { name: "Analytics overview" })).toBeInTheDocument();
   });
 
   it("forces a temporary-password account to change the password before the workspace", async () => {

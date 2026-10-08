@@ -1,0 +1,531 @@
+// @vitest-environment jsdom
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MemoryRouter, useLocation } from "react-router-dom";
+import type {
+  AnalyticsOptions,
+  ConservationReport,
+  ReportRunResponse,
+} from "@wr/shared";
+import { AnalyticsOverviewPage } from "./AnalyticsOverviewPage.js";
+
+const { mockAuth } = vi.hoisted(() => ({
+  mockAuth: { user: null as null | Record<string, string | boolean | null> },
+}));
+
+vi.mock("../../../auth/AuthContext.js", () => ({
+  useAuth: () => ({ user: mockAuth.user }),
+}));
+vi.mock("../../../components/AccountHeader.js", () => ({
+  AccountHeader: () => <header>Account controls</header>,
+}));
+vi.mock("recharts", () => ({
+  Bar: () => null,
+  BarChart: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  CartesianGrid: () => null,
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  Tooltip: () => null,
+  XAxis: () => null,
+  YAxis: () => null,
+}));
+
+const parkId = "11111111-1111-4111-8111-111111111111";
+const runId = "22222222-2222-4222-8222-222222222222";
+const sectorId = "33333333-3333-4333-8333-333333333333";
+
+const options: AnalyticsOptions = {
+  allowedParks: [{ id: parkId, code: "YALA", name: "Yala National Park" }],
+  types: [
+    "POACHING",
+    "INJURED_ANIMAL",
+    "SNARE_FOUND",
+    "FENCE_DAMAGE",
+    "HUMAN_WILDLIFE_CONFLICT",
+    "CROP_DAMAGE",
+    "OTHER",
+  ],
+  sources: ["RANGER", "COMMUNITY", "CAMERA_TRAP"],
+  sectors: [
+    { id: sectorId, code: "SOUTH", name: "Southern Ridge", kind: "SECTOR" },
+  ],
+  earliestDataDate: "2026-01-01",
+  latestDataDate: "2026-10-01",
+  config: {
+    gridCellMeters: 1000,
+    trackBufferMeters: 50,
+    gapNeglectDays: 14,
+    hotspotMinCount: 3,
+    configured: true,
+  },
+};
+
+const report: ConservationReport = {
+  schemaVersion: 1,
+  park: { id: parkId, code: "YALA", name: "Yala National Park" },
+  filters: {
+    parkId,
+    from: "2026-04-01",
+    to: "2026-10-01",
+    preset: "CUSTOM",
+    categoryGroup: "ALL",
+    types: [],
+    sources: [],
+    sectorId: null,
+    includeRejected: false,
+  },
+  window: {
+    fromUtc: "2026-03-31T18:30:00.000Z",
+    toUtcExclusive: "2026-10-01T18:30:00.000Z",
+    bucket: "MONTH",
+    timezone: "Asia/Colombo",
+    days: 184,
+  },
+  generatedAt: "2026-10-07T12:12:00.000Z",
+  kpis: {
+    totalIncidents: 42,
+    previousPeriodIncidents: 38,
+    changePercent: 10.5,
+    changeKind: "UP",
+    hotspotCells: 1,
+    hotspotSectorNames: ["Southern Ridge"],
+    patrolGapAreaKm2: 18.4,
+    patrolGapSharePercent: 19,
+    communityConflictReports: 2,
+    collarBreaches: 1,
+  },
+  dataQuality: {
+    excludedNoLocation: 3,
+    excludedRejected: 2,
+    outsideBoundary: 0,
+    sessionsWithoutTrack: 1,
+    droppedGpsPoints: 0,
+    alertsWithoutLocation: 0,
+  },
+  trend: [{ bucketStart: "2026-09-01", label: "Sep 2026", count: 42 }],
+  breakdown: [
+    {
+      type: "POACHING",
+      sectorId,
+      sectorName: "Southern Ridge",
+      count: 42,
+      riskLevel: "CRITICAL",
+      sharePercent: 100,
+    },
+  ],
+  hotspots: {
+    cellSizeMeters: 1000,
+    cells: [
+      {
+        cellId: "1:1",
+        polygon: [{ latitude: 6.5, longitude: 81.4 }],
+        sectorName: "Southern Ridge",
+        count: 3,
+        riskClass: 5,
+        isHotspot: true,
+      },
+    ],
+    classBreaks: [1, 2, 3, 4, 5],
+  },
+  patrolGaps: {
+    configured: true,
+    cells: [],
+    coveredAreaKm2: 75,
+    gapAreaKm2: 18.4,
+    parkAreaKm2: 100,
+    bySector: [],
+  },
+  priorityCells: [
+    {
+      cellId: "1:1",
+      centre: { latitude: 6.5, longitude: 81.4 },
+      sectorName: "Southern Ridge",
+      incidents: 6,
+      daysSincePatrol: 23,
+      score: 12.4,
+    },
+  ],
+  conflicts: {
+    series: [
+      {
+        bucketStart: "2026-09-01",
+        label: "Sep 2026",
+        communityReports: 2,
+        collarBreaches: 1,
+        rangerReported: 0,
+      },
+    ],
+    byStretch: [],
+  },
+  summarySentences: ["Incidents increased by 11% from the previous period."],
+};
+
+const successfulRun: ReportRunResponse = {
+  runId,
+  code: "RPT-YALA-2026-000042",
+  status: "SUCCEEDED",
+  snapshotSha256: "a".repeat(64),
+  report,
+  suggestions: [],
+};
+
+function LocationText() {
+  const location = useLocation();
+  return <output aria-label="Current filters">{location.search}</output>;
+}
+
+function show(initialEntry = "/analytics") {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[initialEntry]}>
+        <LocationText />
+        <AnalyticsOverviewPage />
+      </MemoryRouter>
+    </QueryClientProvider>,
+  );
+}
+
+let fetchMock: ReturnType<typeof vi.fn>;
+beforeEach(() => {
+  mockAuth.user = {
+    id: "operator-1",
+    role: "PARK_MANAGER",
+    parkId,
+    parkName: "Yala National Park",
+  };
+  fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    if (url.includes("/api/analytics/options"))
+      return new Response(JSON.stringify(options), { status: 200 });
+    if (url === "/api/reports/runs" && init?.method === "POST")
+      return new Response(JSON.stringify(successfulRun), { status: 201 });
+    if (url.includes("/exports"))
+      return new Response(new Blob(["csv content"]), {
+        status: 200,
+        headers: {
+          "Content-Disposition": 'attachment; filename="report.csv"',
+          "X-Report-Sha256": "b".repeat(64),
+        },
+      });
+    if (url.includes(`/api/reports/runs/${runId}`))
+      return new Response(JSON.stringify(successfulRun), { status: 200 });
+    return new Response(JSON.stringify({ message: "Not found" }), {
+      status: 404,
+    });
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+    callback(0);
+    return 1;
+  });
+  vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+  vi.stubGlobal("URL", {
+    createObjectURL: vi.fn(() => "blob:test"),
+    revokeObjectURL: vi.fn(),
+  });
+});
+
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
+
+describe("analytics overview", () => {
+  it("shows access pending without requesting filters when a researcher has no park", () => {
+    mockAuth.user = {
+      id: "researcher-1",
+      role: "RESEARCHER",
+      parkId: null,
+      parkName: null,
+    };
+    show();
+    expect(
+      screen.getByRole("heading", { name: "Park access pending" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "Report filters" }),
+    ).not.toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps filter state in the URL and generates a report with the selected filters", async () => {
+    show();
+    await screen.findByRole("heading", {
+      name: "Choose filters and generate a report",
+    });
+    expect(screen.getByLabelText("Date range")).toHaveValue("LAST_6_MONTHS");
+    expect(screen.getByLabelText("Category")).toHaveValue("ALL");
+    fireEvent.click(screen.getByRole("button", { name: "More filters" }));
+    fireEvent.change(screen.getByLabelText("Category"), {
+      target: { value: "HUMAN_WILDLIFE_CONFLICT" },
+    });
+    fireEvent.change(screen.getByLabelText("Sector"), {
+      target: { value: sectorId },
+    });
+    fireEvent.click(screen.getByLabelText("Include rejected incidents"));
+    expect(screen.getByLabelText("Current filters").textContent).toContain(
+      "group=HUMAN_WILDLIFE_CONFLICT",
+    );
+    expect(screen.getByLabelText("Current filters").textContent).toContain(
+      `sector=${sectorId}`,
+    );
+    expect(screen.getByLabelText("Current filters").textContent).toContain(
+      "rejected=true",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    expect(await screen.findByText(/n = 42 incidents/)).toBeInTheDocument();
+    expect(await screen.findAllByText("RPT-YALA-2026-000042")).toHaveLength(2);
+    expect(
+      screen.getByRole("heading", { name: "Priority areas" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/6 incidents · 23 days since patrol/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: "Data quality summary" }),
+    ).toHaveTextContent("3 without location");
+    const request = fetchMock.mock.calls.find(
+      ([url, init]) =>
+        String(url) === "/api/reports/runs" && init?.method === "POST",
+    );
+    expect(JSON.parse(String(request?.[1]?.body))).toMatchObject({
+      parkId,
+      categoryGroup: "HUMAN_WILDLIFE_CONFLICT",
+      sectorId,
+      includeRejected: true,
+    });
+    const urlFilters =
+      screen.getByLabelText("Current filters").textContent ?? "";
+    expect(urlFilters).toContain(`park=${parkId}`);
+    expect(urlFilters).toContain("from=");
+    expect(urlFilters).toContain("to=");
+    expect(urlFilters).toContain(`run=${runId}`);
+  });
+
+  it("exports the preserved report and keeps CSV available while PDF work is pending", async () => {
+    show(`/analytics?run=${runId}`);
+    await screen.findByText(/n = 42 incidents/);
+    const csv = screen.getByRole("button", { name: "Export data (CSV)" });
+    const pdf = screen.getByRole("button", { name: "Export official PDF" });
+    expect(csv).toBeEnabled();
+    expect(pdf).toBeEnabled();
+    const normalFetch = fetchMock.getMockImplementation()!;
+    let finishPdf!: (response: Response) => void;
+    fetchMock.mockImplementation(
+      (input: RequestInfo | URL, init?: RequestInit) => {
+        if (String(input).includes("/exports") && init?.body) {
+          const { format } = JSON.parse(String(init.body)) as {
+            format: string;
+          };
+          if (format === "PDF")
+            return new Promise<Response>((resolve) => {
+              finishPdf = resolve;
+            });
+        }
+        return normalFetch(input, init);
+      },
+    );
+    fireEvent.click(pdf);
+    expect(
+      await screen.findByRole("button", { name: "Preparing PDF…" }),
+    ).toBeDisabled();
+    expect(csv).toBeEnabled();
+    fireEvent.click(csv);
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        `/api/reports/runs/${runId}/exports`,
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+    finishPdf(new Response(new Blob(["pdf content"]), { status: 200 }));
+    await screen.findByRole("button", { name: "Export official PDF" });
+    await waitFor(() =>
+      expect(
+        vi.mocked(HTMLAnchorElement.prototype.click),
+      ).toHaveBeenCalledTimes(2),
+    );
+    expect(
+      screen.getByText("Snapshot preserved for reproducible downloads"),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps the previous report dimmed while a revised filter set is compiling", async () => {
+    show(`/analytics?run=${runId}`);
+    await screen.findByText(/n = 42 incidents/);
+    fireEvent.click(screen.getByRole("button", { name: "More filters" }));
+    fireEvent.change(screen.getByLabelText("Category"), {
+      target: { value: "HUMAN_WILDLIFE_CONFLICT" },
+    });
+    const normalFetch = fetchMock.getMockImplementation()!;
+    let finishGeneration!: (response: Response) => void;
+    fetchMock.mockImplementation(
+      (input: RequestInfo | URL, init?: RequestInit) =>
+        String(input) === "/api/reports/runs" && init?.method === "POST"
+          ? new Promise<Response>((resolve) => {
+              finishGeneration = resolve;
+            })
+          : normalFetch(input, init),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    expect(
+      await screen.findByRole("button", { name: "Compiling…" }),
+    ).toBeDisabled();
+    expect(screen.getByText(/n = 42 incidents/)).toBeInTheDocument();
+    expect(screen.getByText(/Showing the previous report/)).toBeInTheDocument();
+    finishGeneration(
+      new Response(JSON.stringify(successfulRun), { status: 201 }),
+    );
+    await screen.findByRole("button", { name: "Generate report" });
+  });
+
+  it("shows a retryable failure without dropping the prior report", async () => {
+    show(`/analytics?run=${runId}`);
+    await screen.findByText(/n = 42 incidents/);
+    fetchMock.mockImplementationOnce(async () => {
+      throw new Error("offline");
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "couldn’t reach the server",
+    );
+    expect(screen.getByText(/n = 42 incidents/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
+  });
+
+  it("shows EMPTY suggestions and applies the widened period without changing other filters", async () => {
+    show();
+    await screen.findByRole("heading", {
+      name: "Choose filters and generate a report",
+    });
+    const emptyRun: ReportRunResponse = {
+      ...successfulRun,
+      runId: "44444444-4444-4444-8444-444444444444",
+      status: "EMPTY",
+      snapshotSha256: null,
+      report: null,
+      suggestions: ["Widen to 12 months", "All categories"],
+    };
+    const normalFetch = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementationOnce(
+      (input: RequestInfo | URL, init?: RequestInit) =>
+        String(input) === "/api/reports/runs" && init?.method === "POST"
+          ? Promise.resolve(
+              new Response(JSON.stringify(emptyRun), { status: 201 }),
+            )
+          : normalFetch(input, init),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    expect(
+      await screen.findByRole("heading", {
+        name: "No records match these filters",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Nothing to export")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Widen to 12 months" }));
+    expect(screen.getByLabelText("Date range")).toHaveValue("LAST_12_MONTHS");
+    expect(
+      screen.queryByRole("heading", { name: "No records match these filters" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("applies a server suggestion to clear a sector filter", async () => {
+    const emptyRun: ReportRunResponse = {
+      ...successfulRun,
+      runId: "66666666-6666-4666-8666-666666666666",
+      status: "EMPTY",
+      snapshotSha256: null,
+      report: null,
+      suggestions: ["Clear the sector filter", "Clear the source filter"],
+    };
+    const normalFetch = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(
+      (input: RequestInfo | URL, init?: RequestInit) =>
+        String(input).includes(emptyRun.runId)
+          ? Promise.resolve(
+              new Response(JSON.stringify(emptyRun), { status: 200 }),
+            )
+          : normalFetch(input, init),
+    );
+    show(`/analytics?run=${emptyRun.runId}&sector=${sectorId}&sources=RANGER`);
+    await screen.findByRole("heading", {
+      name: "No records match these filters",
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Clear the sector filter" }),
+    );
+    const currentFilters =
+      screen.getByLabelText("Current filters").textContent ?? "";
+    expect(currentFilters).not.toContain("sector=");
+    expect(currentFilters).toContain("sources=RANGER");
+  });
+
+  it("shows a timeout with a retry while preserving the URL filters", async () => {
+    show(`/analytics?run=${runId}`);
+    await screen.findByText(/n = 42 incidents/);
+    const timedOut: ReportRunResponse = {
+      ...successfulRun,
+      runId: "55555555-5555-4555-8555-555555555555",
+      status: "TIMED_OUT",
+      snapshotSha256: null,
+      report: null,
+    };
+    const normalFetch = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementationOnce(
+      (input: RequestInfo | URL, init?: RequestInit) =>
+        String(input) === "/api/reports/runs" && init?.method === "POST"
+          ? Promise.resolve(
+              new Response(JSON.stringify(timedOut), { status: 201 }),
+            )
+          : normalFetch(input, init),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "report took too long",
+    );
+    expect(screen.getByLabelText("Current filters").textContent).toContain(
+      `run=${timedOut.runId}`,
+    );
+    expect(screen.getByText(/n = 42 incidents/)).toBeInTheDocument();
+    expect(screen.getByText(/Showing the previous report/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByText(/n = 42 incidents/)).toBeInTheDocument();
+  });
+
+  it("shows an export failure and leaves the report available", async () => {
+    show(`/analytics?run=${runId}`);
+    await screen.findByText(/n = 42 incidents/);
+    fetchMock.mockImplementationOnce(async (input: RequestInfo | URL) =>
+      String(input).includes("/exports")
+        ? new Response(
+            JSON.stringify({ message: "PDF renderer unavailable" }),
+            { status: 503 },
+          )
+        : new Response(JSON.stringify(successfulRun), { status: 200 }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Export official PDF" }),
+    );
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "PDF could not be generated",
+    );
+    expect(screen.getByText(/n = 42 incidents/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Retry PDF" }),
+    ).toBeInTheDocument();
+  });
+});
