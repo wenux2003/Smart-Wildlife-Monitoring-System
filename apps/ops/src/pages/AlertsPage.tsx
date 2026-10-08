@@ -89,6 +89,14 @@ export function AlertsPage() {
             </div>
             <div className="flex gap-2">
               <button 
+                onClick={() => setIsDrawing(!isDrawing)}
+                className={`px-4 py-2 rounded-md transition-colors flex items-center justify-center font-bold text-sm ${isDrawing ? 'bg-[#166534] text-white hover:bg-[#14532d]' : 'bg-[#E8EDE4] text-[#14352B] hover:bg-[#DCE5DC]'}`}
+                title={isDrawing ? "Cancel Drawing" : "Draw Geofence Zone"}
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                {isDrawing ? "CANCEL DRAWING" : "DRAW ZONE"}
+              </button>
+              <button 
                 onClick={() => setShowSettings(true)}
                 className="p-2 bg-[#E8EDE4] text-[#14352B] hover:bg-[#DCE5DC] rounded-md transition-colors"
                 title="Alert Settings"
@@ -210,22 +218,15 @@ export function AlertsPage() {
             />
           </MapContainer>
 
-          {/* Floating Draw Button */}
-          <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 9999 }}>
-            <button 
-              onClick={() => setIsDrawing(!isDrawing)}
-              className={`px-4 py-2 rounded-md shadow-lg transition-colors flex items-center gap-2 font-bold ${isDrawing ? 'bg-[#166534] text-white' : 'bg-white text-[#14352B] hover:bg-gray-50 border-2 border-[#166534]'}`}
-              title={isDrawing ? "Cancel Drawing" : "Draw Geofence Zone"}
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-              <span>{isDrawing ? "CANCEL DRAWING" : "DRAW ZONE"}</span>
-            </button>
-          </div>
-
           {isDrawing && (
-            <div style={{ position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)', zIndex: 9999 }} className="bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-md border border-[#DCE5DC] text-sm text-[#14352B] flex items-center gap-2">
+            <div style={{ position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)', zIndex: 9999 }} className="bg-white/90 backdrop-blur px-5 py-2.5 rounded-2xl shadow-lg border border-[#DCE5DC] text-sm text-[#14352B] flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-[#166534] animate-pulse"></div>
-              Click on the map to draw points. Right-click when finished.
+              <div className="flex flex-col">
+                <span className="font-semibold">Click to draw boundary points</span>
+                <span className="text-xs text-[#4B5563]">
+                  Click the <strong className="text-[#166534]">first point (green)</strong> or Right-click to finish. Press <strong className="text-gray-700">Backspace</strong> to undo.
+                </span>
+              </div>
             </div>
           )}
         </div>
