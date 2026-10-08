@@ -14,7 +14,6 @@ import { AlertsPage } from "../pages/AlertsPage.js";
 import { IncidentsPage } from "../pages/IncidentsPage.js";
 import { IncidentDetailPage } from "../pages/IncidentDetailPage.js";
 import { CameraReviewPage } from "../pages/CameraReviewPage.js";
-import { AnalyticsPage } from "../pages/AnalyticsPage.js";
 import { AccountHeader } from "../components/AccountHeader.js";
 
 type RoleName =
@@ -216,16 +215,6 @@ export function App() {
           element={
             <RoleRoute roles={["PARK_MANAGER", "LIAISON_OFFICER"]}>
               <CameraReviewPage />
-            </RoleRoute>
-          }
-        />
-        <Route
-          path="/analytics"
-          element={
-            <RoleRoute
-              roles={["PARK_MANAGER", "LIAISON_OFFICER", "RESEARCHER"]}
-            >
-              <AnalyticsPage />
             </RoleRoute>
           }
         />

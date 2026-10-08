@@ -16,8 +16,13 @@ export async function apiRequest<T>(
   }
   const data = response.status === 204 ? {} : await response.json().catch(() => ({}));
   if (!response.ok) {
+    const isClientError = response.status >= 400 && response.status < 500;
+    const safeMessage = isClientError && data.message 
+      ? data.message 
+      : "An unexpected error occurred. Please try again later.";
+      
     throw Object.assign(
-      new Error(data.message ?? "The account service is unavailable. Please try again."),
+      new Error(safeMessage),
       { status: response.status },
     );
   }

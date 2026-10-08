@@ -223,7 +223,8 @@ describe("Ops M1 incident workflow", () => {
       json: async () => ({ message: "Incident list unavailable" }),
     }));
     show();
-    await screen.findByText("Incident list unavailable");
+    await screen.findByText("An unexpected error occurred. Please try again later.");
+    expect(screen.queryByText("Incident list unavailable")).toBeNull();
   });
   it("supports clarify → verify → assign → start → outcome → resolved with revisions", async () => {
     show(true);

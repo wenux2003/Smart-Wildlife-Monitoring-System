@@ -1,6 +1,7 @@
 import fs from "fs";
 
 const API_URL = process.env.API_URL || "http://localhost:3000/api/pings";
+const PING_SECRET = process.env.PING_SECRET;
 
 async function run() {
   const dataFile = process.argv[2];
@@ -14,11 +15,17 @@ async function run() {
 
   console.log(`Sending ${pings.length} pings...`);
 
+  // Include the device secret header when configured (required in production)
+  const headers = { "Content-Type": "application/json" };
+  if (PING_SECRET) {
+    headers["x-ping-secret"] = PING_SECRET;
+  }
+
   for (const ping of pings) {
     try {
       const res = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(ping),
       });
 
@@ -32,7 +39,7 @@ async function run() {
     } catch (e) {
       console.error(`Error sending ping:`, e);
     }
-    // Simulate delay
+    // Simulate delay between pings
     await new Promise(r => setTimeout(r, 1000));
   }
 }

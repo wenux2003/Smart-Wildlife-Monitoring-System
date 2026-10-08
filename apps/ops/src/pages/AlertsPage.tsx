@@ -1,27 +1,46 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MapContainer, TileLayer, CircleMarker, Popup, Polyline } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 import { AccountHeader } from "../components/AccountHeader.js";
+import { AlertCard } from "../components/AlertCard.js";
+import { AlertSettings } from "../components/AlertSettings.js";
+import type { AlertConfig } from "../components/AlertSettings.js";
+import { AlertsMap } from "../components/AlertsMap.js";
+import { useGeofenceDrawing } from "../hooks/useGeofenceDrawing.js";
+import { NewZoneModal } from "../components/NewZoneModal.js";
 import { apiRequest } from "../api.js";
 import type { Alert, Collar, CollarPing } from "@wr/shared";
 
-type Account = { id: string; name: string; role: string; email: string; parkId: string };
 
 export function AlertsPage() {
   const queryClient = useQueryClient();
   const [selectedCollar, setSelectedCollar] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const { isDrawing, newPolygon, toggleDrawing, completeDrawing, cancelDrawing } = useGeofenceDrawing();
+
+  const { data: config } = useQuery({
+    queryKey: ["alertConfig"],
+    queryFn: () => apiRequest<AlertConfig>("/api/alerts/config"),
+  });
+
+  const updateConfigMutation = useMutation({
+    mutationFn: (newConfig: AlertConfig) => 
+      apiRequest("/api/alerts/config", { method: "PATCH", body: newConfig }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["alertConfig"] });
+      cancelDrawing();
+    },
+  });
 
   const { data: alerts = [], isLoading: alertsLoading } = useQuery({
     queryKey: ["alerts"],
     queryFn: () => apiRequest<Alert[]>("/api/alerts"),
-    refetchInterval: 10000,
+    refetchInterval: 3000,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: collars = [], isLoading: collarsLoading } = useQuery({
+  const { data: collars = [] } = useQuery({
     queryKey: ["collars"],
     queryFn: () => apiRequest<Collar[]>("/api/collars"),
     refetchInterval: 30000,
@@ -33,175 +52,93 @@ export function AlertsPage() {
     enabled: !!selectedCollar,
   });
 
-  const { data: staff = [] } = useQuery({
-    queryKey: ["staff"],
-    queryFn: () => apiRequest<Account[]>("/api/accounts"),
-  });
-
-  const acknowledgeMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/alerts/${id}/acknowledge`, { method: "POST" }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["alerts"] }),
-  });
-
-  const dispatchMutation = useMutation({
-    mutationFn: ({ alertId, rangerId }: { alertId: string; rangerId: string }) => 
-      apiRequest(`/api/alerts/${alertId}/dispatch`, { method: "POST", body: { rangerId } }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["alerts"] }),
-  });
-
   const center: LatLngExpression = [7.8731, 80.7718]; // Sri Lanka center
   const zoom = 7;
 
   return (
-    <div className="workspace-page" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="workspace-page flex flex-col h-screen">
       <AccountHeader />
       
-      <main id="main-content" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        <aside style={{ width: '400px', padding: '20px', overflowY: 'auto', borderRight: '1px solid #ccc' }}>
-          <h2>Active Alerts</h2>
-          
-          {alertsLoading && <p>Loading alerts...</p>}
-          {!alertsLoading && alerts.length === 0 && <p>No active alerts.</p>}
-          
-          {alerts.map(alert => (
-            <div key={alert.id} style={{ padding: '15px', border: '1px solid #ccc', marginBottom: '15px', borderRadius: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <strong>{alert.type.replace('_', ' ')}</strong>
-                <span style={{ 
-                  backgroundColor: alert.severity === 'CRITICAL' ? 'red' : alert.severity === 'HIGH' ? 'orange' : 'yellow', 
-                  color: 'black', padding: '2px 6px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold'
-                }}>{alert.severity}</span>
-              </div>
-              
-              <p style={{ margin: '5px 0' }}>Status: <strong>{alert.status}</strong></p>
-              {alert.collarId && (
-                <p style={{ margin: '5px 0' }}>
-                  Collar: {collars.find(c => c.id === alert.collarId)?.animalName || alert.collarId}
-                </p>
-              )}
-              <p style={{ margin: '5px 0', fontSize: '12px' }}>{new Date(alert.createdAt).toLocaleString()}</p>
-              
-              
-              {alert.status === 'NEW' && (
-                <button 
-                  className="button button-green" 
-                  style={{ marginTop: '10px', width: '100%' }}
-                  onClick={() => acknowledgeMutation.mutate(alert.id)}
-                  disabled={acknowledgeMutation.isPending}
-                >
-                  Acknowledge
-                </button>
-              )}
-              
-              {alert.status === 'ACCEPTED' && (
-                <div style={{ marginTop: '10px' }}>
-                  <select 
-                    id={`ranger-select-${alert.id}`} 
-                    style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
-                    defaultValue=""
-                  >
-                    <option value="" disabled>Select a ranger...</option>
-                    {staff.filter(s => s.role === 'RANGER').map(r => (
-                      <option key={r.id} value={r.id}>{r.name}</option>
-                    ))}
-                  </select>
-                  <button 
-                    className="button button-green" 
-                    style={{ width: '100%' }}
-                    onClick={() => {
-                      const select = document.getElementById(`ranger-select-${alert.id}`) as HTMLSelectElement;
-                      if (select.value) {
-                        dispatchMutation.mutate({ alertId: alert.id, rangerId: select.value });
-                      }
-                    }}
-                    disabled={dispatchMutation.isPending}
-                  >
-                    Dispatch Ranger
-                  </button>
-                </div>
-              )}
-
-              <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '4px', fontSize: '12px' }}>
-                <details>
-                  <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>Advanced Context</summary>
-                  <ul style={{ paddingLeft: '20px', marginTop: '10px' }}>
-                    <li><strong>Nearby Settlements:</strong> Mahiyangana (12km), Bibile (18km)</li>
-                    <li><strong>Camera Images:</strong> No relevant camera trap images in the last 2 hours.</li>
-                    <li><strong>Event History:</strong> 
-                      <ul style={{ paddingLeft: '15px' }}>
-                        <li>{new Date(alert.createdAt).toLocaleString()} - Alert Created</li>
-                        {alert.status !== 'NEW' && <li>Status updated to {alert.status}</li>}
-                      </ul>
-                    </li>
-                  </ul>
-                </details>
-              </div>
+      <main id="main-content" className="flex flex-1 overflow-hidden relative">
+        <aside className="w-[420px] flex-shrink-0 flex flex-col bg-[#F4F6F1] border-r border-[#DCE5DC] z-[500] shadow-[4px_0_24px_rgba(0,0,0,0.06)] relative text-[#1F2937]">
+          <div className="p-6 border-b border-[#DCE5DC] flex justify-between items-start">
+            <div>
+              <p className="section-kicker !mb-2 text-[#14352B]">MONITORING</p>
+              <h1 className="text-3xl font-semibold tracking-tight text-[#1F2937]">Active Alerts</h1>
+              <p className="text-sm text-[#4B5563] mt-1.5">Manage and dispatch rangers to live alerts</p>
             </div>
-          ))}
-        </aside>
-
-        <div style={{ flex: 1, position: 'relative' }}>
-          <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }}>
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            
-            {collars.map(collar => {
-              if (!collar.location) return null;
-              const isSelected = selectedCollar === collar.id;
-              
-              return (
-                <CircleMarker
-                  key={collar.id}
-                  center={[collar.location[1], collar.location[0]]}
-                  radius={8}
-                  pathOptions={{ 
-                    color: isSelected ? 'blue' : 'black', 
-                    fillColor: isSelected ? 'cyan' : 'green', 
-                    fillOpacity: 1, 
-                    weight: 2 
-                  }}
-                  eventHandlers={{
-                    click: () => setSelectedCollar(isSelected ? null : collar.id),
-                  }}
-                >
-                  <Popup>
-                    <strong>{collar.animalName || 'Unknown Animal'}</strong><br/>
-                    Species: {collar.species}<br/>
-                    Battery: {collar.latestBattery}%<br/>
-                    Status: {collar.status}
-                  </Popup>
-                </CircleMarker>
-              );
-            })}
-            
-            {pings.length > 1 && (
-              <Polyline 
-                positions={pings.map(p => [p.location[1], p.location[0]])} 
-                pathOptions={{ color: 'blue', weight: 3, dashArray: '5, 10' }} 
-              />
+            <div className="flex gap-2">
+              <button 
+                onClick={toggleDrawing}
+                className={`px-4 py-2 rounded-md transition-colors flex items-center justify-center font-bold text-sm ${isDrawing ? 'bg-[#166534] text-white hover:bg-[#14532d]' : 'bg-[#E8EDE4] text-[#14352B] hover:bg-[#DCE5DC]'}`}
+                title={isDrawing ? "Cancel Drawing" : "Draw Geofence Zone"}
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                {isDrawing ? "CANCEL DRAWING" : "DRAW ZONE"}
+              </button>
+              <button 
+                onClick={() => setShowSettings(true)}
+                className="p-2 bg-[#E8EDE4] text-[#14352B] hover:bg-[#DCE5DC] rounded-md transition-colors"
+                title="Alert Settings"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              </button>
+            </div>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-6 space-y-5">
+            {alertsLoading && (
+              <div className="flex justify-center py-12 text-[var(--muted)] animate-pulse">
+                <p>Loading alerts...</p>
+              </div>
             )}
             
-            {alerts.filter(a => a.location).map(alert => (
-              <CircleMarker
-                key={`alert-${alert.id}`}
-                center={[alert.location![1], alert.location![0]]}
-                radius={12}
-                pathOptions={{ 
-                  color: 'red', 
-                  fillColor: 'transparent', 
-                  fillOpacity: 0, 
-                  weight: 3,
-                  dashArray: '4'
-                }}
-              >
-                <Popup>
-                  <strong>{alert.type}</strong> ({alert.severity})<br/>
-                  Status: {alert.status}
-                </Popup>
-              </CircleMarker>
+            {!alertsLoading && alerts.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-16 h-16 rounded-full bg-[#E8EDE4] flex items-center justify-center text-[#15803D] mb-4 ring-8 ring-[#15803D]/10">
+                  <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                </div>
+                <h3 className="text-lg font-medium text-[#1F2937]">All Clear</h3>
+                <p className="text-sm text-[#4B5563] mt-2">There are no active alerts at the moment.</p>
+              </div>
+            )}
+            
+            {alerts.map(alert => (
+              <AlertCard key={alert.id} alert={alert} collars={collars} />
             ))}
-          </MapContainer>
-        </div>
+          </div>
+        </aside>
+
+        <AlertsMap 
+          center={center}
+          zoom={zoom}
+          collars={collars}
+          pings={pings}
+          alerts={alerts}
+          config={config}
+          selectedCollar={selectedCollar}
+          setSelectedCollar={setSelectedCollar}
+          isDrawing={isDrawing}
+          setNewPolygon={completeDrawing}
+        />
       </main>
+      
+      {showSettings && <AlertSettings onClose={() => setShowSettings(false)} />}
+      
+      {newPolygon && (
+        <NewZoneModal 
+          polygon={newPolygon}
+          onCancel={cancelDrawing}
+          onSave={(zone) => {
+            const zones = config?.geofenceZones || [];
+            updateConfigMutation.mutate({
+              ...config,
+              geofenceZones: [...zones, zone]
+            });
+          }}
+        />
+      )}
     </div>
   );
 }
+

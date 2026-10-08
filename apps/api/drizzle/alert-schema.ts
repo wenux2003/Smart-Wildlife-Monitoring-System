@@ -13,6 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { parks } from "./reference-schema.js";
 import { authUsers } from "./auth-schema.js";
+import { boolean } from "drizzle-orm/pg-core";
 
 const geometry = customType<{ data: string; config: { type: string } }>({
   dataType(config) {
@@ -52,6 +53,8 @@ export const alerts = pgTable("alerts", {
   status: text("status").notNull().default("NEW"),
   location: geometry("location", { type: "Point" }),
   revision: integer("revision").notNull().default(1),
+  resolutionReason: text("resolution_reason"),
+  isBroadcast: boolean("is_broadcast").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   resolvedAt: timestamp("resolved_at", { withTimezone: true }),
 }, (table) => [
@@ -71,7 +74,7 @@ export const alertDispatches = pgTable("alert_dispatches", {
   completedAt: timestamp("completed_at", { withTimezone: true }),
 }, (table) => [
   index("alert_dispatches_alert_status_idx").on(table.alertId, table.status),
-  uniqueIndex("alert_dispatches_one_open_per_alert").on(table.alertId).where(sql`${table.status} IN ('PENDING', 'ACCEPTED', 'ARRIVED')`),
+  uniqueIndex("alert_dispatches_one_open_per_alert").on(table.alertId).where(sql`${table.status} IN ('ACCEPTED', 'ARRIVED')`),
 ]);
 
 export const settlements = pgTable("settlements", {
@@ -80,4 +83,18 @@ export const settlements = pgTable("settlements", {
   name: varchar("name", { length: 255 }).notNull(),
   location: geometry("location", { type: "Point" }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const cameraTraps = pgTable("camera_traps", {
+  id: uuid("id").primaryKey(),
+  parkId: uuid("park_id").notNull().references(() => parks.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  location: geometry("location", { type: "Point" }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const rangerLocations = pgTable("ranger_locations", {
+  rangerId: uuid("ranger_id").primaryKey().references(() => authUsers.id, { onDelete: "cascade" }),
+  location: geometry("location", { type: "Point" }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -170,7 +170,8 @@ describe("Ops camera review", () => {
       json: async () => ({ message: "Camera queue unavailable" }),
     }));
     show();
-    await screen.findByText("Camera queue unavailable");
+    await screen.findByText("An unexpected error occurred. Please try again later.");
+    expect(screen.queryByText("Camera queue unavailable")).toBeNull();
     fireEvent.click(screen.getByText("Select test photo"));
     fireEvent.change(screen.getByLabelText("Latitude"), {
       target: { value: "92" },

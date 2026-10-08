@@ -24,17 +24,13 @@ import { createAlertRepository } from "./modules/alerts/repository.js";
 import { incidentRoutes } from "./modules/incidents/routes.js";
 import type { IncidentRepository } from "./modules/incidents/repository.js";
 import { createIncidentRepository } from "./modules/incidents/repository.js";
-import { analyticsRoutes } from "./modules/analytics/routes.js";
-import type { AnalyticsRepository } from "./modules/analytics/repository.js";
-import { createAnalyticsRepository } from "./modules/analytics/repository.js";
-import { AnalyticsService } from "./modules/analytics/service.js";
+
 
 export type ServerOptions = AuthOptions & {
   accountsRepository?: AccountRepository;
   patrolRepository?: PatrolRepository;
   alertRepository?: AlertRepository;
   incidentRepository?: IncidentRepository;
-  analyticsRepository?: AnalyticsRepository;
 };
 
 export function createServer(authOptions: ServerOptions = {}) {
@@ -91,11 +87,6 @@ export function createServer(authOptions: ServerOptions = {}) {
     (process.env.DATABASE_URL
       ? createIncidentRepository(process.env.DATABASE_URL)
       : undefined);
-  const analyticsRepository =
-    authOptions.analyticsRepository ??
-    (process.env.DATABASE_URL
-      ? createAnalyticsRepository(process.env.DATABASE_URL)
-      : undefined);
   if (repository?.close) server.addHook("onClose", () => repository.close!());
   if (accountsRepository?.close)
     server.addHook("onClose", () => accountsRepository.close!());
@@ -105,8 +96,6 @@ export function createServer(authOptions: ServerOptions = {}) {
     server.addHook("onClose", () => alertRepository.close!());
   if (incidentRepository?.close)
     server.addHook("onClose", () => incidentRepository.close!());
-  if (analyticsRepository?.close)
-    server.addHook("onClose", () => analyticsRepository.close!());
   // Available to every module: { preHandler: app.authorize({ roles: [...] }) }.
   server.decorateRequest("user", null);
   server.decorate(
@@ -136,13 +125,6 @@ export function createServer(authOptions: ServerOptions = {}) {
     repository: incidentRepository,
     clock: authOptions.clock,
   });
-
-  if (analyticsRepository) {
-    const analyticsService = new AnalyticsService(analyticsRepository);
-    server.register(analyticsRoutes(analyticsService), {
-      prefix: "/api/analytics",
-    });
-  }
 
   server.get(
     "/health",
