@@ -50,6 +50,10 @@ const capabilities = [
 export function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useAuth();
+  const communityReportUrl = new URL(
+    "/community/new",
+    import.meta.env.VITE_PUBLIC_APP_URL?.trim() || "http://localhost:5173",
+  ).href;
   return (
     <div className="home-page">
       <header className="site-header">
@@ -112,6 +116,10 @@ export function HomePage() {
                 caring for our wild places.
               </p>
               <div className="hero-actions">
+                <a className="button button-cream" href={communityReportUrl}>
+                  Report a wildlife incident
+                  <ArrowUpRight size={18} />
+                </a>
                 <Link
                   className="button button-cream"
                   to={user ? "/dashboard" : "/register"}
