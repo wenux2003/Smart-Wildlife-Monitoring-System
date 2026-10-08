@@ -1,3 +1,4 @@
+import type { AlertsConfig } from "./types.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { AlertListSchema, AlertSchema, AlertDispatchSchema, AlertDispatchListSchema, CollarListSchema, CollarPingListSchema, Role, AlertContextSchema, RangerDistanceSchema } from "@wr/shared";
@@ -111,7 +112,7 @@ export async function alertRoutes(
         }),
       },
     },
-    async (request) => requireService().updateParkAlertConfig(request.user!, request.body),
+    async (request) => requireService().updateParkAlertConfig(request.user!, request.body as AlertsConfig),
   );
 
   app.get(
@@ -240,7 +241,7 @@ export async function alertRoutes(
         response: { 200: z.object({ success: z.boolean() }) },
       },
     },
-    async (request, reply) => {
+    async (request) => {
       // Security: if PING_SECRET is configured, verify it. Fail-closed — missing header = denied.
       const pingSecret = process.env.PING_SECRET;
       if (pingSecret) {

@@ -27,7 +27,7 @@ export function MapPolygonDrawer({
       if (!isActive) return;
       setMousePos([e.latlng.lng, e.latlng.lat]);
     },
-    contextmenu(e) {
+    contextmenu() {
       if (!isActive) return;
       if (points.length >= 3) {
         onComplete(points);

@@ -13,7 +13,6 @@ import { NewZoneModal } from "../components/NewZoneModal.js";
 import { apiRequest } from "../api.js";
 import type { Alert, Collar, CollarPing } from "@wr/shared";
 
-type Account = { id: string; name: string; role: string; email: string; parkId: string };
 
 export function AlertsPage() {
   const queryClient = useQueryClient();

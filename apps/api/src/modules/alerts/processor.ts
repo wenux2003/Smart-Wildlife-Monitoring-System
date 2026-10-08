@@ -1,5 +1,5 @@
 import type { AlertRepository } from "./repository.js";
-import type { CollarRecord } from "./types.js";
+import type { AlertsConfig, CollarRecord } from "./types.js";
 import { AlertType, Severity, AlertStatus } from "@wr/shared";
 
 // Example config shape from parks.config:
@@ -20,13 +20,6 @@ export type PingData = {
   recordedAt: Date;
 };
 
-export type AlertsConfig = {
-  geofenceCenter?: [number, number];
-  geofenceRadiusKm?: number;
-  geofenceZones?: any[];
-  immobilitySpeedThreshold?: number;
-  lowBatteryThreshold?: number;
-};
 
 export class PingProcessor {
   constructor(
@@ -64,7 +57,7 @@ export class PingProcessor {
 
   private async checkGeofence(collar: CollarRecord, ping: PingData, parkId: string, alertsConfig: AlertsConfig) {
     let breachDetected = false;
-    let breachSeverity = Severity.HIGH;
+    let breachSeverity: Severity = Severity.HIGH;
 
     // 1. Check Multi-Tiered Polygon Zones
     if (alertsConfig.geofenceZones && Array.isArray(alertsConfig.geofenceZones)) {

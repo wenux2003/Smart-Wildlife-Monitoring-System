@@ -1,6 +1,6 @@
 import postgres from "postgres";
 import { randomUUID } from "node:crypto";
-import type { AlertRecord, CollarRecord, CollarPingRecord, AlertDispatchRecord } from "./types.js";
+import type { AlertRecord, CollarRecord, CollarPingRecord, AlertDispatchRecord, RangerDispatchRecord, AlertsConfig, ParkConfig, AlertContext } from "./types.js";
 import { AlertStatus, DispatchStatus } from "@wr/shared";
 
 // Valid state transitions for dispatches (current → allowed next states)
@@ -27,7 +27,7 @@ export interface DispatchRepository {
   createDispatch(dispatch: Partial<AlertDispatchRecord>): Promise<AlertDispatchRecord>;
   getDispatchById(dispatchId: string): Promise<AlertDispatchRecord | null>;
   updateDispatchStatus(dispatchId: string, status: DispatchStatus, rangerId: string, notes?: string): Promise<AlertDispatchRecord | null>;
-  listDispatchesForRanger(rangerId: string): Promise<any[]>;
+  listDispatchesForRanger(rangerId: string): Promise<RangerDispatchRecord[]>;
   getTimedOutDispatches(timeoutMinutes: number): Promise<AlertDispatchRecord[]>;
   markDispatchTimedOut(dispatchId: string): Promise<void>;
   getRangerForPark(rangerId: string, parkId: string): Promise<{ id: string } | null>;
@@ -37,8 +37,8 @@ export interface DispatchRepository {
 }
 
 export interface ParkRepository {
-  getParkConfig(parkId: string): Promise<any>;
-  updateParkAlertConfig(parkId: string, alertConfig: any): Promise<any>;
+  getParkConfig(parkId: string): Promise<ParkConfig>;
+  updateParkAlertConfig(parkId: string, alertConfig: AlertsConfig): Promise<AlertsConfig>;
 }
 
 export interface AlertRepository extends CollarRepository, DispatchRepository, ParkRepository {
@@ -48,7 +48,7 @@ export interface AlertRepository extends CollarRepository, DispatchRepository, P
   createAlert(alert: Partial<AlertRecord>): Promise<AlertRecord>;
   updateAlertStatus(alertId: string, status: AlertStatus, resolvedAt?: Date): Promise<AlertRecord | null>;
   getActiveAlertForCollar(collarId: string, type: string): Promise<AlertRecord | null>;
-  getAlertContext(alertId: string, parkId: string): Promise<{ settlements: any[], cameras: any[], history: any[] }>;
+  getAlertContext(alertId: string, parkId: string): Promise<AlertContext>;
   broadcastAlert(alertId: string, parkId: string): Promise<void>;
   close?(): Promise<void>;
 }
@@ -262,8 +262,7 @@ export function createAlertRepository(url: string): AlertRepository {
       `;
     },
     async listDispatchesForRanger(rangerId: string) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return sql<any[]>`
+      return sql<RangerDispatchRecord[]>`
         SELECT 
           d.id, d.alert_id, d.ranger_id, d.status, d.notes, d.sent_at, d.responded_at, d.arrived_at, d.completed_at,
           a.type as alert_type, a.severity as alert_severity, 
@@ -277,16 +276,14 @@ export function createAlertRepository(url: string): AlertRepository {
       `;
     },
     async getParkConfig(parkId: string) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await sql<{ config: any }[]>`
+      const result = await sql<{ config: ParkConfig }[]>`
         SELECT config
         FROM parks 
         WHERE id = ${parkId}
       `;
       return result.length > 0 ? result[0].config : {};
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async updateParkAlertConfig(parkId: string, alertConfig: any) {
+    async updateParkAlertConfig(parkId: string, alertConfig: AlertsConfig) {
       // Use a single atomic JSONB merge to avoid the read-modify-write race condition.
       // jsonb_set merges into the existing config column without overwriting sibling keys.
       await sql`

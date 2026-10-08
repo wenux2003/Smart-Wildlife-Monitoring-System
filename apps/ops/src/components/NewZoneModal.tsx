@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Severity } from "@wr/shared";
-import type { AlertConfig, GeofenceZone } from "./AlertSettings.js";
+import type { GeofenceZone } from "./AlertSettings.js";
 
 export function NewZoneModal({ 
   polygon, 

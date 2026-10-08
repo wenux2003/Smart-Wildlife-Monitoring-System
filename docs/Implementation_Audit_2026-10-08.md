@@ -1,5 +1,7 @@
 # Implementation audit — M1 to M3 status (2026-10-08)
 
+> **Latest validation update (2026-10-08):** All 17 lint errors are fixed; lint, workspace typecheck and both production builds pass. The full test run had 148 passing, 2 failing and 7 skipped tests. Both failures were outdated 503-message expectations; after correction, their two files passed all 10 tests. The entire suite was not repeated after those test-only edits. Workflow findings in section 3 remain open.
+
 ## Scope and latest review
 
 Updated by Codex on 2026-10-08 after reviewing Copilot's original audit against local commit `ead5e9ddd38b41e33b9d13d55608f21ecee837d0`.
@@ -148,3 +150,12 @@ At the user's request, checked the configured database and applied pending migra
 - **Applied:** `0007_relax_alert_dispatches_index.sql` changes the unique open-dispatch index to cover ACCEPTED/ARRIVED, allowing multiple PENDING broadcast offers.
 - **Verified:** no pending repository migrations; every table declared by the repository migration files exists in public schema; both new alert columns and the expected dispatch index predicate exist. A second migration run exited 0 with “Database schema is already up to date.”
 - **Limit:** this verifies the configured database upgrade, not a fresh-database migration test or resolution of the lint/workflow issues above. No seed, account reset, or data deletion was performed.
+
+## 7) Lint and validation fixes — 2026-10-08
+
+- Replaced explicit `any` with configuration, dispatch and context types; used the existing typed `hasActiveDispatch` property and removed unused declarations. No lint rules were disabled to close the 17 errors.
+- Corrected the two Ops 503 error-state tests to expect the intentional generic server-error message and assert that raw server text is not exposed. Application error sanitization remains intact.
+- Verified `pnpm lint` and workspace `pnpm typecheck`: pass.
+- Verified production builds for Ops and Ranger: pass. Ops retains a non-blocking large-chunk warning.
+- Full test run: 148 passed, 2 failed, 7 skipped; targeted rerun after fixing the two expectations: 10/10 passed across both affected files. Database-dependent skipped tests were not enabled.
+- This change closes lint and the two historical test failures, not the separate patrol/dispatch/telemetry functional findings. No additional migration was needed.

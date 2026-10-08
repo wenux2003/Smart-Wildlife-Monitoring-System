@@ -1,3 +1,4 @@
+import type { AlertsConfig } from "./types.js";
 import type { SessionUser } from "../auth/guard.js";
 import type { AlertRepository } from "./repository.js";
 import { AlertStatus, AlertType, DispatchStatus } from "@wr/shared";
@@ -99,7 +100,7 @@ export function createAlertService(repository: AlertRepository) {
       return config?.alerts || {};
     },
 
-    async updateParkAlertConfig(user: SessionUser, alertConfig: any) {
+    async updateParkAlertConfig(user: SessionUser, alertConfig: AlertsConfig) {
       if (!user.parkId) {
         throw new AppError("Forbidden", 403, "FORBIDDEN");
       }

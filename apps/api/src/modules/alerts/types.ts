@@ -45,3 +45,26 @@ export interface AlertDispatchRecord {
   arrived_at: Date | null;
   completed_at: Date | null;
 }
+
+export type AlertsConfig = {
+  geofenceCenter?: [number, number];
+  geofenceRadiusKm?: number;
+  geofenceZones?: { name: string; polygon: [number, number][]; alertOn: "enter" | "exit"; severity: Severity }[];
+  immobilitySpeedThreshold?: number;
+  lowBatteryThreshold?: number;
+};
+
+export type ParkConfig = { alerts?: AlertsConfig };
+
+export type RangerDispatchRecord = AlertDispatchRecord & {
+  alert_type: AlertType;
+  alert_severity: Severity;
+  alert_location: [number, number] | null;
+  animal_name: string | null;
+};
+
+export type AlertContext = {
+  settlements: { name: string; distanceM: number }[];
+  cameras: { name: string; distanceM: number }[];
+  history: { timestamp: string; event: string }[];
+};

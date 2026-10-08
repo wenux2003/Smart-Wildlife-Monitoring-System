@@ -79,7 +79,7 @@ export function AlertsMap({
             <Popup>
               <strong>{alert.type}</strong> ({alert.severity})<br/>
               Status: {alert.status === 'ACCEPTED' ? 'REQUIRES DISPATCH' : 
-                       alert.status === 'DISPATCHED' ? ((alert as any).hasActiveDispatch ? 'RANGER DISPATCHED' : <span className="loading-dots">DISPATCHING</span>) :
+                       alert.status === 'DISPATCHED' ? (alert.hasActiveDispatch ? 'RANGER DISPATCHED' : <span className="loading-dots">DISPATCHING</span>) :
                        alert.status}
             </Popup>
           </CircleMarker>
