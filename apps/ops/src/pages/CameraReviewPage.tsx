@@ -144,11 +144,8 @@ export function CameraReviewPage() {
           void add();
         }}
       >
-        <h2>Add mock camera observation</h2>
-        <p>
-          Use an image you own or have permission to use. Images are stored for
-          this prototype.
-        </p>
+        <h2>camera observation</h2>
+        
         <label>
           Captured time
           <input

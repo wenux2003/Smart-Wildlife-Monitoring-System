@@ -69,7 +69,10 @@ export function IncidentDetailPage() {
               >
                 {record.status}
               </span>
-              <p>{record.description}</p>
+              <section aria-labelledby="report-description-title">
+                <h3 id="report-description-title">Report description</h3>
+                <p style={{ whiteSpace: "pre-wrap" }}>{record.description}</p>
+              </section>
               <dl className="m1-details">
                 <dt>Source</dt>
                 <dd>{record.source}</dd>
@@ -241,6 +244,10 @@ export function IncidentDetailPage() {
                 {record.status === "VERIFIED" && (
                   <section className="m1-card m1-form">
                     <h2>Assign responder</h2>
+                    <p>
+                      Select the Ranger responsible for this incident.
+                      Assignment does not start the response.
+                    </p>
                     {responders.isError && (
                       <p role="alert">Responders could not be loaded.</p>
                     )}
@@ -273,6 +280,7 @@ export function IncidentDetailPage() {
                     </button>
                     <button
                       disabled={busy || !record.assignedTo || !record.location}
+                      aria-describedby="response-start-help"
                       onClick={() =>
                         void action(
                           `/api/incidents/${id}/response`,
@@ -282,8 +290,12 @@ export function IncidentDetailPage() {
                         )
                       }
                     >
-                      Start response
+                      Mark response as started
                     </button>
+                    <p id="response-start-help">
+                      Use this when the assigned Ranger has begun responding.
+                      The incident will move to In Progress.
+                    </p>
                     {!record.location && (
                       <p>Confirm coordinates before starting response.</p>
                     )}
