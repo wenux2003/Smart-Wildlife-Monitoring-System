@@ -1,15 +1,34 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "../auth/AuthContext.js";
 import { RangerHomePage } from "../HomePage.js";
-import { ChangePasswordPage, LoadingState } from "../pages/ChangePasswordPage.js";
-import { LoginPage } from "../pages/LoginPage.js";
-import { PatrolMapPage } from "../pages/PatrolMapPage.js";
-import { NewWaypointPage } from "../pages/NewWaypointPage.js";
+import {
+  ChangePasswordPage,
+  LoadingState,
+} from "../pages/ChangePasswordPage.js";
 import { DispatchesPage } from "../pages/DispatchesPage.js";
+import { LoginPage } from "../pages/LoginPage.js";
+import { NewWaypointPage } from "../pages/NewWaypointPage.js";
+import { PatrolSummaryPage } from "../pages/PatrolSummaryPage.js";
+import { ReportIncidentPage } from "../pages/ReportIncidentPage.js";
+import { MyIncidentsPage } from "../pages/MyIncidentsPage.js";
+import { IncidentSync } from "../components/IncidentSync.js";
+import { CommunityReportPage } from "../pages/CommunityReportPage.js";
+import { PatrolSyncCoordinator } from "./PatrolSyncCoordinator.js";
 
-function ProtectedRanger({ children }: { children: React.ReactNode }) {
-  const { user, loading, signOut } = useAuth();
+const PatrolMapPage = lazy(async () => {
+  const module = await import("../pages/PatrolMapPage.js");
+  return { default: module.PatrolMapPage };
+});
+
+function ProtectedRanger({
+  children,
+  allowCapture = false,
+}: {
+  children: React.ReactNode;
+  allowCapture?: boolean;
+}) {
+  const { user, loading, signOut, captureOnly } = useAuth();
   if (loading) return <LoadingState />;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role !== "RANGER")
@@ -18,7 +37,9 @@ function ProtectedRanger({ children }: { children: React.ReactNode }) {
         <section className="auth-card" aria-labelledby="access-title">
           <p className="eyebrow">RANGER ACCESS</p>
           <h1 id="access-title">This app is for rangers.</h1>
-          <p className="lead">Sign out and use the app provided for your role.</p>
+          <p className="lead">
+            Sign out and use the app provided for your role.
+          </p>
           <button
             className="primary-button"
             type="button"
@@ -29,7 +50,9 @@ function ProtectedRanger({ children }: { children: React.ReactNode }) {
         </section>
       </main>
     );
-  if (user.mustChangePassword) return <Navigate to="/change-password" replace />;
+  if (user.mustChangePassword)
+    return <Navigate to="/change-password" replace />;
+  if (captureOnly && !allowCapture) return <Navigate to="/incidents" replace />;
   return children;
 }
 
@@ -41,29 +64,93 @@ function RangerRoutes() {
       "/": "Patrol",
       "/login": "Ranger sign in",
       "/change-password": "Change password",
-      ...(location.pathname.startsWith("/patrol/") ? { [location.pathname]: "Active patrol" } : {}),
+      "/dispatches": "Dispatches",
+      "/incidents/report": "Report incident",
+      ...(location.pathname.startsWith("/patrol/")
+        ? { [location.pathname]: "Active patrol" }
+        : {}),
     };
     document.title = `${titles[location.pathname] ?? "Ranger access"} | Wildlife Guardian`;
   }, [location.pathname]);
 
   return (
     <>
-      <a href="#main-content" className="skip-link">Skip to content</a>
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/community/new" element={<CommunityReportPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
-        <Route path="/" element={<ProtectedRanger><RangerHomePage /></ProtectedRanger>} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRanger allowCapture>
+              <RangerHomePage />
+            </ProtectedRanger>
+          }
+        />
         <Route
           path="/patrol/:assignmentId/active"
-          element={<ProtectedRanger><PatrolMapPage /></ProtectedRanger>}
+          element={
+            <ProtectedRanger allowCapture>
+              <Suspense fallback={<LoadingState />}>
+                <PatrolMapPage />
+              </Suspense>
+            </ProtectedRanger>
+          }
         />
         <Route
           path="/patrol/:assignmentId/waypoints/new"
-          element={<ProtectedRanger><NewWaypointPage /></ProtectedRanger>}
+          element={
+            <ProtectedRanger allowCapture>
+              <NewWaypointPage />
+            </ProtectedRanger>
+          }
         />
-        <Route path="/dispatches" element={<ProtectedRanger><DispatchesPage /></ProtectedRanger>} />
+        <Route
+          path="/incidents/report"
+          element={
+            <ProtectedRanger allowCapture>
+              <ReportIncidentPage />
+            </ProtectedRanger>
+          }
+        />
+        <Route
+          path="/incidents"
+          element={
+            <ProtectedRanger allowCapture>
+              <MyIncidentsPage />
+            </ProtectedRanger>
+          }
+        />
+        <Route
+          path="/incidents/:id"
+          element={
+            <ProtectedRanger allowCapture>
+              <MyIncidentsPage />
+            </ProtectedRanger>
+          }
+        />
+        <Route
+          path="/dispatches"
+          element={
+            <ProtectedRanger>
+              <DispatchesPage />
+            </ProtectedRanger>
+          }
+        />
+        <Route
+          path="/patrol/:assignmentId/summary"
+          element={
+            <ProtectedRanger allowCapture>
+              <PatrolSummaryPage />
+            </ProtectedRanger>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <PatrolSyncCoordinator />
     </>
   );
 }
@@ -71,6 +158,7 @@ function RangerRoutes() {
 export function App() {
   return (
     <AuthProvider>
+      <IncidentSync />
       <RangerRoutes />
     </AuthProvider>
   );

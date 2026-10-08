@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext.js";
 
 export function LoginPage() {
-  const { user, signIn, error: authError } = useAuth();
+  const { user, signIn, error: authError, captureOnly } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,14 +11,14 @@ export function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (user)
+    if (user && !captureOnly)
       navigate(
         user.role === "RANGER" && user.mustChangePassword
           ? "/change-password"
           : "/",
         { replace: true },
       );
-  }, [navigate, user]);
+  }, [navigate, user, captureOnly]);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -40,7 +40,9 @@ export function LoginPage() {
         <h1 id="login-title">Welcome back</h1>
         <p className="lead">Sign in to continue your field work.</p>
         {(error || authError) && (
-          <p className="alert" id="login-error" role="alert">{error || authError}</p>
+          <p className="alert" id="login-error" role="alert">
+            {error || authError}
+          </p>
         )}
         <form aria-label="Ranger sign in" onSubmit={submit}>
           <label htmlFor="email">Email address</label>
@@ -69,9 +71,10 @@ export function LoginPage() {
             {busy ? "Signing in…" : "Sign in"}
           </button>
         </form>
-        <p className="help-copy">
-          Need access? Contact your park manager.
-        </p>
+        <p className="help-copy">Need access? Contact your park manager.</p>
+        <a className="inline-link" href="/community/new">
+          Report a community wildlife conflict without an account
+        </a>
       </section>
     </main>
   );

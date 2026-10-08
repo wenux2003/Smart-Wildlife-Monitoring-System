@@ -4,7 +4,12 @@ import type { LongitudeLatitude } from "@wr/ui";
 export type GpsState =
   | { status: "locating" }
   | { status: "unavailable" }
-  | { status: "ready"; position: LongitudeLatitude; accuracy: number };
+  | {
+      status: "ready";
+      position: LongitudeLatitude;
+      accuracy: number;
+      timestamp: number;
+    };
 
 /** Watches the latest valid browser GPS fix and cleans up the watcher on exit. */
 export function useGpsPosition(): GpsState {
@@ -17,10 +22,11 @@ export function useGpsPosition(): GpsState {
     }
 
     const watchId = navigator.geolocation.watchPosition(
-      ({ coords }) => setGps({
+      ({ coords, timestamp }) => setGps({
         status: "ready",
         position: [coords.longitude, coords.latitude],
         accuracy: coords.accuracy,
+        timestamp,
       }),
       () => setGps({ status: "unavailable" }),
       { enableHighAccuracy: true, maximumAge: 5_000, timeout: 15_000 },

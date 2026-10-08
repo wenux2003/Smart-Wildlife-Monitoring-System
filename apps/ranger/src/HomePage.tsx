@@ -4,6 +4,7 @@ import type { PatrolAssignmentSummary } from "@wr/shared";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext.js";
 import { fetchMyPatrolAssignments } from "./lib/patrols.js";
+import { startOfflinePatrol } from "@wr/offline";
 
 function BackIcon() {
   return (
@@ -65,10 +66,13 @@ function PatrolCard({
   );
   const timing = complete
     ? patrol.completedAt
-      ? `completed ${new Date(patrol.completedAt).toLocaleDateString(undefined, {
-          month: "short",
-          day: "numeric",
-        })}`
+      ? `completed ${new Date(patrol.completedAt).toLocaleDateString(
+          undefined,
+          {
+            month: "short",
+            day: "numeric",
+          },
+        )}`
       : "completed"
     : elapsedMinutes < 60
       ? `assigned ${elapsedMinutes} min ago`
@@ -107,7 +111,9 @@ function PatrolCard({
             <span aria-hidden="true">{selected ? "✓" : ""}</span>
           </button>
         ) : (
-          <span className="patrol-status-label">{patrol.status.toLowerCase()}</span>
+          <span className="patrol-status-label">
+            {patrol.status.toLowerCase()}
+          </span>
         )}
       </div>
 
@@ -115,12 +121,20 @@ function PatrolCard({
         <div className="coverage-track" aria-hidden="true">
           <span style={{ width: `${patrol.coveragePercentage}%` }} />
         </div>
-        <p>{complete ? `${patrol.coveragePercentage}% covered` : "Not covered"}</p>
+        <p>
+          {complete ? `${patrol.coveragePercentage}% covered` : "Not covered"}
+        </p>
       </div>
 
       <div className="patrol-card-meta">
-        <span><MapPinIcon /> {patrol.route.sector}</span>
-        <span>{complete ? `${patrol.coveragePercentage}% coverage` : "Ready to start"}</span>
+        <span>
+          <MapPinIcon /> {patrol.route.sector}
+        </span>
+        <span>
+          {complete
+            ? `${patrol.coveragePercentage}% coverage`
+            : "Ready to start"}
+        </span>
       </div>
     </article>
   );
@@ -134,6 +148,7 @@ export function RangerHomePage() {
   const [selectedPatrolId, setSelectedPatrolId] = useState<string>();
   const [error, setError] = useState("");
   const [signingOut, setSigningOut] = useState(false);
+  const [startingPatrol, setStartingPatrol] = useState(false);
 
   useEffect(() => {
     const updateConnection = () => setOnline(navigator.onLine);
@@ -164,15 +179,49 @@ export function RangerHomePage() {
     staleTime: 30_000,
   });
   const patrolAssignments = patrolQuery.data ?? [];
-  const selectedPatrol = patrolAssignments.find(
-    (patrol) => patrol.id === selectedPatrolId && patrol.status === "ASSIGNED",
-  ) ?? patrolAssignments.find((patrol) => patrol.status === "ASSIGNED");
+  const selectedPatrol =
+    patrolAssignments.find(
+      (patrol) =>
+        patrol.id === selectedPatrolId && patrol.status === "ASSIGNED",
+    ) ?? patrolAssignments.find((patrol) => patrol.status === "ASSIGNED");
+
+  async function startSelectedPatrol() {
+    if (!selectedPatrol || !user) return;
+    setError("");
+    setStartingPatrol(true);
+    try {
+      await startOfflinePatrol({
+        assignmentId: selectedPatrol.id,
+        rangerId: user.id,
+        route: {
+          id: selectedPatrol.route.id,
+          name: selectedPatrol.route.name,
+          sector: selectedPatrol.route.sector,
+          estimatedDistanceKm: selectedPatrol.route.estimatedDistanceKm,
+          path: selectedPatrol.route.path,
+        },
+      });
+      navigate(`/patrol/${selectedPatrol.id}/active`);
+    } catch (failure) {
+      setError(
+        failure instanceof Error
+          ? failure.message
+          : "The patrol could not be started.",
+      );
+    } finally {
+      setStartingPatrol(false);
+    }
+  }
 
   return (
     <main className="patrol-screen" id="main-content">
       <header className="patrol-header">
         <div className="patrol-nav-row">
-          <button className="back-button" type="button" aria-label="Back to home">
+          <button
+            className="back-button"
+            type="button"
+            aria-label="Back to home"
+          >
             <BackIcon />
             <span>Home</span>
           </button>
@@ -203,7 +252,11 @@ export function RangerHomePage() {
         </div>
 
         {menuOpen && (
-          <section className="ranger-menu" id="ranger-account-menu" aria-label="Ranger account">
+          <section
+            className="ranger-menu"
+            id="ranger-account-menu"
+            aria-label="Ranger account"
+          >
             <div>
               <strong>{user?.name}</strong>
               <span>{user?.parkName ?? "No park assigned"}</span>
@@ -225,32 +278,70 @@ export function RangerHomePage() {
             <p className="section-date">Today</p>
             <h2 id="today-patrols">{user?.parkName ?? "Yala West"}</h2>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              gap: "8px",
+            }}
+          >
             <span>
               {patrolQuery.isLoading
                 ? "Loading routes"
                 : `${patrolAssignments.length} ${patrolAssignments.length === 1 ? "route" : "routes"}`}
             </span>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <Link to="/dispatches" className="button" style={{ fontSize: '14px', textDecoration: 'underline' }}>View Dispatches</Link>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <Link
+                to="/incidents/report"
+                className="button"
+                style={{ fontSize: "14px", textDecoration: "underline" }}
+              >
+                Report Incident
+              </Link>
+              <Link
+                to="/incidents"
+                className="button"
+                style={{ fontSize: "14px", textDecoration: "underline" }}
+              >
+                My incidents / sync
+              </Link>
+              <Link
+                to="/dispatches"
+                className="button"
+                style={{ fontSize: "14px", textDecoration: "underline" }}
+              >
+                View Dispatches
+              </Link>
             </div>
           </div>
         </div>
 
         {patrolQuery.isLoading ? (
-          <div className="patrol-loading" role="status" aria-label="Loading patrol assignments">
-            <span /><span /><span />
+          <div
+            className="patrol-loading"
+            role="status"
+            aria-label="Loading patrol assignments"
+          >
+            <span />
+            <span />
+            <span />
           </div>
         ) : patrolQuery.isError ? (
           <div className="patrol-query-state" role="alert">
             <strong>Patrols couldn’t be loaded</strong>
             <p>{(patrolQuery.error as Error).message}</p>
-            <button type="button" onClick={() => void patrolQuery.refetch()}>Try again</button>
+            <button type="button" onClick={() => void patrolQuery.refetch()}>
+              Try again
+            </button>
           </div>
         ) : patrolAssignments.length === 0 ? (
           <div className="patrol-query-state">
             <strong>No patrols assigned</strong>
-            <p>Your next route will appear here after your park manager assigns it.</p>
+            <p>
+              Your next route will appear here after your park manager assigns
+              it.
+            </p>
           </div>
         ) : (
           <div className="patrol-list">
@@ -265,27 +356,39 @@ export function RangerHomePage() {
           </div>
         )}
 
-        {error && <p className="alert" role="alert">{error}</p>}
-
-        {!patrolQuery.isLoading && !patrolQuery.isError && patrolAssignments.length > 0 && (
-          <button
-            className="start-patrol-button"
-            type="button"
-            disabled={!selectedPatrol}
-            onClick={() => selectedPatrol && navigate(`/patrol/${selectedPatrol.id}/active`)}
-          >
-            <span className="start-patrol-icon"><StartIcon /></span>
-            <span className="start-patrol-copy">
-              <strong>Start patrol</strong>
-              <small>
-                {selectedPatrol
-                  ? `${selectedPatrol.route.name} · ${selectedPatrol.route.estimatedDistanceKm.toFixed(1)} km`
-                  : "No assigned trail available"}
-              </small>
-            </span>
-            <span className="start-patrol-arrow" aria-hidden="true">→</span>
-          </button>
+        {error && (
+          <p className="alert" role="alert">
+            {error}
+          </p>
         )}
+
+        {!patrolQuery.isLoading &&
+          !patrolQuery.isError &&
+          patrolAssignments.length > 0 && (
+            <button
+              className="start-patrol-button"
+              type="button"
+              disabled={!selectedPatrol || startingPatrol}
+              onClick={() => void startSelectedPatrol()}
+            >
+              <span className="start-patrol-icon">
+                <StartIcon />
+              </span>
+              <span className="start-patrol-copy">
+                <strong>
+                  {startingPatrol ? "Preparing patrol…" : "Start patrol"}
+                </strong>
+                <small>
+                  {selectedPatrol
+                    ? `${selectedPatrol.route.name} · ${selectedPatrol.route.estimatedDistanceKm.toFixed(1)} km`
+                    : "No assigned trail available"}
+                </small>
+              </span>
+              <span className="start-patrol-arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
+          )}
 
         <p className="patrol-footnote">
           GPS tracking begins only after you start the patrol.

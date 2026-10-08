@@ -69,15 +69,43 @@ export function WorkspacePage() {
         </h2>
         <div className="workspace-modules">
           {[
-            { icon: Binoculars, name: "Incident reporting", link: undefined },
+            ...(user.role === "RESEARCHER"
+              ? []
+              : [
+                  {
+                    icon: Binoculars,
+                    name: "Incident reporting",
+                    link: "/incidents",
+                  },
+                  {
+                    icon: Binoculars,
+                    name: "Community conflict inbox",
+                    link: "/conflicts",
+                  },
+                  {
+                    icon: Binoculars,
+                    name: "Camera-trap review",
+                    link: "/camera-traps",
+                  },
+                ]),
             { icon: Footprints, name: "Ranger patrols", link: undefined },
             { icon: Radio, name: "Wildlife alerts", link: "/alerts" },
-            { icon: ChartNoAxesCombined, name: "Conservation analytics", link: undefined },
+            {
+              icon: ChartNoAxesCombined,
+              name: "Conservation analytics",
+              link: "/analytics",
+            },
           ].map(({ icon: Icon, name, link }) => (
             <article key={name}>
               <Icon size={27} />
               <h3>{name}</h3>
-              {link ? <Link className="button button-green" to={link}>Open</Link> : <span className="development-tag">In development</span>}
+              {link ? (
+                <Link className="button button-green" to={link}>
+                  Open
+                </Link>
+              ) : (
+                <span className="development-tag">In development</span>
+              )}
             </article>
           ))}
         </div>
