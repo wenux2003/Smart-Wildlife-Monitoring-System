@@ -6,7 +6,8 @@ import "leaflet/dist/leaflet.css";
 
 import { AccountHeader } from "../components/AccountHeader.js";
 import { AlertCard } from "../components/AlertCard.js";
-import { AlertSettings, AlertConfig } from "../components/AlertSettings.js";
+import { AlertSettings } from "../components/AlertSettings.js";
+import type { AlertConfig } from "../components/AlertSettings.js";
 import { MapPolygonDrawer } from "../components/MapPolygonDrawer.js";
 import { NewZoneModal } from "../components/NewZoneModal.js";
 import { apiRequest } from "../api.js";
@@ -183,7 +184,7 @@ export function AlertsPage() {
                 <Popup>
                   <strong>{alert.type}</strong> ({alert.severity})<br/>
                   Status: {alert.status === 'ACCEPTED' ? 'REQUIRES DISPATCH' : 
-                           alert.status === 'DISPATCHED' ? (alert.hasActiveDispatch ? 'RANGER DISPATCHED' : <span className="loading-dots">DISPATCHING</span>) :
+                           alert.status === 'DISPATCHED' ? ((alert as any).hasActiveDispatch ? 'RANGER DISPATCHED' : <span className="loading-dots">DISPATCHING</span>) :
                            alert.status}
                 </Popup>
               </CircleMarker>

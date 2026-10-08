@@ -75,11 +75,11 @@ export function AlertCard({ alert, collars }: { alert: Alert; collars: any[] }) 
             <span>Status</span> 
             <span className={`font-medium px-2 py-0.5 rounded-sm ${
               alert.status === 'ACCEPTED' ? 'text-amber-700 bg-amber-50 animate-pulse' : 
-              alert.status === 'DISPATCHED' ? (alert.hasActiveDispatch ? 'text-emerald-700 bg-emerald-50' : 'text-blue-700 bg-blue-50') : 
+              alert.status === 'DISPATCHED' ? ((alert as any).hasActiveDispatch ? 'text-emerald-700 bg-emerald-50' : 'text-blue-700 bg-blue-50') : 
               'text-[#1F2937] bg-[#f6f8f5]'
             }`}>
               {alert.status === 'ACCEPTED' ? 'REQUIRES DISPATCH' : 
-               alert.status === 'DISPATCHED' ? (alert.hasActiveDispatch ? 'RANGER DISPATCHED' : <span className="loading-dots">DISPATCHING</span>) : 
+               alert.status === 'DISPATCHED' ? ((alert as any).hasActiveDispatch ? 'RANGER DISPATCHED' : <span className="loading-dots">DISPATCHING</span>) : 
                alert.status}
             </span>
           </div>
