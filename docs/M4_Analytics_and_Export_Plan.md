@@ -4,7 +4,7 @@
 **Use case:** M4 — Analytics and export
 **Preserved use case:** Group 039, "Analyze Conservation Data & Generate Reports" (G39 pp. 4–10)
 **Owner :** Wenura Kavinda
-**Status:** ✅ P0 complete: contracts tested and migrations verified twice on isolated local PostGIS. P1 domain implementation is in progress.
+**Status:** ✅ P0 complete: contracts tested and migrations verified twice on isolated local PostGIS. ✅ P1 complete: domain implementation passes 12 tests with 100% coverage. P2 is next.
 **Supersedes:** the short M4 notes in [Implementation plan §7 M4](./Group037_Implementation_Plan.md#m4-analytics-and-export) and the endpoint rows in its §5. Where this plan is more specific, this plan wins; update those sections to link here.
 
 ---
@@ -1279,7 +1279,7 @@ The implementation plan requires "six months of labeled synthetic analytics data
 | Phase | Deliverable | Tier | Exit check | Status |
 |---|---|---|---|---|
 | P0 Contracts | `shared/analytics.ts` + tests; `0009_analytics.sql`; `analytics-schema.ts` | 1 | Migrate twice on a local PostGIS; shared tests green | ✅ Complete — 7 contract tests; full migrations applied then rerun cleanly on isolated local PostGIS |
-| P1 Domain | `filter.ts`, `metrics.ts`, `report-code.ts`, `report-assembler.ts`, `narrative.ts` + tests | 1 | 100% domain coverage | 🟡 In progress — implementation prepared; phase validation recorded in next commit |
+| P1 Domain | `filter.ts`, `metrics.ts`, `report-code.ts`, `report-assembler.ts`, `narrative.ts` + tests | 1 | 100% domain coverage | ✅ Complete — 12 tests; 100% lines, statements, branches and functions; lint/typecheck pass |
 | P2 Seed | Boundary, sectors, grid build, demo incidents, patrols, alerts | 1 | Seed twice, no duplicates; counts as specified | ⏳ Not started |
 | P3 Repository | Read SQL for KPIs, trend, breakdown, hotspots, gaps, conflicts; audit repository; DB tests | 1 | DB tests green on an isolated database; query < 2 s on the seed | ⏳ Not started |
 | P4 Service + routes | E1–E5, errors, access, timeout, rate limit, server registration | 1 | `routes.test.ts` and `service.test.ts` green | ⏳ Not started |
@@ -1414,3 +1414,7 @@ All Appendix A flows: ⏳ Not started. A flow is marked ✅ only after its liste
 
 - ✅ P0: all migrations including 0009 applied to an isolated local PostgreSQL 17/PostGIS database; second run returned already up to date. Seven shared contract tests pass. The installed local image was used after the planned PostgreSQL 16 image download stalled. CI remains the PostgreSQL 16 compatibility check.
 - No Neon migrations or shared database seed executed.
+
+- ✅ P1: Colombo date normalization, UI presets, category/type intersection, zero-filled buckets, change/hotspot/priority metrics, sequence-backed report codes, narrative and validated SHA-256 snapshots.
+- ✅ P1 gate: `pnpm vitest run --config vitest.m4-domain.config.ts --coverage`; 12 tests, 100% across all four coverage measures. Workspace lint/typecheck passed.
+- Presets: last 6 months = 180 rolling days; last 12 months = 365 rolling days. Explicit from/to remain authoritative.
