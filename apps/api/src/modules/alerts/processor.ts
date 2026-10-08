@@ -1,4 +1,5 @@
 import type { AlertRepository } from "./repository.js";
+import type { CollarRecord } from "./types.js";
 import { AlertType, Severity, AlertStatus } from "@wr/shared";
 
 // Example config shape from parks.config:
@@ -11,18 +12,28 @@ import { AlertType, Severity, AlertStatus } from "@wr/shared";
 //   }
 // }
 
+export type PingData = {
+  collarId: string;
+  location: [number, number];
+  speed: number | null;
+  battery: number | null;
+  recordedAt: Date;
+};
+
+export type AlertsConfig = {
+  geofenceCenter?: [number, number];
+  geofenceRadiusKm?: number;
+  geofenceZones?: any[];
+  immobilitySpeedThreshold?: number;
+  lowBatteryThreshold?: number;
+};
+
 export class PingProcessor {
   constructor(
     private readonly repository: AlertRepository
   ) {}
 
-  async processPing(pingData: {
-    collarId: string;
-    location: [number, number];
-    speed: number | null;
-    battery: number | null;
-    recordedAt: Date;
-  }) {
+  async processPing(pingData: PingData) {
     // 1. Get the collar to find its park
     const collar = await this.repository.getCollarById(pingData.collarId);
     if (!collar) throw new Error("Collar not found");
@@ -40,9 +51,7 @@ export class PingProcessor {
 
     // Get config
     const parkConfig = await this.repository.getParkConfig(parkId);
-    const alertsConfig = parkConfig?.alerts || {
-      geofenceCenter: [80.3, 7.3],
-      geofenceRadiusKm: 25,
+    const alertsConfig: AlertsConfig = parkConfig?.alerts || {
       immobilitySpeedThreshold: 0.1,
       lowBatteryThreshold: 20,
     };
@@ -53,8 +62,7 @@ export class PingProcessor {
     await this.checkBattery(collar, pingData, parkId, alertsConfig);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async checkGeofence(collar: any, ping: any, parkId: string, alertsConfig: any) {
+  private async checkGeofence(collar: CollarRecord, ping: PingData, parkId: string, alertsConfig: AlertsConfig) {
     let breachDetected = false;
     let breachSeverity = Severity.HIGH;
 
@@ -107,9 +115,9 @@ export class PingProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async checkImmobility(collar: any, ping: any, parkId: string, alertsConfig: any) {
-    const isImmobile = ping.speed !== null && ping.speed !== undefined && ping.speed <= alertsConfig.immobilitySpeedThreshold;
+  private async checkImmobility(collar: CollarRecord, ping: PingData, parkId: string, alertsConfig: AlertsConfig) {
+    const threshold = alertsConfig.immobilitySpeedThreshold ?? 0.1;
+    const isImmobile = ping.speed !== null && ping.speed !== undefined && ping.speed <= threshold;
     const active = await this.repository.getActiveAlertForCollar(collar.id, AlertType.IMMOBILITY);
 
     if (isImmobile) {
@@ -129,9 +137,9 @@ export class PingProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async checkBattery(collar: any, ping: any, parkId: string, alertsConfig: any) {
-    const isLow = ping.battery !== null && ping.battery <= alertsConfig.lowBatteryThreshold;
+  private async checkBattery(collar: CollarRecord, ping: PingData, parkId: string, alertsConfig: AlertsConfig) {
+    const threshold = alertsConfig.lowBatteryThreshold ?? 20;
+    const isLow = ping.battery !== null && ping.battery <= threshold;
     const active = await this.repository.getActiveAlertForCollar(collar.id, AlertType.LOW_BATTERY);
 
     if (isLow) {

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MapContainer, TileLayer, CircleMarker, Popup, Polyline, Polygon } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -8,7 +7,8 @@ import { AccountHeader } from "../components/AccountHeader.js";
 import { AlertCard } from "../components/AlertCard.js";
 import { AlertSettings } from "../components/AlertSettings.js";
 import type { AlertConfig } from "../components/AlertSettings.js";
-import { MapPolygonDrawer } from "../components/MapPolygonDrawer.js";
+import { AlertsMap } from "../components/AlertsMap.js";
+import { useGeofenceDrawing } from "../hooks/useGeofenceDrawing.js";
 import { NewZoneModal } from "../components/NewZoneModal.js";
 import { apiRequest } from "../api.js";
 import type { Alert, Collar, CollarPing } from "@wr/shared";
@@ -19,8 +19,7 @@ export function AlertsPage() {
   const queryClient = useQueryClient();
   const [selectedCollar, setSelectedCollar] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [newPolygon, setNewPolygon] = useState<[number, number][] | null>(null);
+  const { isDrawing, newPolygon, toggleDrawing, completeDrawing, cancelDrawing } = useGeofenceDrawing();
 
   const { data: config } = useQuery({
     queryKey: ["alertConfig"],
@@ -32,8 +31,7 @@ export function AlertsPage() {
       apiRequest("/api/alerts/config", { method: "PATCH", body: newConfig }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["alertConfig"] });
-      setNewPolygon(null);
-      setIsDrawing(false);
+      cancelDrawing();
     },
   });
 
@@ -43,8 +41,7 @@ export function AlertsPage() {
     refetchInterval: 3000,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: collars = [], isLoading: collarsLoading } = useQuery({
+  const { data: collars = [] } = useQuery({
     queryKey: ["collars"],
     queryFn: () => apiRequest<Collar[]>("/api/collars"),
     refetchInterval: 30000,
@@ -54,22 +51,6 @@ export function AlertsPage() {
     queryKey: ["collars", selectedCollar, "pings"],
     queryFn: () => apiRequest<CollarPing[]>(`/api/collars/${selectedCollar}/pings`),
     enabled: !!selectedCollar,
-  });
-
-  const { data: staff = [] } = useQuery({
-    queryKey: ["staff"],
-    queryFn: () => apiRequest<Account[]>("/api/accounts"),
-  });
-
-  const acknowledgeMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/alerts/${id}/acknowledge`, { method: "POST" }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["alerts"] }),
-  });
-
-  const dispatchMutation = useMutation({
-    mutationFn: ({ alertId, rangerId }: { alertId: string; rangerId: string }) => 
-      apiRequest(`/api/alerts/${alertId}/dispatch`, { method: "POST", body: { rangerId } }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["alerts"] }),
   });
 
   const center: LatLngExpression = [7.8731, 80.7718]; // Sri Lanka center
@@ -89,7 +70,7 @@ export function AlertsPage() {
             </div>
             <div className="flex gap-2">
               <button 
-                onClick={() => setIsDrawing(!isDrawing)}
+                onClick={toggleDrawing}
                 className={`px-4 py-2 rounded-md transition-colors flex items-center justify-center font-bold text-sm ${isDrawing ? 'bg-[#166534] text-white hover:bg-[#14532d]' : 'bg-[#E8EDE4] text-[#14352B] hover:bg-[#DCE5DC]'}`}
                 title={isDrawing ? "Cancel Drawing" : "Draw Geofence Zone"}
               >
@@ -129,107 +110,18 @@ export function AlertsPage() {
           </div>
         </aside>
 
-        <div className="flex-1 bg-[#bad2e3] relative" style={{ zIndex: 0, minHeight: 0 }}>
-          <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%', zIndex: 0 }}>
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            
-            {collars.map(collar => {
-              if (!collar.location) return null;
-              const isSelected = selectedCollar === collar.id;
-              
-              return (
-                <CircleMarker
-                  key={collar.id}
-                  center={[collar.location[1], collar.location[0]]}
-                  radius={8}
-                  pathOptions={{ 
-                    color: isSelected ? '#D97706' : '#1F2937', 
-                    fillColor: isSelected ? '#D97706' : '#166534', 
-                    fillOpacity: 1, 
-                    weight: 2 
-                  }}
-                  eventHandlers={{
-                    click: () => setSelectedCollar(isSelected ? null : collar.id),
-                  }}
-                >
-                  <Popup>
-                    <strong>{collar.animalName || 'Unknown Animal'}</strong><br/>
-                    Species: {collar.species}<br/>
-                    Battery: {collar.latestBattery}%<br/>
-                    Status: {collar.status}
-                  </Popup>
-                </CircleMarker>
-              );
-            })}
-            
-            {pings.length > 1 && (
-              <Polyline 
-                positions={pings.map(p => [p.location[1], p.location[0]])} 
-                pathOptions={{ color: '#D97706', weight: 3, dashArray: '5, 10' }} 
-              />
-            )}
-            
-            {alerts.filter(a => a.location).map(alert => (
-              <CircleMarker
-                key={`alert-${alert.id}`}
-                center={[alert.location![1], alert.location![0]]}
-                radius={12}
-                pathOptions={{ 
-                  color: alert.severity === 'CRITICAL' ? '#B91C1C' : alert.severity === 'HIGH' ? '#B45309' : '#1D4ED8', 
-                  fillColor: 'transparent', 
-                  fillOpacity: 0, 
-                  weight: 3,
-                  dashArray: '4'
-                }}
-              >
-                <Popup>
-                  <strong>{alert.type}</strong> ({alert.severity})<br/>
-                  Status: {alert.status === 'ACCEPTED' ? 'REQUIRES DISPATCH' : 
-                           alert.status === 'DISPATCHED' ? ((alert as any).hasActiveDispatch ? 'RANGER DISPATCHED' : <span className="loading-dots">DISPATCHING</span>) :
-                           alert.status}
-                </Popup>
-              </CircleMarker>
-            ))}
-
-            {/* Render existing zones */}
-            {config?.geofenceZones?.map((zone, i) => (
-              <Polygon 
-                key={i} 
-                positions={zone.polygon.map(p => [p[1], p[0]])}
-                pathOptions={{
-                  color: zone.severity === 'CRITICAL' ? '#B91C1C' : zone.severity === 'HIGH' ? '#B45309' : '#D97706',
-                  fillColor: zone.severity === 'CRITICAL' ? '#B91C1C' : zone.severity === 'HIGH' ? '#B45309' : '#D97706',
-                  fillOpacity: 0.1,
-                  weight: 2,
-                  dashArray: '4, 4'
-                }}
-              >
-                <Popup>
-                  <strong>{zone.name}</strong><br/>
-                  Alert on {zone.alertOn} ({zone.severity})
-                </Popup>
-              </Polygon>
-            ))}
-
-            {/* Drawing tool overlay */}
-            <MapPolygonDrawer 
-              isActive={isDrawing} 
-              onComplete={(poly) => setNewPolygon(poly)} 
-            />
-          </MapContainer>
-
-          {isDrawing && (
-            <div style={{ position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)', zIndex: 9999 }} className="bg-white/90 backdrop-blur px-5 py-2.5 rounded-2xl shadow-lg border border-[#DCE5DC] text-sm text-[#14352B] flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-[#166534] animate-pulse"></div>
-              <div className="flex flex-col">
-                <span className="font-semibold">Click to draw boundary points</span>
-                <span className="text-xs text-[#4B5563]">
-                  Click the <strong className="text-[#166534]">first point (green)</strong> or Right-click to finish. Press <strong className="text-gray-700">Backspace</strong> to undo.
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
+        <AlertsMap 
+          center={center}
+          zoom={zoom}
+          collars={collars}
+          pings={pings}
+          alerts={alerts}
+          config={config}
+          selectedCollar={selectedCollar}
+          setSelectedCollar={setSelectedCollar}
+          isDrawing={isDrawing}
+          setNewPolygon={completeDrawing}
+        />
       </main>
       
       {showSettings && <AlertSettings onClose={() => setShowSettings(false)} />}
@@ -237,10 +129,7 @@ export function AlertsPage() {
       {newPolygon && (
         <NewZoneModal 
           polygon={newPolygon}
-          onCancel={() => {
-            setNewPolygon(null);
-            setIsDrawing(false);
-          }}
+          onCancel={cancelDrawing}
           onSave={(zone) => {
             const zones = config?.geofenceZones || [];
             updateConfigMutation.mutate({

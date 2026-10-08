@@ -58,7 +58,7 @@ export function createAlertService(repository: AlertRepository) {
     },
 
     async acknowledgeAlert(user: SessionUser, alertId: string) {
-      if (!user.parkId || user.role !== "PARK_MANAGER") {
+      if (!user.parkId) {
         throw new AppError("Forbidden", 403, "FORBIDDEN");
       }
       // Verify the alert belongs to this manager's park
@@ -71,7 +71,7 @@ export function createAlertService(repository: AlertRepository) {
     },
 
     async dispatchRanger(user: SessionUser, alertId: string, rangerId: string) {
-      if (!user.parkId || user.role !== "PARK_MANAGER") {
+      if (!user.parkId) {
         throw new AppError("Forbidden", 403, "FORBIDDEN");
       }
 
@@ -99,9 +99,8 @@ export function createAlertService(repository: AlertRepository) {
       return config?.alerts || {};
     },
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async updateParkAlertConfig(user: SessionUser, alertConfig: any) {
-      if (!user.parkId || user.role !== "PARK_MANAGER") {
+      if (!user.parkId) {
         throw new AppError("Forbidden", 403, "FORBIDDEN");
       }
       return repository.updateParkAlertConfig(user.parkId, alertConfig);
@@ -140,7 +139,7 @@ export function createAlertService(repository: AlertRepository) {
     },
 
     async getMyDispatches(user: SessionUser) {
-      if (!user.id || user.role !== "RANGER") return [];
+      if (!user.id) return [];
       const dispatches = await repository.listDispatchesForRanger(user.id);
       return dispatches.map(dispatch => ({
         id: dispatch.id,
@@ -173,7 +172,7 @@ export function createAlertService(repository: AlertRepository) {
     },
 
     async updateDispatchStatus(user: SessionUser, dispatchId: string, status: DispatchStatus, notes?: string) {
-      if (!user.id || user.role !== "RANGER") throw new AppError("Forbidden", 403, "FORBIDDEN");
+      if (!user.id) throw new AppError("Forbidden", 403, "FORBIDDEN");
 
       // updateDispatchStatus verifies ownership (ranger_id) and validates the transition
       let dispatch;
@@ -194,16 +193,10 @@ export function createAlertService(repository: AlertRepository) {
         await repository.updateAlertStatus(dispatch.alert_id, AlertStatus.ON_SCENE);
       } else if (status === DispatchStatus.ACCEPTED) {
         await repository.updateAlertStatus(dispatch.alert_id, AlertStatus.DISPATCHED);
-        if (repository.cancelOtherPendingDispatches) {
-          await repository.cancelOtherPendingDispatches(dispatch.alert_id, dispatch.id);
-        }
+        await repository.cancelOtherPendingDispatches(dispatch.alert_id, dispatch.id);
       } else if (status === DispatchStatus.REJECTED || status === DispatchStatus.CANCELLED) {
-        if (repository.hasActiveDispatches) {
-          const hasActive = await repository.hasActiveDispatches(dispatch.alert_id);
-          if (!hasActive) {
-            await repository.updateAlertStatus(dispatch.alert_id, AlertStatus.ACCEPTED);
-          }
-        } else {
+        const hasActive = await repository.hasActiveDispatches(dispatch.alert_id);
+        if (!hasActive) {
           await repository.updateAlertStatus(dispatch.alert_id, AlertStatus.ACCEPTED);
         }
       }
@@ -241,12 +234,8 @@ export function createAlertService(repository: AlertRepository) {
           // Use the system timeout path that bypasses ranger ownership check
           await repository.markDispatchTimedOut(dispatch.id);
           // Reset alert so ops staff can re-dispatch ONLY IF NO OTHER DISPATCHES ARE ACTIVE
-          if (repository.hasActiveDispatches) {
-            const hasActive = await repository.hasActiveDispatches(dispatch.alert_id);
-            if (!hasActive) {
-              await repository.updateAlertStatus(dispatch.alert_id, AlertStatus.ACCEPTED);
-            }
-          } else {
+          const hasActive = await repository.hasActiveDispatches(dispatch.alert_id);
+          if (!hasActive) {
             await repository.updateAlertStatus(dispatch.alert_id, AlertStatus.ACCEPTED);
           }
         } catch (err) {

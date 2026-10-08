@@ -1,17 +1,43 @@
+const PINGS_URL = "http://localhost:3000/api/pings";
+const COLLARS_URL = "http://localhost:3000/api/collars";
 
-const API_URL = "http://localhost:3000/api/pings";
+const activeCollars: { id: string, lat: number, lng: number, speed: number, battery: number }[] = [];
 
-// Simulated collar data
-const collars = [
-  { id: "5c9b986b-a25e-4c74-a690-36b043213568", lat: 6.37, lng: 81.33, speed: 1.5, battery: 95 },
-  { id: "c2222222-2222-2222-2222-222222222222", lat: 6.40, lng: 81.35, speed: 0.0, battery: 15 },
-];
+async function fetchCollars() {
+  try {
+    const res = await fetch(COLLARS_URL);
+    if (!res.ok) throw new Error("Failed to fetch collars");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const collars = await res.json() as any[];
+    
+    // Merge new collars into activeCollars
+    for (const collar of collars) {
+      if (!activeCollars.find(c => c.id === collar.id)) {
+        // Use default coords if location missing (GeoJSON coordinates are [lng, lat])
+        const location = collar.location || [81.33, 6.37];
+        activeCollars.push({
+          id: collar.id,
+          lng: location[0],
+          lat: location[1],
+          speed: 1.5,
+          battery: collar.latestBattery || 95
+        });
+      }
+    }
+  } catch (e) {
+    console.error("Could not fetch collars:", e);
+  }
+}
 
 async function simulatePings() {
   console.log("Starting collar simulator...");
+  await fetchCollars(); // Initial fetch
   
   setInterval(async () => {
-    for (const collar of collars) {
+    // Refresh collars periodically (~every 100s)
+    if (Math.random() < 0.1) await fetchCollars();
+    
+    for (const collar of activeCollars) {
       // Simulate slight movement
       collar.lat += (Math.random() - 0.5) * 0.001;
       collar.lng += (Math.random() - 0.5) * 0.001;
@@ -28,9 +54,14 @@ async function simulatePings() {
       };
       
       try {
-        const response = await fetch(API_URL, {
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (process.env.PING_SECRET) {
+          headers["x-ping-secret"] = process.env.PING_SECRET;
+        }
+
+        const response = await fetch(PINGS_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify(payload),
         });
         

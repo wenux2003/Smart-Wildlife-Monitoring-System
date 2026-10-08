@@ -14,58 +14,62 @@ const DISPATCH_TRANSITIONS: Record<DispatchStatus, DispatchStatus[]> = {
   [DispatchStatus.CANCELLED]: [],
 };
 
-export interface AlertRepository {
+export interface CollarRepository {
+  createPing(ping: Partial<CollarPingRecord>): Promise<CollarPingRecord>;
+  getCollarById(collarId: string): Promise<CollarRecord | null>;
+  getCollarByIdForPark(collarId: string, parkId: string): Promise<CollarRecord | null>;
+  listCollarsForPark(parkId: string): Promise<(CollarRecord & { location: [number, number] | null })[]>;
+  getCollarPings(collarId: string, limit?: number): Promise<CollarPingRecord[]>;
+  getCollarsWithLostSignal(thresholdMinutes: number): Promise<CollarRecord[]>;
+}
+
+export interface DispatchRepository {
+  createDispatch(dispatch: Partial<AlertDispatchRecord>): Promise<AlertDispatchRecord>;
+  getDispatchById(dispatchId: string): Promise<AlertDispatchRecord | null>;
+  updateDispatchStatus(dispatchId: string, status: DispatchStatus, rangerId: string, notes?: string): Promise<AlertDispatchRecord | null>;
+  listDispatchesForRanger(rangerId: string): Promise<any[]>;
+  getTimedOutDispatches(timeoutMinutes: number): Promise<AlertDispatchRecord[]>;
+  markDispatchTimedOut(dispatchId: string): Promise<void>;
+  getRangerForPark(rangerId: string, parkId: string): Promise<{ id: string } | null>;
+  getAvailableRangers(alertId: string, parkId: string): Promise<{ rangerId: string, name: string, distanceM: number | null }[]>;
+  cancelOtherPendingDispatches(alertId: string, acceptedDispatchId: string): Promise<void>;
+  hasActiveDispatches(alertId: string): Promise<boolean>;
+}
+
+export interface ParkRepository {
+  getParkConfig(parkId: string): Promise<any>;
+  updateParkAlertConfig(parkId: string, alertConfig: any): Promise<any>;
+}
+
+export interface AlertRepository extends CollarRepository, DispatchRepository, ParkRepository {
   listAlertsForPark(parkId: string): Promise<AlertRecord[]>;
   getAlertById(alertId: string): Promise<AlertRecord | null>;
   getAlertByIdForPark(alertId: string, parkId: string): Promise<AlertRecord | null>;
   createAlert(alert: Partial<AlertRecord>): Promise<AlertRecord>;
   updateAlertStatus(alertId: string, status: AlertStatus, resolvedAt?: Date): Promise<AlertRecord | null>;
-
-  createPing(ping: Partial<CollarPingRecord>): Promise<CollarPingRecord>;
-  getCollarById(collarId: string): Promise<CollarRecord | null>;
-  getCollarByIdForPark(collarId: string, parkId: string): Promise<CollarRecord | null>;
-
-  createDispatch(dispatch: Partial<AlertDispatchRecord>): Promise<AlertDispatchRecord>;
-  getDispatchById(dispatchId: string): Promise<AlertDispatchRecord | null>;
-  updateDispatchStatus(dispatchId: string, status: DispatchStatus, rangerId: string, notes?: string): Promise<AlertDispatchRecord | null>;
-
-  listCollarsForPark(parkId: string): Promise<(CollarRecord & { location: [number, number] | null })[]>;
-  getCollarPings(collarId: string, limit?: number): Promise<CollarPingRecord[]>;
-
-  listDispatchesForRanger(rangerId: string): Promise<any[]>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getParkConfig(parkId: string): Promise<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  updateParkAlertConfig(parkId: string, alertConfig: any): Promise<any>;
   getActiveAlertForCollar(collarId: string, type: string): Promise<AlertRecord | null>;
-  getCollarsWithLostSignal(thresholdMinutes: number): Promise<CollarRecord[]>;
-  getTimedOutDispatches(timeoutMinutes: number): Promise<AlertDispatchRecord[]>;
-  markDispatchTimedOut(dispatchId: string): Promise<void>;
-  getRangerForPark(rangerId: string, parkId: string): Promise<{ id: string } | null>;
-  
   getAlertContext(alertId: string, parkId: string): Promise<{ settlements: any[], cameras: any[], history: any[] }>;
-  getAvailableRangers(alertId: string, parkId: string): Promise<{ rangerId: string, name: string, distanceM: number | null }[]>;
   broadcastAlert(alertId: string, parkId: string): Promise<void>;
-  cancelOtherPendingDispatches(alertId: string, acceptedDispatchId: string): Promise<void>;
-  hasActiveDispatches(alertId: string): Promise<boolean>;
-
   close?(): Promise<void>;
 }
 
 export function createAlertRepository(url: string): AlertRepository {
   const sql = postgres(url, { max: 5, prepare: false, connect_timeout: 15 });
 
+  const ALERT_SELECT_COLUMNS = sql`
+    id, park_id, collar_id, type, severity, status, 
+    (ST_AsGeoJSON(location)::jsonb -> 'coordinates') AS location,
+    created_at, resolved_at, resolution_reason, is_broadcast,
+    EXISTS (
+      SELECT 1 FROM alert_dispatches 
+      WHERE alert_id = alerts.id AND status IN ('ACCEPTED', 'ARRIVED')
+    ) AS has_active_dispatch
+  `;
+
   return {
     async listAlertsForPark(parkId) {
       return sql<AlertRecord[]>`
-        SELECT 
-          id, park_id, collar_id, type, severity, status, 
-          (ST_AsGeoJSON(location)::jsonb -> 'coordinates') AS location,
-          created_at, resolved_at, resolution_reason, is_broadcast,
-          EXISTS (
-            SELECT 1 FROM alert_dispatches 
-            WHERE alert_id = alerts.id AND status IN ('ACCEPTED', 'ARRIVED')
-          ) AS has_active_dispatch
+        SELECT ${ALERT_SELECT_COLUMNS}
         FROM alerts 
         WHERE park_id = ${parkId}
         ORDER BY created_at DESC
@@ -73,14 +77,7 @@ export function createAlertRepository(url: string): AlertRepository {
     },
     async getAlertById(alertId) {
       const result = await sql<AlertRecord[]>`
-        SELECT 
-          id, park_id, collar_id, type, severity, status, 
-          (ST_AsGeoJSON(location)::jsonb -> 'coordinates') AS location,
-          created_at, resolved_at, resolution_reason, is_broadcast,
-          EXISTS (
-            SELECT 1 FROM alert_dispatches 
-            WHERE alert_id = alerts.id AND status IN ('ACCEPTED', 'ARRIVED')
-          ) AS has_active_dispatch
+        SELECT ${ALERT_SELECT_COLUMNS}
         FROM alerts 
         WHERE id = ${alertId}
       `;
@@ -88,14 +85,7 @@ export function createAlertRepository(url: string): AlertRepository {
     },
     async getAlertByIdForPark(alertId, parkId) {
       const result = await sql<AlertRecord[]>`
-        SELECT 
-          id, park_id, collar_id, type, severity, status, 
-          (ST_AsGeoJSON(location)::jsonb -> 'coordinates') AS location,
-          created_at, resolved_at, resolution_reason, is_broadcast,
-          EXISTS (
-            SELECT 1 FROM alert_dispatches 
-            WHERE alert_id = alerts.id AND status IN ('ACCEPTED', 'ARRIVED')
-          ) AS has_active_dispatch
+        SELECT ${ALERT_SELECT_COLUMNS}
         FROM alerts 
         WHERE id = ${alertId} AND park_id = ${parkId}
       `;
@@ -118,11 +108,7 @@ export function createAlertRepository(url: string): AlertRepository {
             : sql`NULL`
           }
         )
-        RETURNING 
-          id, park_id, collar_id, type, severity, status, 
-          (ST_AsGeoJSON(location)::jsonb -> 'coordinates') AS location,
-          created_at, resolved_at, resolution_reason, is_broadcast,
-          false AS has_active_dispatch
+        RETURNING ${ALERT_SELECT_COLUMNS}
       `;
       return result[0];
     },
@@ -132,14 +118,7 @@ export function createAlertRepository(url: string): AlertRepository {
         SET status = ${status as string},
             resolved_at = COALESCE(${resolvedAt ?? null}, resolved_at)
         WHERE id = ${alertId}
-        RETURNING 
-          id, park_id, collar_id, type, severity, status, 
-          (ST_AsGeoJSON(location)::jsonb -> 'coordinates') AS location,
-          created_at, resolved_at, resolution_reason, is_broadcast,
-          EXISTS (
-            SELECT 1 FROM alert_dispatches 
-            WHERE alert_id = alerts.id AND status IN ('ACCEPTED', 'ARRIVED')
-          ) AS has_active_dispatch
+        RETURNING ${ALERT_SELECT_COLUMNS}
       `;
       return result.length > 0 ? result[0] : null;
     },
@@ -319,14 +298,7 @@ export function createAlertRepository(url: string): AlertRepository {
     },
     async getActiveAlertForCollar(collarId: string, type: string) {
       const result = await sql<AlertRecord[]>`
-        SELECT 
-          id, park_id, collar_id, type, severity, status, 
-          (ST_AsGeoJSON(location)::jsonb -> 'coordinates') AS location,
-          created_at, resolved_at, resolution_reason, is_broadcast,
-          EXISTS (
-            SELECT 1 FROM alert_dispatches 
-            WHERE alert_id = alerts.id AND status IN ('ACCEPTED', 'ARRIVED')
-          ) AS has_active_dispatch
+        SELECT ${ALERT_SELECT_COLUMNS}
         FROM alerts 
         WHERE collar_id = ${collarId} 
           AND type = ${type} 
