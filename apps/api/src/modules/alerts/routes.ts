@@ -16,6 +16,11 @@ export async function alertRoutes(
     ? createAlertService(options.repository)
     : undefined;
 
+  // Instantiate once — PingProcessor is stateless, no need to recreate per request.
+  const processor = options.repository
+    ? new PingProcessor(options.repository)
+    : undefined;
+
   const requireService = () => {
     if (!service)
       throw new AppError(
@@ -236,7 +241,7 @@ export async function alertRoutes(
       },
     },
     async (request, reply) => {
-      // Require a shared secret in non-development environments (M3-9)
+      // Security: if PING_SECRET is configured, verify it. Fail-closed — missing header = denied.
       const pingSecret = process.env.PING_SECRET;
       if (pingSecret) {
         const provided = request.headers["x-ping-secret"];
@@ -245,10 +250,8 @@ export async function alertRoutes(
         }
       }
 
-      const repo = options.repository;
-      if (!repo) throw new AppError("Repository unavailable", 503, "UNAVAILABLE");
+      if (!processor) throw new AppError("Processor unavailable", 503, "UNAVAILABLE");
 
-      const processor = new PingProcessor(repo);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const body = request.body as any;
       await processor.processPing({

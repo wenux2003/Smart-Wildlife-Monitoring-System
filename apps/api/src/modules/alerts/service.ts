@@ -249,8 +249,9 @@ export function createAlertService(repository: AlertRepository) {
           } else {
             await repository.updateAlertStatus(dispatch.alert_id, AlertStatus.ACCEPTED);
           }
-        } catch {
-          // Log and continue; don't let one failure block others
+        } catch (err) {
+          // Log but continue — don't let one failed timeout block all others
+          console.error(`[checkTimeouts] Failed to time out dispatch ${dispatch.id}:`, err);
         }
       }
     },

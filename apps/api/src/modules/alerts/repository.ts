@@ -167,13 +167,15 @@ export function createAlertRepository(url: string): AlertRepository {
       `;
 
       // Update collar's freshness metadata atomically.
-      // Only overwrite last_ping_at / latest_battery if this ping is newer than
-      // what is already stored (prevents out-of-order pings from rolling back state).
+      // Use a CTE to snapshot the OLD last_ping_at BEFORE the update, so both SET clauses
+      // (last_ping_at and latest_battery) compare against the same pre-update value.
+      // This prevents the bug where last_ping_at is already updated when latest_battery is evaluated.
       await sql`
+        WITH old AS (SELECT last_ping_at FROM collars WHERE id = ${ping.collar_id as string})
         UPDATE collars
         SET
-          last_ping_at    = CASE WHEN last_ping_at IS NULL OR ${recordedAt} > last_ping_at    THEN ${recordedAt}    ELSE last_ping_at    END,
-          latest_battery  = CASE WHEN last_ping_at IS NULL OR ${recordedAt} > last_ping_at    THEN ${battery}       ELSE latest_battery  END
+          last_ping_at   = CASE WHEN (SELECT last_ping_at FROM old) IS NULL OR ${recordedAt} > (SELECT last_ping_at FROM old) THEN ${recordedAt}  ELSE last_ping_at   END,
+          latest_battery = CASE WHEN (SELECT last_ping_at FROM old) IS NULL OR ${recordedAt} > (SELECT last_ping_at FROM old) THEN ${battery}      ELSE latest_battery END
         WHERE id = ${ping.collar_id as string}
       `;
 
@@ -306,14 +308,14 @@ export function createAlertRepository(url: string): AlertRepository {
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async updateParkAlertConfig(parkId: string, alertConfig: any) {
-      const config = await this.getParkConfig(parkId) || {};
-      config.alerts = alertConfig;
+      // Use a single atomic JSONB merge to avoid the read-modify-write race condition.
+      // jsonb_set merges into the existing config column without overwriting sibling keys.
       await sql`
         UPDATE parks 
-        SET config = ${config} 
+        SET config = COALESCE(config, '{}'::jsonb) || jsonb_build_object('alerts', ${JSON.stringify(alertConfig)}::jsonb)
         WHERE id = ${parkId}
       `;
-      return config.alerts;
+      return alertConfig;
     },
     async getActiveAlertForCollar(collarId: string, type: string) {
       const result = await sql<AlertRecord[]>`

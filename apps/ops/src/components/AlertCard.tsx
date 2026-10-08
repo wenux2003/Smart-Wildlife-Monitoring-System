@@ -17,6 +17,7 @@ type RangerDistanceData = {
 
 export function AlertCard({ alert, collars }: { alert: Alert; collars: any[] }) {
   const queryClient = useQueryClient();
+  const [selectedRangerId, setSelectedRangerId] = useState("");
 
   const { data: context } = useQuery({
     queryKey: ["alerts", alert.id, "context"],
@@ -128,9 +129,9 @@ export function AlertCard({ alert, collars }: { alert: Alert; collars: any[] }) 
           <div className="mt-5 space-y-3">
             <div className="relative">
               <select 
-                id={`ranger-select-${alert.id}`} 
                 className="w-full appearance-none bg-[#FFFFFF] border border-[#DCE5DC] text-[#1F2937] text-[13px] font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-[#166534]/20 focus:border-[#166534] block p-2.5 transition-colors"
-                defaultValue=""
+                value={selectedRangerId}
+                onChange={e => setSelectedRangerId(e.target.value)}
               >
                 <option value="" disabled>Assign to a ranger...</option>
                 {rangers.map(r => (
@@ -146,9 +147,8 @@ export function AlertCard({ alert, collars }: { alert: Alert; collars: any[] }) 
             <button 
               className="button button-green w-full !py-2.5 !min-h-0 text-[13px] tracking-wide shadow-sm"
               onClick={() => {
-                const select = document.getElementById(`ranger-select-${alert.id}`) as HTMLSelectElement;
-                if (select.value) {
-                  dispatchMutation.mutate({ alertId: alert.id, rangerId: select.value });
+                if (selectedRangerId) {
+                  dispatchMutation.mutate({ alertId: alert.id, rangerId: selectedRangerId });
                 }
               }}
               disabled={dispatchMutation.isPending}

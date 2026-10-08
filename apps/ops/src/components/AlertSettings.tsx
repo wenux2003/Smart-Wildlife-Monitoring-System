@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../api.js";
 
@@ -44,19 +44,23 @@ export function AlertSettings({ onClose }: { onClose: () => void }) {
     return <div className="p-5 text-center">Loading settings...</div>;
   }
 
-  const handleOpen = () => {
-    if (config) {
-      setGeofenceCenterLat(config.geofenceCenter?.[0]?.toString() || "");
-      setGeofenceCenterLng(config.geofenceCenter?.[1]?.toString() || "");
-      setGeofenceRadiusKm(config.geofenceRadiusKm?.toString() || "");
-      setImmobilitySpeedThreshold(config.immobilitySpeedThreshold?.toString() || "");
-      setLowBatteryThreshold(config.lowBatteryThreshold?.toString() || "");
-    }
-  };
+  // Populate form whenever config loads or changes.
+  // geofenceCenter is stored as [lon, lat] (GeoJSON order), so index 1 = lat, index 0 = lon.
+  useEffect(() => {
+    if (!config) return;
+    setGeofenceCenterLat(config.geofenceCenter?.[1]?.toString() ?? "");
+    setGeofenceCenterLng(config.geofenceCenter?.[0]?.toString() ?? "");
+    setGeofenceRadiusKm(config.geofenceRadiusKm?.toString() ?? "");
+    setImmobilitySpeedThreshold(config.immobilitySpeedThreshold?.toString() ?? "");
+    setLowBatteryThreshold(config.lowBatteryThreshold?.toString() ?? "");
+  }, [config]);
 
   const handleSave = () => {
     updateMutation.mutate({
-      geofenceCenter: geofenceCenterLat && geofenceCenterLng ? [parseFloat(geofenceCenterLat), parseFloat(geofenceCenterLng)] : undefined,
+      // Store as [lon, lat] (GeoJSON order) — form shows lat first, then lon
+      geofenceCenter: geofenceCenterLat && geofenceCenterLng
+        ? [parseFloat(geofenceCenterLng), parseFloat(geofenceCenterLat)]
+        : undefined,
       geofenceRadiusKm: geofenceRadiusKm ? parseFloat(geofenceRadiusKm) : undefined,
       immobilitySpeedThreshold: immobilitySpeedThreshold ? parseFloat(immobilitySpeedThreshold) : undefined,
       lowBatteryThreshold: lowBatteryThreshold ? parseFloat(lowBatteryThreshold) : undefined,
@@ -65,7 +69,7 @@ export function AlertSettings({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden text-[#1F2937]" onLoad={handleOpen}>
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden text-[#1F2937]">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
           <h2 className="text-lg font-semibold text-gray-800">Alert Settings</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -75,14 +79,14 @@ export function AlertSettings({ onClose }: { onClose: () => void }) {
         
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Geofence Center (Lat, Lng)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Geofence Center</label>
             <div className="flex gap-2">
               <input 
                 type="number" 
                 step="any"
                 value={geofenceCenterLat} 
                 onChange={e => setGeofenceCenterLat(e.target.value)} 
-                placeholder="Lat" 
+                placeholder="Latitude" 
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#166534] focus:border-transparent" 
               />
               <input 
@@ -90,7 +94,7 @@ export function AlertSettings({ onClose }: { onClose: () => void }) {
                 step="any"
                 value={geofenceCenterLng} 
                 onChange={e => setGeofenceCenterLng(e.target.value)} 
-                placeholder="Lng" 
+                placeholder="Longitude" 
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#166534] focus:border-transparent" 
               />
             </div>

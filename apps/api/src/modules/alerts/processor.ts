@@ -87,8 +87,10 @@ export class PingProcessor {
       }
     }
 
+    const active = await this.repository.getActiveAlertForCollar(collar.id, AlertType.GEOFENCE_BREACH);
+
     if (breachDetected) {
-      const active = await this.repository.getActiveAlertForCollar(collar.id, AlertType.GEOFENCE_BREACH);
+      // Only create a new alert if there isn't one already active
       if (!active) {
         await this.repository.createAlert({
           park_id: parkId,
@@ -99,14 +101,18 @@ export class PingProcessor {
           location: ping.location
         });
       }
+    } else if (active) {
+      // Condition cleared — animal is back inside the boundary. Auto-resolve.
+      await this.repository.updateAlertStatus(active.id, AlertStatus.AUTO_RESOLVED, new Date());
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async checkImmobility(collar: any, ping: any, parkId: string, alertsConfig: any) {
-    // Treat speed exactly zero as a valid zero value (not null)
-    if (ping.speed !== null && ping.speed !== undefined && ping.speed <= alertsConfig.immobilitySpeedThreshold) {
-      const active = await this.repository.getActiveAlertForCollar(collar.id, AlertType.IMMOBILITY);
+    const isImmobile = ping.speed !== null && ping.speed !== undefined && ping.speed <= alertsConfig.immobilitySpeedThreshold;
+    const active = await this.repository.getActiveAlertForCollar(collar.id, AlertType.IMMOBILITY);
+
+    if (isImmobile) {
       if (!active) {
         await this.repository.createAlert({
           park_id: parkId,
@@ -117,13 +123,18 @@ export class PingProcessor {
           location: ping.location
         });
       }
+    } else if (active) {
+      // Animal is moving again. Auto-resolve.
+      await this.repository.updateAlertStatus(active.id, AlertStatus.AUTO_RESOLVED, new Date());
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async checkBattery(collar: any, ping: any, parkId: string, alertsConfig: any) {
-    if (ping.battery !== null && ping.battery <= alertsConfig.lowBatteryThreshold) {
-      const active = await this.repository.getActiveAlertForCollar(collar.id, AlertType.LOW_BATTERY);
+    const isLow = ping.battery !== null && ping.battery <= alertsConfig.lowBatteryThreshold;
+    const active = await this.repository.getActiveAlertForCollar(collar.id, AlertType.LOW_BATTERY);
+
+    if (isLow) {
       if (!active) {
         await this.repository.createAlert({
           park_id: parkId,
@@ -134,6 +145,9 @@ export class PingProcessor {
           location: ping.location
         });
       }
+    } else if (active) {
+      // Battery recovered (collar replaced/recharged). Auto-resolve.
+      await this.repository.updateAlertStatus(active.id, AlertStatus.AUTO_RESOLVED, new Date());
     }
   }
 

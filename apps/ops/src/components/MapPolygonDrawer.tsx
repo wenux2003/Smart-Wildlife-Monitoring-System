@@ -36,7 +36,9 @@ export function MapPolygonDrawer({
     }
   });
 
-  // Handle keyboard events (Undo and Cancel)
+  // Handle keyboard events (Undo and Cancel).
+  // The handler uses functional state updaters (prev => ...) so it does NOT need `points` in deps.
+  // Including `points` would re-add/remove the listener on every click, which is wasteful.
   useEffect(() => {
     if (!isActive) return;
     
@@ -50,7 +52,7 @@ export function MapPolygonDrawer({
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isActive, points]);
+  }, [isActive]); // ← `points` intentionally omitted: functional updater captures latest state
 
   if (!isActive) return null;
 
