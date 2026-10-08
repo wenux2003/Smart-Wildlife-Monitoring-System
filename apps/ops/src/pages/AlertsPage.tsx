@@ -89,13 +89,6 @@ export function AlertsPage() {
             </div>
             <div className="flex gap-2">
               <button 
-                onClick={() => setIsDrawing(!isDrawing)}
-                className={`p-2 rounded-md transition-colors ${isDrawing ? 'bg-[#166534] text-white' : 'bg-[#E8EDE4] text-[#14352B] hover:bg-[#DCE5DC]'}`}
-                title={isDrawing ? "Cancel Drawing" : "Draw Geofence Zone"}
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-              </button>
-              <button 
                 onClick={() => setShowSettings(true)}
                 className="p-2 bg-[#E8EDE4] text-[#14352B] hover:bg-[#DCE5DC] rounded-md transition-colors"
                 title="Alert Settings"
@@ -128,7 +121,19 @@ export function AlertsPage() {
           </div>
         </aside>
 
-        <div className="flex-1 bg-[#bad2e3]" style={{ zIndex: 0, minHeight: 0 }}>
+        <div className="flex-1 bg-[#bad2e3] relative" style={{ zIndex: 0, minHeight: 0 }}>
+          {/* Floating Draw Button */}
+          <div className="absolute top-4 right-4 z-[400]">
+            <button 
+              onClick={() => setIsDrawing(!isDrawing)}
+              className={`px-4 py-2 rounded-md shadow-md transition-colors flex items-center gap-2 ${isDrawing ? 'bg-[#166534] text-white' : 'bg-white text-[#14352B] hover:bg-gray-50 border border-gray-200'}`}
+              title={isDrawing ? "Cancel Drawing" : "Draw Geofence Zone"}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+              <span className="font-medium text-sm">{isDrawing ? "Cancel Drawing" : "Draw Zone"}</span>
+            </button>
+          </div>
+
           <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%', zIndex: 0 }}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             
