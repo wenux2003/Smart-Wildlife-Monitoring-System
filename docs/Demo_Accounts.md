@@ -65,6 +65,31 @@ password is kept only in the database owner's private `.env` (`SUPER_ADMIN_PASSW
 3. Sign in as that new Ranger in the Ranger app. They are forced to choose a new password
    before reaching the home page.
 
+## Sample data
+
+The shared database also holds **synthetic sample data**, added by `corepack pnpm db:seed:demo`
+(`apps/api/src/seed-demo-data.ts`). Yala has six months of history (April–October 2026); Wilpattu and
+Sinharaja have a smaller set. Every sample incident description starts with **[Demo data]**,
+and sample SMS phone numbers use the fake `+94 70 000 ….` range.
+
+| Sign in as | Where to look | What you should see |
+|---|---|---|
+| `manager.yala` | **Incidents** | About 150 Yala incidents from rangers, villagers (SMS) and a camera trap, in every status from New to Resolved, with history, photos and outcome notes |
+| `liaison.yala` | **Community inbox** | About 45 villager reports: SMS in the real `ELEPHANT … @ landmark` format, public-form crop and fence reports, unknown places waiting for a location, and follow-ups sent. The six newest SMS arrived through the real SMS endpoint, one of them badly formatted (`NEEDS_INFO`) |
+| `liaison.yala` | **Camera review** | 24 camera-trap frames: 8 waiting for review, the rest classified |
+| `manager.yala` | **Wildlife alerts** | 5 collared animals with 48 hours of movement, 3 geofence zones, and about 45 alerts with dispatch history (resolved, auto-resolved, cancelled, one broadcast). A few are open now |
+| `ranger1.yala` | Ranger app **home** | A new patrol to start (Trail 4B, Southern Ridge) and a history of completed and partial patrols |
+| `ranger3.yala` | Ranger app **dispatches** | One alert where the ranger is on scene, plus past accepted, rejected and timed-out dispatches |
+
+Notes:
+
+- The collar simulator isn't running, so after an hour the alerts module correctly raises
+  **Signal lost** alerts for the sample collars. That is expected behaviour.
+- The script is safe to repeat: it inserts nothing that already exists and never changes rows it
+  didn't create. Park alert zones are only added to a park that has none.
+- `corepack pnpm db:seed:demo --remove` deletes exactly the sample rows again, together with anything
+  added to them through the apps (for example, a status change on a sample incident).
+
 ## Rules for the shared database
 
 - Anything you create is **real data in the shared database** and can't be deleted;
