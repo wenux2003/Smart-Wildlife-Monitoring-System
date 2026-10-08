@@ -4,7 +4,7 @@
 **Use case:** M4 — Analytics and export
 **Preserved use case:** Group 039, "Analyze Conservation Data & Generate Reports" (G39 pp. 4–10)
 **Owner :** Wenura Kavinda
-**Status:** ✅ P0 complete: contracts tested and migrations verified twice on isolated local PostGIS. ✅ P1 complete: domain implementation passes 12 tests with 100% coverage. ✅ P2 seed/grid implemented and verified on isolated local PostGIS. ✅ P3 report/audit repositories validated locally. P4 is next.
+**Status:** ✅ P0 complete: contracts tested and migrations verified twice on isolated local PostGIS. ✅ P1 complete: domain implementation passes 12 tests with 100% coverage. ✅ P2 seed/grid implemented and verified on isolated local PostGIS. ✅ P3 report/audit repositories validated locally. Paused at the user's request after P3. P4 is next; P4–P9 have not started.
 **Supersedes:** the short M4 notes in [Implementation plan §7 M4](./Group037_Implementation_Plan.md#m4-analytics-and-export) and the endpoint rows in its §5. Where this plan is more specific, this plan wins; update those sections to link here.
 
 ---
@@ -1427,3 +1427,11 @@ All Appendix A flows: ⏳ Not started. A flow is marked ✅ only after its liste
 - ✅ P3 checks: seeded report under 2 seconds, privacy field exclusions, audit park/user isolation, Colombo midnight, unresolved/outside points, grid-edge ties, metric area, dropped GPS and long-gap rejection; PostgreSQL 57014 timeout observed.
 - P3 correction: JSON writes cast serialized text through `text::jsonb` to avoid a JSON-string value. Fixed P2 settings write; repaired only the disposable local fixtures, then reran the seed idempotency tests.
 - Boundary tie-break uses nearest polygon centroid then ID: the schema has polygon bands but no centreline. This is an explicit prototype approximation. Collar breaches are excluded when the selected category/type group has no HWC type; incident-source filters apply to incident series, not device alerts.
+
+### Pause checkpoint — 2026-10-08
+
+- ✅ Stopped at the user's request after completing and committing P3. P4 planning files were read, but no P4 code was written.
+- ✅ Phase commits: P0 c4f8f8e; P1 1f397f6; P2 f15c8f7; P3 4bbf69c.
+- Next: P4 service and protected routes (E1–E5), access/error handling, export rate limiting, server registration, service/route tests. Then P5–P9 remain.
+- M4 is not yet available end to end: API registration, export renderers and Ops UI are still pending.
+- Validation completed through P3 is recorded above. No new tests were run for this documentation-only pause update. No shared Neon database changes were made during this continuation.
