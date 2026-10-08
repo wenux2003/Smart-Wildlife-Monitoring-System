@@ -6,6 +6,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -159,6 +160,93 @@ function show(detail = false, communityOnly = false) {
   );
 }
 describe("Ops M1 incident workflow", () => {
+  it.each(["RANGER", "COMMUNITY"] as const)(
+    "labels the original %s report description without changing its text",
+    async (source) => {
+      const description =
+        "  Original report:\nElephant near Gate 4.\nPlease call before responding.  ";
+      data.incident.source = source;
+      data.incident.description = description;
+      show(true);
+      const report = await screen.findByRole("region", {
+        name: "Report description",
+      });
+      expect(
+        within(report).getByRole("heading", {
+          name: "Report description",
+        }),
+      ).toBeVisible();
+      expect(within(report).getByText(/Original report:/).textContent).toBe(
+        description,
+      );
+    },
+  );
+  it.each(["NEW", "VERIFIED", "IN_PROGRESS", "RESOLVED", "REJECTED"] as const)(
+    "offers the response-start explanation and action only when VERIFIED (status %s)",
+    async (status) => {
+      data.incident.status = status;
+      data.incident.assignedTo = responderId;
+      data.incident.location = { latitude: 6.52, longitude: 81.42 };
+      data.incident.locationStatus = "MANUAL";
+      show(true);
+      await screen.findByRole("region", { name: "Report description" });
+      const button = screen.queryByRole("button", {
+        name: "Mark response as started",
+      });
+      const helper =
+        "Use this when the assigned Ranger has begun responding. The incident will move to In Progress.";
+      if (status !== "VERIFIED") {
+        expect(button).not.toBeInTheDocument();
+        expect(screen.queryByText(helper)).not.toBeInTheDocument();
+        return;
+      }
+      expect(button).toBeEnabled();
+      expect(button).toHaveAccessibleDescription(helper);
+      expect(screen.getByText(helper)).toBeVisible();
+      expect(
+        screen.getByText(
+          "Select the Ranger responsible for this incident. Assignment does not start the response.",
+        ),
+      ).toBeVisible();
+      fireEvent.click(button!);
+      await screen.findByLabelText("Outcome notes");
+      const startRequest = request.mock.calls.find((call) =>
+        call[0].endsWith("/response"),
+      );
+      expect(startRequest?.[1]?.method).toBe("POST");
+      expect(JSON.parse(startRequest![1].body)).toEqual({
+        expectedRevision: 1,
+        action: "START",
+      });
+      expect(screen.getByText("IN_PROGRESS")).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", {
+          name: "Mark response as started",
+        }),
+      ).not.toBeInTheDocument();
+      expect(screen.queryByText(helper)).not.toBeInTheDocument();
+    },
+  );
+  it.each(["assignment", "confirmed location"])(
+    "keeps response-start disabled for a VERIFIED incident missing %s",
+    async (missing) => {
+      data.incident.status = "VERIFIED";
+      data.incident.assignedTo = missing === "assignment" ? null : responderId;
+      data.incident.location =
+        missing === "confirmed location"
+          ? null
+          : { latitude: 6.52, longitude: 81.42 };
+      show(true);
+      const button = await screen.findByRole("button", {
+        name: "Mark response as started",
+      });
+      expect(button).toBeDisabled();
+      fireEvent.click(button);
+      expect(
+        request.mock.calls.some((call) => call[0].endsWith("/response")),
+      ).toBe(false);
+    },
+  );
   it("renders a legacy photo and avoids duplicating matching media", async () => {
     data.incident.photoUrl = "https://example.org/legacy.jpg";
     show(true);
@@ -223,13 +311,15 @@ describe("Ops M1 incident workflow", () => {
       json: async () => ({ message: "Incident list unavailable" }),
     }));
     show();
-    await screen.findByText("An unexpected error occurred. Please try again later.");
+    await screen.findByText(
+      "An unexpected error occurred. Please try again later.",
+    );
     expect(screen.queryByText("Incident list unavailable")).toBeNull();
   });
   it("supports clarify → verify → assign → start → outcome → resolved with revisions", async () => {
     show(true);
     await screen.findByText("Elephant in an unknown field");
-    expect(screen.queryByText("Start response")).toBeNull();
+    expect(screen.queryByText("Mark response as started")).toBeNull();
     fireEvent.change(screen.getByLabelText("Latitude"), {
       target: { value: "6.52" },
     });
@@ -257,9 +347,9 @@ describe("Ops M1 incident workflow", () => {
     fireEvent.click(screen.getByText("Assign ranger"));
     await screen.findByText("Responder assigned.");
     await waitFor(() =>
-      expect(screen.getByText("Start response")).not.toBeDisabled(),
+      expect(screen.getByText("Mark response as started")).not.toBeDisabled(),
     );
-    fireEvent.click(screen.getByText("Start response"));
+    fireEvent.click(screen.getByText("Mark response as started"));
     await screen.findByText("Response started.");
     await screen.findByLabelText("Outcome notes");
     fireEvent.change(screen.getByLabelText("Outcome notes"), {
