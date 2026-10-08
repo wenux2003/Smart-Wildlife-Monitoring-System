@@ -2,9 +2,17 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../api.js";
 
-type AlertConfig = {
+export type GeofenceZone = {
+  name: string;
+  polygon: [number, number][]; // [lon, lat][]
+  alertOn: "enter" | "exit";
+  severity: string;
+};
+
+export type AlertConfig = {
   geofenceCenter?: [number, number];
   geofenceRadiusKm?: number;
+  geofenceZones?: GeofenceZone[];
   immobilitySpeedThreshold?: number;
   lowBatteryThreshold?: number;
 };

@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MapContainer, TileLayer, CircleMarker, Popup, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, CircleMarker, Popup, Polyline, Polygon } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 import { AccountHeader } from "../components/AccountHeader.js";
 import { AlertCard } from "../components/AlertCard.js";
-import { AlertSettings } from "../components/AlertSettings.js";
+import { AlertSettings, AlertConfig } from "../components/AlertSettings.js";
+import { MapPolygonDrawer } from "../components/MapPolygonDrawer.js";
+import { NewZoneModal } from "../components/NewZoneModal.js";
 import { apiRequest } from "../api.js";
 import type { Alert, Collar, CollarPing } from "@wr/shared";
 
@@ -16,6 +18,23 @@ export function AlertsPage() {
   const queryClient = useQueryClient();
   const [selectedCollar, setSelectedCollar] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [newPolygon, setNewPolygon] = useState<[number, number][] | null>(null);
+
+  const { data: config } = useQuery({
+    queryKey: ["alertConfig"],
+    queryFn: () => apiRequest<AlertConfig>("/api/alerts/config"),
+  });
+
+  const updateConfigMutation = useMutation({
+    mutationFn: (newConfig: AlertConfig) => 
+      apiRequest("/api/alerts/config", { method: "PATCH", body: newConfig }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["alertConfig"] });
+      setNewPolygon(null);
+      setIsDrawing(false);
+    },
+  });
 
   const { data: alerts = [], isLoading: alertsLoading } = useQuery({
     queryKey: ["alerts"],
@@ -67,13 +86,22 @@ export function AlertsPage() {
               <h1 className="text-3xl font-semibold tracking-tight text-[#1F2937]">Active Alerts</h1>
               <p className="text-sm text-[#4B5563] mt-1.5">Manage and dispatch rangers to live alerts</p>
             </div>
-            <button 
-              onClick={() => setShowSettings(true)}
-              className="p-2 bg-[#E8EDE4] text-[#14352B] hover:bg-[#DCE5DC] rounded-md transition-colors"
-              title="Alert Settings"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            </button>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setIsDrawing(!isDrawing)}
+                className={`p-2 rounded-md transition-colors ${isDrawing ? 'bg-[#166534] text-white' : 'bg-[#E8EDE4] text-[#14352B] hover:bg-[#DCE5DC]'}`}
+                title={isDrawing ? "Cancel Drawing" : "Draw Geofence Zone"}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+              </button>
+              <button 
+                onClick={() => setShowSettings(true)}
+                className="p-2 bg-[#E8EDE4] text-[#14352B] hover:bg-[#DCE5DC] rounded-md transition-colors"
+                title="Alert Settings"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              </button>
+            </div>
           </div>
           
           <div className="flex-1 overflow-y-auto p-6 space-y-5">
@@ -160,11 +188,61 @@ export function AlertsPage() {
                 </Popup>
               </CircleMarker>
             ))}
+
+            {/* Render existing zones */}
+            {config?.geofenceZones?.map((zone, i) => (
+              <Polygon 
+                key={i} 
+                positions={zone.polygon.map(p => [p[1], p[0]])}
+                pathOptions={{
+                  color: zone.severity === 'CRITICAL' ? '#B91C1C' : zone.severity === 'HIGH' ? '#B45309' : '#D97706',
+                  fillColor: zone.severity === 'CRITICAL' ? '#B91C1C' : zone.severity === 'HIGH' ? '#B45309' : '#D97706',
+                  fillOpacity: 0.1,
+                  weight: 2,
+                  dashArray: '4, 4'
+                }}
+              >
+                <Popup>
+                  <strong>{zone.name}</strong><br/>
+                  Alert on {zone.alertOn} ({zone.severity})
+                </Popup>
+              </Polygon>
+            ))}
+
+            {/* Drawing tool overlay */}
+            <MapPolygonDrawer 
+              isActive={isDrawing} 
+              onComplete={(poly) => setNewPolygon(poly)} 
+            />
           </MapContainer>
+
+          {isDrawing && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-md border border-[#DCE5DC] z-[400] text-sm text-[#14352B] flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#166534] animate-pulse"></div>
+              Click on the map to draw points. Right-click when finished.
+            </div>
+          )}
         </div>
       </main>
       
       {showSettings && <AlertSettings onClose={() => setShowSettings(false)} />}
+      
+      {newPolygon && (
+        <NewZoneModal 
+          polygon={newPolygon}
+          onCancel={() => {
+            setNewPolygon(null);
+            setIsDrawing(false);
+          }}
+          onSave={(zone) => {
+            const zones = config?.geofenceZones || [];
+            updateConfigMutation.mutate({
+              ...config,
+              geofenceZones: [...zones, zone]
+            });
+          }}
+        />
+      )}
     </div>
   );
 }
