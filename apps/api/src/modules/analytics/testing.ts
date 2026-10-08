@@ -18,6 +18,7 @@ export const OTHER_PARK = "22222222-2222-4222-8222-222222222222";
 export function reportFixture(): ConservationReport {
   return {
     schemaVersion: 1,
+    syntheticDemo: false,
     park: { id: TEST_PARK, code: "YALA", name: "Yala" },
     filters: AnalyticsFilterSchema.parse({
       parkId: TEST_PARK,
@@ -72,6 +73,7 @@ export function reportFixture(): ConservationReport {
 export function reportFixtureSections(): ReportSections {
   const report = reportFixture();
   return {
+    syntheticDemo: report.syntheticDemo,
     park: report.park,
     filters: report.filters,
     window: report.window,

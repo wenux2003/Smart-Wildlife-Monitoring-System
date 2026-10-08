@@ -26,7 +26,7 @@ afterEach(async () => {
   await Promise.all(servers.splice(0).map((server) => server.close()));
 });
 
-function setup(exporters: readonly ReportExporter[] = []) {
+function setup(exporters?: readonly ReportExporter[]) {
   const auth = memoryRepository();
   const analytics = analyticsMemoryRepository();
   const audit = reportAuditMemoryRepository();
@@ -78,6 +78,42 @@ function setup(exporters: readonly ReportExporter[] = []) {
 }
 
 describe("M4 analytics routes", () => {
+  it("registers the CSV and PDF exporters on the real API composition root", async () => {
+    const s = setup();
+    const session = s.session(Role.PARK_MANAGER);
+    const generated = await s.call(
+      "POST",
+      "/reports/runs",
+      validFilter,
+      session.cookie,
+    );
+    const run = generated.json();
+
+    const csv = await s.call(
+      "POST",
+      `/reports/runs/${run.runId}/exports`,
+      { format: "CSV" },
+      session.cookie,
+      "http://localhost:5173",
+    );
+    expect(csv.statusCode).toBe(200);
+    expect(csv.headers["content-type"]).toContain("text/csv");
+    expect(csv.payload).toContain("report_code,section,dimension");
+    expect(csv.headers["x-report-sha256"]).toMatch(/^[a-f0-9]{64}$/);
+
+    const pdf = await s.call(
+      "POST",
+      `/reports/runs/${run.runId}/exports`,
+      { format: "PDF" },
+      session.cookie,
+      "http://localhost:5173",
+    );
+    expect(pdf.statusCode).toBe(200);
+    expect(pdf.headers["content-type"]).toContain("application/pdf");
+    expect(pdf.rawPayload.subarray(0, 5).toString("latin1")).toBe("%PDF-");
+    expect(pdf.headers["x-report-sha256"]).toMatch(/^[a-f0-9]{64}$/);
+  });
+
   it("serves options, a generated run, reload, export and scoped history", async () => {
     const exporter: ReportExporter = {
       format: "CSV",

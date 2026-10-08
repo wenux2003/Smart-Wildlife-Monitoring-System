@@ -36,7 +36,10 @@ const IsoDateSchema = z
   .regex(/^\d{4}-\d{2}-\d{2}$/)
   .refine((value) => {
     const date = new Date(`${value}T00:00:00.000Z`);
-    return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+    return (
+      Number.isFinite(date.getTime()) &&
+      date.toISOString().slice(0, 10) === value
+    );
   }, "Enter a valid calendar date.");
 
 function daysBetween(from: string, to: string): number {
@@ -60,17 +63,15 @@ export const ParkAnalyticsConfigSchema = z
       .min(100)
       .max(10_000)
       .default(2000),
-    typeRiskLevels: z
-      .record(IncidentCategorySchema, RiskLevelSchema)
-      .default({
-        POACHING: "CRITICAL",
-        SNARE_FOUND: "HIGH",
-        INJURED_ANIMAL: "HIGH",
-        HUMAN_WILDLIFE_CONFLICT: "HIGH",
-        CROP_DAMAGE: "MEDIUM",
-        FENCE_DAMAGE: "MEDIUM",
-        OTHER: "LOW",
-      }),
+    typeRiskLevels: z.record(IncidentCategorySchema, RiskLevelSchema).default({
+      POACHING: "CRITICAL",
+      SNARE_FOUND: "HIGH",
+      INJURED_ANIMAL: "HIGH",
+      HUMAN_WILDLIFE_CONFLICT: "HIGH",
+      CROP_DAMAGE: "MEDIUM",
+      FENCE_DAMAGE: "MEDIUM",
+      OTHER: "LOW",
+    }),
   })
   .strict();
 export type ParkAnalyticsConfig = z.infer<typeof ParkAnalyticsConfigSchema>;
@@ -185,6 +186,7 @@ export const StretchConflictRowSchema = z.object({
 
 export const ConservationReportSchema = z.object({
   schemaVersion: z.literal(1),
+  syntheticDemo: z.boolean().optional(),
   park: z.object({
     id: z.string().uuid(),
     code: z.string(),
@@ -231,20 +233,22 @@ export const ConservationReportSchema = z.object({
 });
 export type ConservationReport = z.infer<typeof ConservationReportSchema>;
 
-export const ReportRunResponseSchema = z.object({
-  runId: z.string().uuid(),
-  code: z.string(),
-  status: ReportRunStatusSchema,
-  snapshotSha256: z.string().length(64).nullable(),
-  report: ConservationReportSchema.nullable(),
-  suggestions: z.array(z.string()).default([]),
-}).refine(
-  (run) =>
-    run.status === "SUCCEEDED"
-      ? run.report !== null && run.snapshotSha256 !== null
-      : run.report === null && run.snapshotSha256 === null,
-  "Successful runs require a report and snapshot hash; other runs cannot include either.",
-);
+export const ReportRunResponseSchema = z
+  .object({
+    runId: z.string().uuid(),
+    code: z.string(),
+    status: ReportRunStatusSchema,
+    snapshotSha256: z.string().length(64).nullable(),
+    report: ConservationReportSchema.nullable(),
+    suggestions: z.array(z.string()).default([]),
+  })
+  .refine(
+    (run) =>
+      run.status === "SUCCEEDED"
+        ? run.report !== null && run.snapshotSha256 !== null
+        : run.report === null && run.snapshotSha256 === null,
+    "Successful runs require a report and snapshot hash; other runs cannot include either.",
+  );
 export type ReportRunResponse = z.infer<typeof ReportRunResponseSchema>;
 
 export const AnalyticsParkSchema = z.object({

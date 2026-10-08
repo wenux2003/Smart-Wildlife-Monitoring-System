@@ -17,15 +17,17 @@
     "db:seed:analytics": "tsx --env-file=../../.env src/seed-analytics.ts"
   },
   "dependencies": {
-    "fastify-type-provider-zod": "4.0.2",
     "@wr/shared": "workspace:*",
     "drizzle-orm": "^0.44.2",
     "fastify": "^5.4.0",
+    "fastify-type-provider-zod": "4.0.2",
+    "pdfmake": "0.2.22",
     "postgres": "^3.4.7",
     "zod": "^3.25.67"
   },
   "devDependencies": {
     "@types/node": "^20.17.0",
+    "@types/pdfmake": "0.2.11",
     "tsx": "^4.20.3",
     "typescript": "catalog:",
     "vitest": "catalog:"

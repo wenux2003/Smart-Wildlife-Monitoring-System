@@ -7,10 +7,7 @@ import {
   type AnalyticsOptions,
 } from "@wr/shared";
 import type { AnalyticsRepository } from "./types.js";
-import {
-  buckets,
-  colomboDate,
-} from "./domain/filter.js";
+import { buckets, colomboDate } from "./domain/filter.js";
 import {
   classBreaks,
   hotspotThreshold,
@@ -24,7 +21,7 @@ type Park = {
   id: string;
   code: string;
   name: string;
-  config: { analytics?: unknown };
+  config: { analytics?: unknown; analyticsDemo?: unknown };
   configured: boolean;
 };
 type Row = {
@@ -333,95 +330,101 @@ FROM q`;
           return {
             hasPatrolPoints: quality.has_points,
             sections: {
+              syntheticDemo: p.config.analyticsDemo != null,
               park: { id, code: p.code, name: p.name },
-            filters: f.filters,
-            window: f.window,
-            generatedAt: generatedAt.toISOString(),
-            kpis: {
-              totalIncidents: total,
-              previousPeriodIncidents: previous,
-              ...percentChange(total, previous),
-              hotspotCells: hotspots.filter((c) => c.isHotspot).length,
-              hotspotSectorNames: [
-                ...new Set(
-                  hotspots
-                    .filter((c) => c.isHotspot && c.sectorName)
-                    .map((c) => String(c.sectorName)),
+              filters: f.filters,
+              window: f.window,
+              generatedAt: generatedAt.toISOString(),
+              kpis: {
+                totalIncidents: total,
+                previousPeriodIncidents: previous,
+                ...percentChange(total, previous),
+                hotspotCells: hotspots.filter((c) => c.isHotspot).length,
+                hotspotSectorNames: [
+                  ...new Set(
+                    hotspots
+                      .filter((c) => c.isHotspot && c.sectorName)
+                      .map((c) => String(c.sectorName)),
+                  ),
+                ].slice(0, 3),
+                patrolGapAreaKm2: p.configured ? gap : null,
+                patrolGapSharePercent: p.configured
+                  ? sharePercent(gap, area)
+                  : null,
+                communityConflictReports: series.reduce(
+                  (n, r) => n + r.communityReports,
+                  0,
                 ),
-              ].slice(0, 3),
-              patrolGapAreaKm2: p.configured ? gap : null,
-              patrolGapSharePercent: p.configured
-                ? sharePercent(gap, area)
-                : null,
-              communityConflictReports: series.reduce(
-                (n, r) => n + r.communityReports,
-                0,
-              ),
-              collarBreaches: series.reduce((n, r) => n + r.collarBreaches, 0),
-            },
-            dataQuality: {
-              excludedNoLocation: accepted
-                .filter((r) => r.unlocated)
-                .reduce((n, r) => n + r.count, 0),
-              excludedRejected: current
-                .filter((r) => r.status === "REJECTED")
-                .reduce((n, r) => n + r.count, 0),
-              outsideBoundary: accepted
-                .filter((r) => !r.unlocated && !r.cell_id)
-                .reduce((n, r) => n + r.count, 0),
-              sessionsWithoutTrack: quality.missing,
-              droppedGpsPoints: quality.dropped,
-              alertsWithoutLocation: alerts
-                .filter((r) => r.unlocated)
-                .reduce((n, r) => n + r.count, 0),
-            },
-            trend,
-            breakdown,
-            hotspots: {
-              cellSizeMeters: config.gridCellMeters,
-              cells: hotspots,
-              classBreaks: breaks,
-            },
-            patrolGaps: {
-              configured: p.configured,
-              cells: cells.map((c) => ({
-                cellId: c.cell_id,
-                polygon: polygon(c),
-                covered: c.covered,
-                lastPatrolledAt: c.last_patrolled_at?.toISOString() ?? null,
-                daysSincePatrol: days(c),
-              })),
-              coveredAreaKm2: Math.max(0, area - gap),
-              gapAreaKm2: gap,
-              parkAreaKm2: area,
-              bySector: [...bySector.values()].map((v) => ({
-                sectorName: v.sectorName,
-                gapAreaKm2: v.gapAreaKm2,
-                gapSharePercent: sharePercent(v.gapAreaKm2, v.area),
-              })),
-            },
-            priorityCells: cells
-              .filter(
-                (c) =>
-                  (counts.get(c.cell_id) ?? 0) >= config.hotspotMinCount &&
-                  (days(c) === null ||
-                    Number(days(c)) >= config.gapNeglectDays),
-              )
-              .map((c) => ({
-                cellId: c.cell_id,
-                centre: {
-                  longitude: Math.round(c.centre.coordinates[0] * 1000) / 1000,
-                  latitude: Math.round(c.centre.coordinates[1] * 1000) / 1000,
-                },
-                sectorName: c.sector_name,
-                incidents: counts.get(c.cell_id) ?? 0,
-                daysSincePatrol: days(c),
-                score: priorityScore(counts.get(c.cell_id) ?? 0, days(c)),
-              }))
-              .sort(
-                (a, b) => b.score - a.score || a.cellId.localeCompare(b.cellId),
-              )
-              .slice(0, 5),
+                collarBreaches: series.reduce(
+                  (n, r) => n + r.collarBreaches,
+                  0,
+                ),
+              },
+              dataQuality: {
+                excludedNoLocation: accepted
+                  .filter((r) => r.unlocated)
+                  .reduce((n, r) => n + r.count, 0),
+                excludedRejected: current
+                  .filter((r) => r.status === "REJECTED")
+                  .reduce((n, r) => n + r.count, 0),
+                outsideBoundary: accepted
+                  .filter((r) => !r.unlocated && !r.cell_id)
+                  .reduce((n, r) => n + r.count, 0),
+                sessionsWithoutTrack: quality.missing,
+                droppedGpsPoints: quality.dropped,
+                alertsWithoutLocation: alerts
+                  .filter((r) => r.unlocated)
+                  .reduce((n, r) => n + r.count, 0),
+              },
+              trend,
+              breakdown,
+              hotspots: {
+                cellSizeMeters: config.gridCellMeters,
+                cells: hotspots,
+                classBreaks: breaks,
+              },
+              patrolGaps: {
+                configured: p.configured,
+                cells: cells.map((c) => ({
+                  cellId: c.cell_id,
+                  polygon: polygon(c),
+                  covered: c.covered,
+                  lastPatrolledAt: c.last_patrolled_at?.toISOString() ?? null,
+                  daysSincePatrol: days(c),
+                })),
+                coveredAreaKm2: Math.max(0, area - gap),
+                gapAreaKm2: gap,
+                parkAreaKm2: area,
+                bySector: [...bySector.values()].map((v) => ({
+                  sectorName: v.sectorName,
+                  gapAreaKm2: v.gapAreaKm2,
+                  gapSharePercent: sharePercent(v.gapAreaKm2, v.area),
+                })),
+              },
+              priorityCells: cells
+                .filter(
+                  (c) =>
+                    (counts.get(c.cell_id) ?? 0) >= config.hotspotMinCount &&
+                    (days(c) === null ||
+                      Number(days(c)) >= config.gapNeglectDays),
+                )
+                .map((c) => ({
+                  cellId: c.cell_id,
+                  centre: {
+                    longitude:
+                      Math.round(c.centre.coordinates[0] * 1000) / 1000,
+                    latitude: Math.round(c.centre.coordinates[1] * 1000) / 1000,
+                  },
+                  sectorName: c.sector_name,
+                  incidents: counts.get(c.cell_id) ?? 0,
+                  daysSincePatrol: days(c),
+                  score: priorityScore(counts.get(c.cell_id) ?? 0, days(c)),
+                }))
+                .sort(
+                  (a, b) =>
+                    b.score - a.score || a.cellId.localeCompare(b.cellId),
+                )
+                .slice(0, 5),
               conflicts: { series, byStretch: [...stretches.values()] },
             },
           };

@@ -25,10 +25,15 @@ import { incidentRoutes } from "./modules/incidents/routes.js";
 import type { IncidentRepository } from "./modules/incidents/repository.js";
 import { createIncidentRepository } from "./modules/incidents/repository.js";
 import { analyticsRoutes } from "./modules/analytics/routes.js";
-import type { AnalyticsRepository, ReportAuditRepository, ReportExporter } from "./modules/analytics/types.js";
+import type {
+  AnalyticsRepository,
+  ReportAuditRepository,
+  ReportExporter,
+} from "./modules/analytics/types.js";
 import { createAnalyticsRepository } from "./modules/analytics/repository.js";
 import { createReportAuditRepository } from "./modules/analytics/audit-repository.js";
-
+import { csvExporter } from "./modules/analytics/exporters/csv-exporter.js";
+import { pdfExporter } from "./modules/analytics/exporters/pdf-exporter.js";
 
 export type ServerOptions = AuthOptions & {
   accountsRepository?: AccountRepository;
@@ -150,7 +155,7 @@ export function createServer(authOptions: ServerOptions = {}) {
     prefix: "/api",
     repository: analyticsRepository,
     auditRepository: reportAuditRepository,
-    exporters: authOptions.analyticsExporters,
+    exporters: authOptions.analyticsExporters ?? [pdfExporter, csvExporter],
     clock: authOptions.clock,
   });
 

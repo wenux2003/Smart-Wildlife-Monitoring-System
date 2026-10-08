@@ -16,6 +16,7 @@ import type { SessionUser } from "../auth/guard.js";
 import { assembleReport } from "./domain/report-assembler.js";
 import { normalizeFilter, presetRange } from "./domain/filter.js";
 import { emptyReportSuggestions } from "./domain/suggestions.js";
+import { ExporterRegistry } from "./exporters/registry.js";
 import type {
   AnalyticsRepository,
   ReportAuditRepository,
@@ -63,9 +64,7 @@ export function createAnalyticsService(
   exporters: readonly ReportExporter[] = [],
   clock: Clock = systemClock,
 ) {
-  const exportersByFormat = new Map(
-    exporters.map((exporter) => [exporter.format, exporter]),
-  );
+  const exportersByFormat = new ExporterRegistry(exporters);
   const exportsByUser = new Map<string, number[]>();
 
   function parkIdFor(user: SessionUser, requestedParkId?: string): string {
@@ -298,7 +297,15 @@ export function createAnalyticsService(
         bytes = await exporter.render({ ...run, report: run.report });
         if (!Buffer.isBuffer(bytes) || bytes.length === 0)
           throw new Error("Exporter returned an empty file.");
-      } catch {
+      } catch (error) {
+        const exportError =
+          error instanceof AppError && error.code === "EXPORT_TOO_LARGE"
+            ? error
+            : new AppError(
+                "The export could not be created. The report is still available.",
+                500,
+                "EXPORT_FAILED",
+              );
         await recordExport({
           runId,
           requestedBy: user.id,
@@ -306,13 +313,9 @@ export function createAnalyticsService(
           status: "FAILED",
           byteSize: null,
           fileSha256: null,
-          errorCode: "EXPORT_FAILED",
+          errorCode: exportError.code,
         });
-        throw new AppError(
-          "The export could not be created. The report is still available.",
-          500,
-          "EXPORT_FAILED",
-        );
+        throw exportError;
       }
       const fileSha256 = createHash("sha256").update(bytes).digest("hex");
       await recordExport({
@@ -328,7 +331,7 @@ export function createAnalyticsService(
         bytes,
         fileSha256,
         mimeType: exporter.mimeType,
-        filename: `${run.code}.${exporter.extension}`,
+        filename: `wana-rakshaka_${run.code.replace(/[^A-Za-z0-9-]/g, "-")}_${run.filters.from}_to_${run.filters.to}.${exporter.extension}`,
       };
     },
 

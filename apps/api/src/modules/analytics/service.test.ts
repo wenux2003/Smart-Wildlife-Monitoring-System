@@ -194,7 +194,9 @@ describe("M4 analytics service", () => {
     const run = await service.generate(manager, baseFilter);
     const file = await service.exportRun(manager, run.runId, "CSV");
     expect(file.bytes.toString()).toContain("report,snapshot");
-    expect(file.filename).toMatch(/\.csv$/);
+    expect(file.filename).toBe(
+      "wana-rakshaka_RPT-YALA-2026-000001_2026-10-01_to_2026-10-08.csv",
+    );
     expect(file.fileSha256).toMatch(/^[a-f0-9]{64}$/);
     expect(audit.insertedExports).toMatchObject([
       {
@@ -227,6 +229,37 @@ describe("M4 analytics service", () => {
       { status: "FAILED", errorCode: "EXPORT_FAILED" },
     ]);
     expect(audit.insertedExports).toHaveLength(1);
+  });
+
+  it("audits oversized exports and preserves the EXPORT_TOO_LARGE error", async () => {
+    const { service, audit } = create(undefined, [
+      {
+        format: "CSV",
+        mimeType: "text/csv",
+        extension: "csv",
+        async render() {
+          throw new AppError(
+            "This report is too large to export as CSV.",
+            413,
+            "EXPORT_TOO_LARGE",
+          );
+        },
+      },
+    ]);
+    const run = await service.generate(manager, baseFilter);
+    await expectAppError(
+      service.exportRun(manager, run.runId, "CSV"),
+      413,
+      "EXPORT_TOO_LARGE",
+    );
+    expect(audit.insertedExports).toMatchObject([
+      {
+        status: "FAILED",
+        errorCode: "EXPORT_TOO_LARGE",
+        byteSize: null,
+        fileSha256: null,
+      },
+    ]);
   });
 
   it("rejects exports for empty runs", async () => {

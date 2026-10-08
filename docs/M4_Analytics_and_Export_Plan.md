@@ -11,27 +11,27 @@
 
 ## 0. How to read this plan
 
-| Section | What it gives you |
-|---|---|
-| 1 | Goal, scope and what makes M4 the signature part of the project |
-| 2 | Requirements traced to the case study, Group 039 and our critique |
-| 3 | What exists today, verified against the code and the shared database |
-| 4 | Metric dictionary: every number on screen, with its exact definition |
-| 5 | Database: new migration, tables, indexes and park configuration |
-| 6 | Shared contracts (Zod) |
-| 7 | API: module structure, endpoints, errors and access rules |
-| 8 | Spatial algorithms: hotspots, patrol gaps, boundary conflicts |
-| 9 | Export: PDF and CSV design |
-| 10 | Ops UI: routes, pages, sections, components |
-| 11 | UI design: tokens, layout, charts, map, motion, accessibility |
-| 12 | Third-party libraries: what is reused, added, and rejected |
-| 13 | Code quality: SOLID mapping and design patterns |
-| 14 | Testing and the >80% coverage plan |
-| 15 | Demo data seed |
-| 16 | Build order, delivery tiers and the definition of done |
-| 17 | Risks, decisions and open questions |
-| Appendix A | Full flow traceability matrix |
-| Appendix B | Edge-case checklist |
+| Section    | What it gives you                                                    |
+| ---------- | -------------------------------------------------------------------- |
+| 1          | Goal, scope and what makes M4 the signature part of the project      |
+| 2          | Requirements traced to the case study, Group 039 and our critique    |
+| 3          | What exists today, verified against the code and the shared database |
+| 4          | Metric dictionary: every number on screen, with its exact definition |
+| 5          | Database: new migration, tables, indexes and park configuration      |
+| 6          | Shared contracts (Zod)                                               |
+| 7          | API: module structure, endpoints, errors and access rules            |
+| 8          | Spatial algorithms: hotspots, patrol gaps, boundary conflicts        |
+| 9          | Export: PDF and CSV design                                           |
+| 10         | Ops UI: routes, pages, sections, components                          |
+| 11         | UI design: tokens, layout, charts, map, motion, accessibility        |
+| 12         | Third-party libraries: what is reused, added, and rejected           |
+| 13         | Code quality: SOLID mapping and design patterns                      |
+| 14         | Testing and the >80% coverage plan                                   |
+| 15         | Demo data seed                                                       |
+| 16         | Build order, delivery tiers and the definition of done               |
+| 17         | Risks, decisions and open questions                                  |
+| Appendix A | Full flow traceability matrix                                        |
+| Appendix B | Edge-case checklist                                                  |
 
 Rules this plan follows, from the assignment and our own plans:
 
@@ -51,12 +51,12 @@ Give Park Managers and Researchers a trustworthy, filterable picture of **where 
 
 ### 1.2 Actors
 
-| Actor | Role in M4 | Source |
-|---|---|---|
-| Park Manager | Primary. Full analytics for own park, export, report history for own park | G39 p. 4; [User groups §4.2](./User_groups.md) |
-| Researcher | Primary. Read-only analytics and export for the one park they were granted; sees own report history only; never sees reporter contact details | G39 p. 4; [User groups §4.5](./User_groups.md) |
-| Ministry / funding body | External recipient of exported files. No account, no screens | G39 p. 4; [User groups §5](./User_groups.md) |
-| Ranger, Liaison Officer, Super Admin | No M4 access (Super Admin manages accounts only) | [User groups matrix](./User_groups.md) |
+| Actor                                | Role in M4                                                                                                                                    | Source                                         |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Park Manager                         | Primary. Full analytics for own park, export, report history for own park                                                                     | G39 p. 4; [User groups §4.2](./User_groups.md) |
+| Researcher                           | Primary. Read-only analytics and export for the one park they were granted; sees own report history only; never sees reporter contact details | G39 p. 4; [User groups §4.5](./User_groups.md) |
+| Ministry / funding body              | External recipient of exported files. No account, no screens                                                                                  | G39 p. 4; [User groups §5](./User_groups.md)   |
+| Ranger, Liaison Officer, Super Admin | No M4 access (Super Admin manages accounts only)                                                                                              | [User groups matrix](./User_groups.md)         |
 
 ### 1.3 In scope
 
@@ -78,13 +78,13 @@ Predictive modelling, ML hotspot forecasting, scheduled or emailed reports, cros
 
 These five features turn "charts on a page" into a decision tool. Each one is grounded in the case study, not decoration.
 
-| Signature feature | Why it matters | Case study / G39 link |
-|---|---|---|
-| **Priority cells — "Where to patrol next"** | Crosses hotspots with patrol gaps. It lists the grid cells that have repeated incidents *and* no recent patrol, ranked, with sector name and days since last patrol | Case study p. 3 ("allocate limited ranger staff to where they're needed most"); G39 storyboard p. 8 ("identify unpatrolled poaching hotspots before assigning weekly ranger shifts") |
-| **Audited report snapshot with a reference code** | Every generated report gets a code such as `RPT-YALA-2026-000042` and a stored snapshot. The PDF and CSV are rendered from that snapshot, so the file always matches the screen. Each file carries a SHA-256 fingerprint | G39 postcondition p. 6 ("log of the report query is stored"); critique C9 |
-| **Honest data-quality strip** | Every view states its sample size and what was excluded: unresolved locations, rejected reports, patrol sessions with no GPS points. This replaces G39's unexplained "Confidence 94.2%" | Our interaction critique ("explain/remove the analytics confidence percentage") |
-| **Source-separated conflict trends** | Community reports and collar breaches are shown as two series, never summed into one "conflict" number, plus a month × boundary-stretch matrix | Implementation plan §7 M4; case study p. 2 ("patterns of conflict along particular boundary stretches") |
-| **Park-configurable analysis** | Grid cell size, track buffer, neglect window and type risk levels come from park configuration. Sinharaja's dense forest uses smaller cells than Yala's grassland, with no code change | Case study p. 2 ("System Flexibility") |
+| Signature feature                                 | Why it matters                                                                                                                                                                                                           | Case study / G39 link                                                                                                                                                                |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Priority cells — "Where to patrol next"**       | Crosses hotspots with patrol gaps. It lists the grid cells that have repeated incidents _and_ no recent patrol, ranked, with sector name and days since last patrol                                                      | Case study p. 3 ("allocate limited ranger staff to where they're needed most"); G39 storyboard p. 8 ("identify unpatrolled poaching hotspots before assigning weekly ranger shifts") |
+| **Audited report snapshot with a reference code** | Every generated report gets a code such as `RPT-YALA-2026-000042` and a stored snapshot. The PDF and CSV are rendered from that snapshot, so the file always matches the screen. Each file carries a SHA-256 fingerprint | G39 postcondition p. 6 ("log of the report query is stored"); critique C9                                                                                                            |
+| **Honest data-quality strip**                     | Every view states its sample size and what was excluded: unresolved locations, rejected reports, patrol sessions with no GPS points. This replaces G39's unexplained "Confidence 94.2%"                                  | Our interaction critique ("explain/remove the analytics confidence percentage")                                                                                                      |
+| **Source-separated conflict trends**              | Community reports and collar breaches are shown as two series, never summed into one "conflict" number, plus a month × boundary-stretch matrix                                                                           | Implementation plan §7 M4; case study p. 2 ("patterns of conflict along particular boundary stretches")                                                                              |
+| **Park-configurable analysis**                    | Grid cell size, track buffer, neglect window and type risk levels come from park configuration. Sinharaja's dense forest uses smaller cells than Yala's grassland, with no code change                                   | Case study p. 2 ("System Flexibility")                                                                                                                                               |
 
 ---
 
@@ -104,22 +104,22 @@ These five features turn "charts on a page" into a decision tool. Each one is gr
 
 ### 2.2 Group 039 flows and our decisions
 
-| G39 flow | Decision | Justification |
-|---|---|---|
-| Main: select module, set filters, generate, view stats/charts/tables, export, download | **Retained** | Core flow |
-| Main step "system prompts the user to set search filters" | **Retained, improved:** sensible defaults (own park, last 6 months, all categories) are pre-filled, and the report is not generated until the user clicks "Generate report" | Matches G39 while avoiding an empty first screen |
-| Alt: visualize spatial heatmap | **Retained, improved:** a graded grid map instead of a blurred heat layer, with counts, a legend and a table alternative | Blurred heat layers can't be read precisely, have no accessible alternative and hide the excluded-location count. A grid lines up exactly with the patrol-gap analysis |
-| Alt: human-wildlife conflict trends | **Retained, improved:** a separate conflict view with two source series and a boundary-stretch breakdown | Implementation plan §7 M4: show the sources separately so they aren't mistaken for deduplicated real-world conflicts |
-| Alt: export skipped | **Retained.** The run is audited with no export | Critique C9: download is a conditional postcondition |
-| Exception: no records found | **Retained.** Empty state with suggestions to widen the date range or sector; filters stay | G39 p. 6 |
-| Exception: data retrieval / server timeout | **Retained.** The query is aborted at 8 s, filters and the previous report stay on screen, and a Retry button is shown; the run is audited as `TIMED_OUT` | G39 p. 6 |
-| Exception: export generation failure | **Retained.** Error message, the on-screen report stays intact, the export is audited as `FAILED`, and the user can retry | G39 p. 7 |
-| Postcondition: export "compiled and downloaded" | **Changed to conditional:** "if the user requests an export, a file is compiled and downloaded" | Critique C9 |
-| Postcondition: query logged in audit history | **Retained, extended:** filters, user, time, outcome, duration and a snapshot fingerprint | G39 p. 6 |
-| Sequence: `ConservationReport` created per generation | **Retained:** `report_runs` row with snapshot | G39 p. 7 |
-| Sequence numbering inconsistency | **Corrected** in our improved sequence diagram (§7.5) | Critique C12 |
-| Wireframe "Confidence: 94.2%" | **Removed.** Replaced by sample size and excluded counts | Interaction critique |
-| Wireframe severity column | **Changed** to "Risk level", derived from incident type through park configuration and labelled as such | Incidents have no severity column (§3). Showing a derived value as observed severity would be misleading |
+| G39 flow                                                                               | Decision                                                                                                                                                                    | Justification                                                                                                                                                          |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Main: select module, set filters, generate, view stats/charts/tables, export, download | **Retained**                                                                                                                                                                | Core flow                                                                                                                                                              |
+| Main step "system prompts the user to set search filters"                              | **Retained, improved:** sensible defaults (own park, last 6 months, all categories) are pre-filled, and the report is not generated until the user clicks "Generate report" | Matches G39 while avoiding an empty first screen                                                                                                                       |
+| Alt: visualize spatial heatmap                                                         | **Retained, improved:** a graded grid map instead of a blurred heat layer, with counts, a legend and a table alternative                                                    | Blurred heat layers can't be read precisely, have no accessible alternative and hide the excluded-location count. A grid lines up exactly with the patrol-gap analysis |
+| Alt: human-wildlife conflict trends                                                    | **Retained, improved:** a separate conflict view with two source series and a boundary-stretch breakdown                                                                    | Implementation plan §7 M4: show the sources separately so they aren't mistaken for deduplicated real-world conflicts                                                   |
+| Alt: export skipped                                                                    | **Retained.** The run is audited with no export                                                                                                                             | Critique C9: download is a conditional postcondition                                                                                                                   |
+| Exception: no records found                                                            | **Retained.** Empty state with suggestions to widen the date range or sector; filters stay                                                                                  | G39 p. 6                                                                                                                                                               |
+| Exception: data retrieval / server timeout                                             | **Retained.** The query is aborted at 8 s, filters and the previous report stay on screen, and a Retry button is shown; the run is audited as `TIMED_OUT`                   | G39 p. 6                                                                                                                                                               |
+| Exception: export generation failure                                                   | **Retained.** Error message, the on-screen report stays intact, the export is audited as `FAILED`, and the user can retry                                                   | G39 p. 7                                                                                                                                                               |
+| Postcondition: export "compiled and downloaded"                                        | **Changed to conditional:** "if the user requests an export, a file is compiled and downloaded"                                                                             | Critique C9                                                                                                                                                            |
+| Postcondition: query logged in audit history                                           | **Retained, extended:** filters, user, time, outcome, duration and a snapshot fingerprint                                                                                   | G39 p. 6                                                                                                                                                               |
+| Sequence: `ConservationReport` created per generation                                  | **Retained:** `report_runs` row with snapshot                                                                                                                               | G39 p. 7                                                                                                                                                               |
+| Sequence numbering inconsistency                                                       | **Corrected** in our improved sequence diagram (§7.5)                                                                                                                       | Critique C12                                                                                                                                                           |
+| Wireframe "Confidence: 94.2%"                                                          | **Removed.** Replaced by sample size and excluded counts                                                                                                                    | Interaction critique                                                                                                                                                   |
+| Wireframe severity column                                                              | **Changed** to "Risk level", derived from incident type through park configuration and labelled as such                                                                     | Incidents have no severity column (§3). Showing a derived value as observed severity would be misleading                                                               |
 
 Appendix A lists the full flow-by-flow traceability with tests.
 
@@ -131,39 +131,39 @@ These facts were checked against `main` (`2ff2608`) and the shared Neon database
 
 ### 3.1 Code
 
-| Area | Finding | Consequence for M4 |
-|---|---|---|
-| API | No `modules/analytics` folder. An earlier prototype (`fbf2892`) was deleted, and its `export_audits` table never had a migration | Build fresh. Don't revive the prototype's `ST_SnapToGrid` in degrees, because degree cells aren't equal-area |
-| Ops routing | No `/analytics` route. `WorkspacePage.tsx` still links to `/analytics` and shows a 404 | Add routes; fix the tiles and the page-title map |
-| Ops `DashboardPage.tsx` | Unused placeholder | Delete it in the M4 PR |
-| Charts | `recharts ^2.15.4` is installed in Ops but never imported | Reuse it; no new chart library |
-| Maps | Leaflet 1.9 and react-leaflet 4 with OSM tiles; no heat plugin | Reuse them; render a grid with `Rectangle` and `GeoJSON` |
-| Fetch wrapper | `api.ts` handles JSON only | Add a typed blob download helper for exports |
-| Design systems | Two exist: the `workspace` system (`styles.css`) and the `m1-*` system (`IncidentFields.css`) | M4 uses one scoped `an-*` layer built on the shared CSS variables (§11) |
-| Tests | Vitest, Testing Library, `fetch` stubbed with `vi.stubGlobal`; `vitest.m1.config.ts` is the per-use-case coverage template | Mirror it with `vitest.m4.config.ts` |
-| DB access | Raw `postgres` tagged templates; Drizzle files describe the schema only | Same style; add `drizzle/analytics-schema.ts` for documentation |
+| Area                    | Finding                                                                                                                          | Consequence for M4                                                                                           |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| API                     | No `modules/analytics` folder. An earlier prototype (`fbf2892`) was deleted, and its `export_audits` table never had a migration | Build fresh. Don't revive the prototype's `ST_SnapToGrid` in degrees, because degree cells aren't equal-area |
+| Ops routing             | No `/analytics` route. `WorkspacePage.tsx` still links to `/analytics` and shows a 404                                           | Add routes; fix the tiles and the page-title map                                                             |
+| Ops `DashboardPage.tsx` | Unused placeholder                                                                                                               | Delete it in the M4 PR                                                                                       |
+| Charts                  | `recharts ^2.15.4` is installed in Ops but never imported                                                                        | Reuse it; no new chart library                                                                               |
+| Maps                    | Leaflet 1.9 and react-leaflet 4 with OSM tiles; no heat plugin                                                                   | Reuse them; render a grid with `Rectangle` and `GeoJSON`                                                     |
+| Fetch wrapper           | `api.ts` handles JSON only                                                                                                       | Add a typed blob download helper for exports                                                                 |
+| Design systems          | Two exist: the `workspace` system (`styles.css`) and the `m1-*` system (`IncidentFields.css`)                                    | M4 uses one scoped `an-*` layer built on the shared CSS variables (§11)                                      |
+| Tests                   | Vitest, Testing Library, `fetch` stubbed with `vi.stubGlobal`; `vitest.m1.config.ts` is the per-use-case coverage template       | Mirror it with `vitest.m4.config.ts`                                                                         |
+| DB access               | Raw `postgres` tagged templates; Drizzle files describe the schema only                                                          | Same style; add `drizzle/analytics-schema.ts` for documentation                                              |
 
 ### 3.2 Data model gaps
 
-| Gap | Effect | Fix in this plan |
-|---|---|---|
-| `parks` has no boundary geometry | Patrol-gap area has no denominator | `parks.boundary` (MultiPolygon), seeded |
-| `patrol_routes.target_area` is NULL for every route | No per-route target | M4 measures coverage against the park analysis grid instead (§8.2). It doesn't depend on target areas |
-| `patrol_sessions.coverage_percent` is always 0 | Can't be used | M4 computes coverage from GPS points; it never reads this column |
-| `incidents` has no severity | Wireframe severity column has no data | Type-based "risk level" from park configuration (§5.4) |
-| `incidents` has no sector, and no GIST index on `location` | Breakdown by sector needs a spatial join; slow queries | `analysis_sectors` table + GIST index (§5) |
-| Geofences live in `parks.config.alerts`; `alerts.location` is nullable | Boundary-conflict counts need alert points | Use `alerts.location`; count NULL locations as excluded |
-| `incident_landmarks` stores lat/lng as doubles | Not a problem for M4 | M4 reads `incidents.location` only |
-| Researcher has one `park_id`, not several | "Allowed parks" means one park | Park selector shows the one allowed park; contract still accepts `parkId` so multi-park access can come later |
+| Gap                                                                    | Effect                                                 | Fix in this plan                                                                                              |
+| ---------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `parks` has no boundary geometry                                       | Patrol-gap area has no denominator                     | `parks.boundary` (MultiPolygon), seeded                                                                       |
+| `patrol_routes.target_area` is NULL for every route                    | No per-route target                                    | M4 measures coverage against the park analysis grid instead (§8.2). It doesn't depend on target areas         |
+| `patrol_sessions.coverage_percent` is always 0                         | Can't be used                                          | M4 computes coverage from GPS points; it never reads this column                                              |
+| `incidents` has no severity                                            | Wireframe severity column has no data                  | Type-based "risk level" from park configuration (§5.4)                                                        |
+| `incidents` has no sector, and no GIST index on `location`             | Breakdown by sector needs a spatial join; slow queries | `analysis_sectors` table + GIST index (§5)                                                                    |
+| Geofences live in `parks.config.alerts`; `alerts.location` is nullable | Boundary-conflict counts need alert points             | Use `alerts.location`; count NULL locations as excluded                                                       |
+| `incident_landmarks` stores lat/lng as doubles                         | Not a problem for M4                                   | M4 reads `incidents.location` only                                                                            |
+| Researcher has one `park_id`, not several                              | "Allowed parks" means one park                         | Park selector shows the one allowed park; contract still accepts `parkId` so multi-park access can come later |
 
 ### 3.3 Data volume in the shared database
 
-| Table | Rows today |
-|---|---|
-| incidents | 1 (Yala) |
-| alerts | 0 |
-| patrol_sessions | 3 completed |
-| patrol_gps_points | 6 |
+| Table               | Rows today                   |
+| ------------------- | ---------------------------- |
+| incidents           | 1 (Yala)                     |
+| alerts              | 0                            |
+| patrol_sessions     | 3 completed                  |
+| patrol_gps_points   | 6                            |
 | parks with boundary | 0 (column doesn't exist yet) |
 
 **Consequence:** a convincing demo needs the deterministic six-month demo seed in §15. The implementation plan already requires it ("six months of labeled synthetic analytics data").
@@ -186,37 +186,37 @@ Every metric uses the **filter window** `[from, to]` with these rules:
 - **Zero-filled buckets:** every bucket is returned, including those with a count of 0 (`generate_series`), so charts never hide gaps.
 - **Rejected incidents** are excluded from all metrics by default and counted separately in the data-quality strip. The filter toggle "Include rejected" adds them back.
 
-| ID | Metric | Definition | Shown as |
-|---|---|---|---|
-| K1 | Total incidents | Count of incidents in park and window matching category, type, source and sector filters; status ≠ REJECTED unless included | "42 incidents" |
-| K1Δ | Change vs previous period | `(curr − prev) / prev × 100`, rounded to a whole number. prev = 0 and curr > 0 → "New activity"; both 0 → "No change" | "▲ 12% vs previous 180 days" with text, not colour alone |
-| K2 | High-risk hotspots | Number of grid cells whose incident count is **≥ `hotspotMinCount`** (park config, default 3) **and** in the top 10% of non-empty cells. If fewer than 10 non-empty cells, only the minimum count applies | "3 cells", plus the sector names of the top cells |
-| K3 | Patrol gap area | Total area in km² of park grid cells with **no valid patrol track** in the window (§8.2) | "18.4 km²", plus the share of the park and the worst sector |
-| K4 | Conflict events | Two numbers, never summed: community conflict reports and collar geofence breaches | "17 community reports · 9 collar breaches" |
-| K5 (Tier 2) | Median first response | Median of `first_response_at − reported_at` for incidents with a response; reports n; unanswered incidents listed separately, never averaged in | "Median 3 h 20 min (n = 21) · 4 awaiting response" |
-| T1 | Incident frequency trend | K1 per bucket, zero-filled | Bar chart |
-| T2 | Conflict trend | Community reports and collar breaches per bucket, two series | Grouped bars or two lines |
-| B1 | Sector incident breakdown | Count per incident type × sector, sorted by count. Columns: type, sector, count, risk level, share of total | Paginated table |
-| B2 | Boundary-stretch conflicts | Conflict counts per boundary stretch × source | Bar chart and matrix |
-| S1 | Hotspot grid | Count per grid cell (non-empty cells only) with a 5-class colour scale | Map layer |
-| S2 | Coverage grid | Per cell: covered yes/no, last patrolled time, days since | Map layer |
-| P1 | Priority cells | Hotspot cells (K2 rule, relaxed to count ≥ `hotspotMinCount`) that were not patrolled within `gapNeglectDays`. Score = `incidents × min(daysSincePatrol, 90)`; never patrolled = 90. Top 5 | Ranked list "Where to patrol next" |
-| Q1 | Excluded: no location | Incidents in the window with `location IS NULL` or `location_status = 'UNRESOLVED'`. Included in K1 and T1, excluded from S1, K2 and B1's sector column ("Unknown sector" row) | Data-quality strip |
-| Q2 | Excluded: rejected | Rejected incidents in the window | Data-quality strip |
-| Q3 | Patrol data quality | Sessions in the window with fewer than 2 valid GPS points; points dropped by the accuracy or gap rules | Data-quality strip on the patrol gap page |
-| Q4 | Outside boundary | Located incidents outside the park boundary (for example, a village beyond the fence) | Counted in K1; shown on the map; excluded from cell counts with a note |
+| ID          | Metric                     | Definition                                                                                                                                                                                                | Shown as                                                               |
+| ----------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| K1          | Total incidents            | Count of incidents in park and window matching category, type, source and sector filters; status ≠ REJECTED unless included                                                                               | "42 incidents"                                                         |
+| K1Δ         | Change vs previous period  | `(curr − prev) / prev × 100`, rounded to a whole number. prev = 0 and curr > 0 → "New activity"; both 0 → "No change"                                                                                     | "▲ 12% vs previous 180 days" with text, not colour alone               |
+| K2          | High-risk hotspots         | Number of grid cells whose incident count is **≥ `hotspotMinCount`** (park config, default 3) **and** in the top 10% of non-empty cells. If fewer than 10 non-empty cells, only the minimum count applies | "3 cells", plus the sector names of the top cells                      |
+| K3          | Patrol gap area            | Total area in km² of park grid cells with **no valid patrol track** in the window (§8.2)                                                                                                                  | "18.4 km²", plus the share of the park and the worst sector            |
+| K4          | Conflict events            | Two numbers, never summed: community conflict reports and collar geofence breaches                                                                                                                        | "17 community reports · 9 collar breaches"                             |
+| K5 (Tier 2) | Median first response      | Median of `first_response_at − reported_at` for incidents with a response; reports n; unanswered incidents listed separately, never averaged in                                                           | "Median 3 h 20 min (n = 21) · 4 awaiting response"                     |
+| T1          | Incident frequency trend   | K1 per bucket, zero-filled                                                                                                                                                                                | Bar chart                                                              |
+| T2          | Conflict trend             | Community reports and collar breaches per bucket, two series                                                                                                                                              | Grouped bars or two lines                                              |
+| B1          | Sector incident breakdown  | Count per incident type × sector, sorted by count. Columns: type, sector, count, risk level, share of total                                                                                               | Paginated table                                                        |
+| B2          | Boundary-stretch conflicts | Conflict counts per boundary stretch × source                                                                                                                                                             | Bar chart and matrix                                                   |
+| S1          | Hotspot grid               | Count per grid cell (non-empty cells only) with a 5-class colour scale                                                                                                                                    | Map layer                                                              |
+| S2          | Coverage grid              | Per cell: covered yes/no, last patrolled time, days since                                                                                                                                                 | Map layer                                                              |
+| P1          | Priority cells             | Hotspot cells (K2 rule, relaxed to count ≥ `hotspotMinCount`) that were not patrolled within `gapNeglectDays`. Score = `incidents × min(daysSincePatrol, 90)`; never patrolled = 90. Top 5                | Ranked list "Where to patrol next"                                     |
+| Q1          | Excluded: no location      | Incidents in the window with `location IS NULL` or `location_status = 'UNRESOLVED'`. Included in K1 and T1, excluded from S1, K2 and B1's sector column ("Unknown sector" row)                            | Data-quality strip                                                     |
+| Q2          | Excluded: rejected         | Rejected incidents in the window                                                                                                                                                                          | Data-quality strip                                                     |
+| Q3          | Patrol data quality        | Sessions in the window with fewer than 2 valid GPS points; points dropped by the accuracy or gap rules                                                                                                    | Data-quality strip on the patrol gap page                              |
+| Q4          | Outside boundary           | Located incidents outside the park boundary (for example, a village beyond the fence)                                                                                                                     | Counted in K1; shown on the map; excluded from cell counts with a note |
 
 ### 4.1 Category groups
 
 The G39 filter "Poaching & Snares" is a group, not a single type. Groups are defined once in `@wr/shared`:
 
-| Group | Incident types | Conflict view also counts |
-|---|---|---|
-| `ALL` | all | — |
-| `POACHING_AND_SNARES` | POACHING, SNARE_FOUND | — |
+| Group                     | Incident types                                     | Conflict view also counts       |
+| ------------------------- | -------------------------------------------------- | ------------------------------- |
+| `ALL`                     | all                                                | —                               |
+| `POACHING_AND_SNARES`     | POACHING, SNARE_FOUND                              | —                               |
 | `HUMAN_WILDLIFE_CONFLICT` | HUMAN_WILDLIFE_CONFLICT, CROP_DAMAGE, FENCE_DAMAGE | collar `GEOFENCE_BREACH` alerts |
-| `ANIMAL_WELFARE` | INJURED_ANIMAL | — |
-| `OTHER` | OTHER | — |
+| `ANIMAL_WELFARE`          | INJURED_ANIMAL                                     | —                               |
+| `OTHER`                   | OTHER                                              | —                               |
 
 A **conflict report** (K4, T2, B2) is an incident with source `COMMUNITY` and a type in the HWC group. Ranger-reported HWC incidents count in the incident metrics, and appear as an optional third series "Ranger-reported conflict" in the conflict view, never merged.
 
@@ -333,12 +333,12 @@ erDiagram
 
 ### 5.3 What M4 reads from other modules (read-only)
 
-| Owner | Table | Columns used |
-|---|---|---|
-| M1 | incidents | id, park_id, type, source, status, location, location_status, captured_at, reported_at, first_response_at, resolved_at |
-| M2 | patrol_assignments, patrol_routes, patrol_sessions, patrol_gps_points | park_id via route, ranger_id, status, started_at, ended_at, position, accuracy_m, recorded_at |
-| M3 | alerts, collars, settlements | park_id, type, severity, status, location, created_at; collar species; settlement name and location |
-| Shared | parks, auth_users | park name, code, boundary, config; user id and role |
+| Owner  | Table                                                                 | Columns used                                                                                                           |
+| ------ | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| M1     | incidents                                                             | id, park_id, type, source, status, location, location_status, captured_at, reported_at, first_response_at, resolved_at |
+| M2     | patrol_assignments, patrol_routes, patrol_sessions, patrol_gps_points | park_id via route, ranger_id, status, started_at, ended_at, position, accuracy_m, recorded_at                          |
+| M3     | alerts, collars, settlements                                          | park_id, type, severity, status, location, created_at; collar species; settlement name and location                    |
+| Shared | parks, auth_users                                                     | park name, code, boundary, config; user id and role                                                                    |
 
 M4 never reads `reporter_phone`, `reporter_id` names, `community_messages.phone` or `raw_text`, `incident_media` or `description`. The repository's SQL doesn't select these columns at all. This is the privacy guarantee for Researchers (User groups §4.5), enforced by construction rather than by filtering afterwards.
 
@@ -348,31 +348,42 @@ Stored under `parks.config.analytics`. This is JSON, so no migration is needed. 
 
 ```ts
 // packages/shared/src/analytics.ts
-export const ParkAnalyticsConfigSchema = z.object({
-  gridCellMeters: z.number().int().min(250).max(5000).default(1000),
-  trackBufferMeters: z.number().int().min(10).max(500).default(50),
-  maxSegmentGapSeconds: z.number().int().min(30).max(3600).default(600),
-  maxSegmentLengthMeters: z.number().int().min(50).max(5000).default(1000),
-  maxPointAccuracyMeters: z.number().int().min(5).max(500).default(100),
-  gapNeglectDays: z.number().int().min(1).max(180).default(14),
-  hotspotMinCount: z.number().int().min(1).max(50).default(3),
-  boundaryStretchBufferMeters: z.number().int().min(100).max(10000).default(2000),
-  typeRiskLevels: z.record(IncidentCategorySchema, RiskLevelSchema).default({
-    POACHING: "CRITICAL", SNARE_FOUND: "HIGH", INJURED_ANIMAL: "HIGH",
-    HUMAN_WILDLIFE_CONFLICT: "HIGH", CROP_DAMAGE: "MEDIUM",
-    FENCE_DAMAGE: "MEDIUM", OTHER: "LOW",
-  }),
-}).strict();
+export const ParkAnalyticsConfigSchema = z
+  .object({
+    gridCellMeters: z.number().int().min(250).max(5000).default(1000),
+    trackBufferMeters: z.number().int().min(10).max(500).default(50),
+    maxSegmentGapSeconds: z.number().int().min(30).max(3600).default(600),
+    maxSegmentLengthMeters: z.number().int().min(50).max(5000).default(1000),
+    maxPointAccuracyMeters: z.number().int().min(5).max(500).default(100),
+    gapNeglectDays: z.number().int().min(1).max(180).default(14),
+    hotspotMinCount: z.number().int().min(1).max(50).default(3),
+    boundaryStretchBufferMeters: z
+      .number()
+      .int()
+      .min(100)
+      .max(10000)
+      .default(2000),
+    typeRiskLevels: z.record(IncidentCategorySchema, RiskLevelSchema).default({
+      POACHING: "CRITICAL",
+      SNARE_FOUND: "HIGH",
+      INJURED_ANIMAL: "HIGH",
+      HUMAN_WILDLIFE_CONFLICT: "HIGH",
+      CROP_DAMAGE: "MEDIUM",
+      FENCE_DAMAGE: "MEDIUM",
+      OTHER: "LOW",
+    }),
+  })
+  .strict();
 ```
 
 Demo seed values show park flexibility (case study "System Flexibility"):
 
-| Setting | Yala (open grassland) | Sinharaja (dense rainforest) | Wilpattu |
-|---|---|---|---|
-| gridCellMeters | 1000 | 500 | 1000 |
-| trackBufferMeters | 75 | 25 | 50 |
-| gapNeglectDays | 14 | 21 | 14 |
-| typeRiskLevels.CROP_DAMAGE | HIGH | MEDIUM | MEDIUM |
+| Setting                    | Yala (open grassland) | Sinharaja (dense rainforest) | Wilpattu |
+| -------------------------- | --------------------- | ---------------------------- | -------- |
+| gridCellMeters             | 1000                  | 500                          | 1000     |
+| trackBufferMeters          | 75                    | 25                           | 50       |
+| gapNeglectDays             | 14                    | 21                           | 14       |
+| typeRiskLevels.CROP_DAMAGE | HIGH                  | MEDIUM                       | MEDIUM   |
 
 Settings are edited through the seed in this phase. A settings screen is shared-feature work, not M4.
 
@@ -384,30 +395,53 @@ One file, exported from `packages/shared/src/index.ts`. The API validates with t
 
 ```ts
 export const AnalyticsCategoryGroupSchema = z.enum([
-  "ALL", "POACHING_AND_SNARES", "HUMAN_WILDLIFE_CONFLICT", "ANIMAL_WELFARE", "OTHER",
+  "ALL",
+  "POACHING_AND_SNARES",
+  "HUMAN_WILDLIFE_CONFLICT",
+  "ANIMAL_WELFARE",
+  "OTHER",
 ]);
 export const RiskLevelSchema = z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
 export const ReportFormatSchema = z.enum(["PDF", "CSV"]);
-export const ReportRunStatusSchema = z.enum(["SUCCEEDED", "EMPTY", "TIMED_OUT", "FAILED"]);
-export const DateRangePresetSchema = z.enum(["LAST_7_DAYS", "LAST_30_DAYS", "LAST_90_DAYS",
-  "LAST_6_MONTHS", "LAST_12_MONTHS", "CUSTOM"]);
+export const ReportRunStatusSchema = z.enum([
+  "SUCCEEDED",
+  "EMPTY",
+  "TIMED_OUT",
+  "FAILED",
+]);
+export const DateRangePresetSchema = z.enum([
+  "LAST_7_DAYS",
+  "LAST_30_DAYS",
+  "LAST_90_DAYS",
+  "LAST_6_MONTHS",
+  "LAST_12_MONTHS",
+  "CUSTOM",
+]);
 export const BucketSchema = z.enum(["DAY", "WEEK", "MONTH"]);
 
-const IsoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);    // calendar date, Colombo
+const IsoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/); // calendar date, Colombo
 
-export const AnalyticsFilterSchema = z.object({
-  parkId: z.string().uuid(),
-  from: IsoDate,
-  to: IsoDate,
-  preset: DateRangePresetSchema.default("CUSTOM"),
-  categoryGroup: AnalyticsCategoryGroupSchema.default("ALL"),
-  types: z.array(IncidentCategorySchema).max(7).default([]),   // empty = all in the group
-  sources: z.array(IncidentSourceSchema).max(3).default([]),   // empty = all
-  sectorId: z.string().uuid().nullable().default(null),
-  includeRejected: z.boolean().default(false),
-}).strict()
-  .refine(f => f.from <= f.to, { path: ["to"], message: "End date must be on or after start date." })
-  .refine(f => daysBetween(f.from, f.to) <= 731, { path: ["from"], message: "Choose a range of 2 years or less." });
+export const AnalyticsFilterSchema = z
+  .object({
+    parkId: z.string().uuid(),
+    from: IsoDate,
+    to: IsoDate,
+    preset: DateRangePresetSchema.default("CUSTOM"),
+    categoryGroup: AnalyticsCategoryGroupSchema.default("ALL"),
+    types: z.array(IncidentCategorySchema).max(7).default([]), // empty = all in the group
+    sources: z.array(IncidentSourceSchema).max(3).default([]), // empty = all
+    sectorId: z.string().uuid().nullable().default(null),
+    includeRejected: z.boolean().default(false),
+  })
+  .strict()
+  .refine((f) => f.from <= f.to, {
+    path: ["to"],
+    message: "End date must be on or after start date.",
+  })
+  .refine((f) => daysBetween(f.from, f.to) <= 731, {
+    path: ["from"],
+    message: "Choose a range of 2 years or less.",
+  });
 // "not in the future" is checked in the service against the injected Clock, not here.
 ```
 
@@ -417,11 +451,11 @@ Response schemas (abbreviated). Every number has an explicit unit in its name.
 export const KpiSchema = z.object({
   totalIncidents: z.number().int().nonnegative(),
   previousPeriodIncidents: z.number().int().nonnegative(),
-  changePercent: z.number().nullable(),            // null = no previous data
+  changePercent: z.number().nullable(), // null = no previous data
   changeKind: z.enum(["UP", "DOWN", "NO_CHANGE", "NEW_ACTIVITY"]),
   hotspotCells: z.number().int().nonnegative(),
   hotspotSectorNames: z.array(z.string()).max(3),
-  patrolGapAreaKm2: z.number().nonnegative().nullable(),   // null = park not configured
+  patrolGapAreaKm2: z.number().nonnegative().nullable(), // null = park not configured
   patrolGapSharePercent: z.number().min(0).max(100).nullable(),
   communityConflictReports: z.number().int().nonnegative(),
   collarBreaches: z.number().int().nonnegative(),
@@ -436,56 +470,112 @@ export const DataQualitySchema = z.object({
   alertsWithoutLocation: z.number().int().nonnegative(),
 });
 
-export const TrendPointSchema = z.object({ bucketStart: IsoDate, label: z.string(), count: z.number().int() });
+export const TrendPointSchema = z.object({
+  bucketStart: IsoDate,
+  label: z.string(),
+  count: z.number().int(),
+});
 export const BreakdownRowSchema = z.object({
-  type: IncidentCategorySchema, sectorId: z.string().uuid().nullable(),
-  sectorName: z.string(), count: z.number().int(), riskLevel: RiskLevelSchema, sharePercent: z.number(),
+  type: IncidentCategorySchema,
+  sectorId: z.string().uuid().nullable(),
+  sectorName: z.string(),
+  count: z.number().int(),
+  riskLevel: RiskLevelSchema,
+  sharePercent: z.number(),
 });
 export const HotspotCellSchema = z.object({
-  cellId: z.string(), polygon: z.array(CoordinatesSchema), sectorName: z.string().nullable(),
-  count: z.number().int(), riskClass: z.number().int().min(1).max(5), isHotspot: z.boolean(),
+  cellId: z.string(),
+  polygon: z.array(CoordinatesSchema),
+  sectorName: z.string().nullable(),
+  count: z.number().int(),
+  riskClass: z.number().int().min(1).max(5),
+  isHotspot: z.boolean(),
 });
 export const CoverageCellSchema = z.object({
-  cellId: z.string(), polygon: z.array(CoordinatesSchema), covered: z.boolean(),
-  lastPatrolledAt: z.string().datetime().nullable(), daysSincePatrol: z.number().int().nullable(),
+  cellId: z.string(),
+  polygon: z.array(CoordinatesSchema),
+  covered: z.boolean(),
+  lastPatrolledAt: z.string().datetime().nullable(),
+  daysSincePatrol: z.number().int().nullable(),
 });
 export const PriorityCellSchema = z.object({
-  cellId: z.string(), centre: CoordinatesSchema, sectorName: z.string().nullable(),
-  incidents: z.number().int(), daysSincePatrol: z.number().int().nullable(), score: z.number(),
+  cellId: z.string(),
+  centre: CoordinatesSchema,
+  sectorName: z.string().nullable(),
+  incidents: z.number().int(),
+  daysSincePatrol: z.number().int().nullable(),
+  score: z.number(),
 });
 export const ConflictSeriesPointSchema = z.object({
-  bucketStart: IsoDate, label: z.string(),
-  communityReports: z.number().int(), collarBreaches: z.number().int(), rangerReported: z.number().int(),
+  bucketStart: IsoDate,
+  label: z.string(),
+  communityReports: z.number().int(),
+  collarBreaches: z.number().int(),
+  rangerReported: z.number().int(),
 });
 export const StretchConflictRowSchema = z.object({
-  stretchId: z.string().uuid(), stretchName: z.string(),
-  communityReports: z.number().int(), collarBreaches: z.number().int(),
-  byMonth: z.array(z.object({ bucketStart: IsoDate, communityReports: z.number().int(), collarBreaches: z.number().int() })),
+  stretchId: z.string().uuid(),
+  stretchName: z.string(),
+  communityReports: z.number().int(),
+  collarBreaches: z.number().int(),
+  byMonth: z.array(
+    z.object({
+      bucketStart: IsoDate,
+      communityReports: z.number().int(),
+      collarBreaches: z.number().int(),
+    }),
+  ),
 });
 
 export const ConservationReportSchema = z.object({
   schemaVersion: z.literal(1),
   park: z.object({ id: z.string().uuid(), code: z.string(), name: z.string() }),
   filters: AnalyticsFilterSchema,
-  window: z.object({ fromUtc: z.string().datetime(), toUtcExclusive: z.string().datetime(),
-    bucket: BucketSchema, timezone: z.literal("Asia/Colombo"), days: z.number().int() }),
+  window: z.object({
+    fromUtc: z.string().datetime(),
+    toUtcExclusive: z.string().datetime(),
+    bucket: BucketSchema,
+    timezone: z.literal("Asia/Colombo"),
+    days: z.number().int(),
+  }),
   generatedAt: z.string().datetime(),
   kpis: KpiSchema,
   dataQuality: DataQualitySchema,
   trend: z.array(TrendPointSchema),
   breakdown: z.array(BreakdownRowSchema),
-  hotspots: z.object({ cellSizeMeters: z.number().int(), cells: z.array(HotspotCellSchema), classBreaks: z.array(z.number()) }),
-  patrolGaps: z.object({ configured: z.boolean(), cells: z.array(CoverageCellSchema),
-    coveredAreaKm2: z.number(), gapAreaKm2: z.number(), parkAreaKm2: z.number(),
-    bySector: z.array(z.object({ sectorName: z.string(), gapAreaKm2: z.number(), gapSharePercent: z.number() })) }),
+  hotspots: z.object({
+    cellSizeMeters: z.number().int(),
+    cells: z.array(HotspotCellSchema),
+    classBreaks: z.array(z.number()),
+  }),
+  patrolGaps: z.object({
+    configured: z.boolean(),
+    cells: z.array(CoverageCellSchema),
+    coveredAreaKm2: z.number(),
+    gapAreaKm2: z.number(),
+    parkAreaKm2: z.number(),
+    bySector: z.array(
+      z.object({
+        sectorName: z.string(),
+        gapAreaKm2: z.number(),
+        gapSharePercent: z.number(),
+      }),
+    ),
+  }),
   priorityCells: z.array(PriorityCellSchema).max(5),
-  conflicts: z.object({ series: z.array(ConflictSeriesPointSchema), byStretch: z.array(StretchConflictRowSchema) }),
+  conflicts: z.object({
+    series: z.array(ConflictSeriesPointSchema),
+    byStretch: z.array(StretchConflictRowSchema),
+  }),
   summarySentences: z.array(z.string()).max(4),
 });
 
 export const ReportRunResponseSchema = z.object({
-  runId: z.string().uuid(), code: z.string(), status: ReportRunStatusSchema,
-  snapshotSha256: z.string().length(64).nullable(), report: ConservationReportSchema.nullable(),
+  runId: z.string().uuid(),
+  code: z.string(),
+  status: ReportRunStatusSchema,
+  snapshotSha256: z.string().length(64).nullable(),
+  report: ConservationReportSchema.nullable(),
 });
 ```
 
@@ -539,13 +629,13 @@ If either repository is missing, every route returns 503 `ANALYTICS_UNAVAILABLE`
 
 All endpoints are under `/api`. Every response sets `Cache-Control: no-store`. POST requests go through the same origin check as incidents and accounts (`APP_ORIGINS`).
 
-| # | Method and path | Purpose | Roles | Body / query | Success |
-|---|---|---|---|---|---|
-| E1 | `GET /analytics/options?parkId` | Filter options: allowed parks, types, sources, sectors, earliest and latest data dates, park config summary | PM, RESEARCHER | `parkId` optional (defaults to the user's park) | 200 `AnalyticsOptions` |
-| E2 | `POST /reports/runs` | **Generate report** (main flow). Validates filters, runs all sections in one read-only transaction, assembles the snapshot, writes the audit row, returns the report | PM, RESEARCHER | `AnalyticsFilter` | 201 `ReportRunResponse` (`status` SUCCEEDED or EMPTY) |
-| E3 | `GET /reports/runs/:runId` | Reload a stored report (page refresh, history, deep link) | PM (own park), RESEARCHER (own runs) | — | 200 `ReportRunResponse` |
-| E4 | `POST /reports/runs/:runId/exports` | Render the snapshot as PDF or CSV, audit the attempt, stream the file | PM (own park), RESEARCHER (own runs) | `{ format: "PDF" \| "CSV" }` | 200 file with `Content-Disposition: attachment` and `X-Report-Sha256` |
-| E5 | `GET /reports/runs?page&pageSize&status` | Report history with exports | PM: all runs in own park; RESEARCHER: own runs | — | 200 `{ items, total, page, pageSize }` |
+| #   | Method and path                          | Purpose                                                                                                                                                              | Roles                                          | Body / query                                    | Success                                                               |
+| --- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------- |
+| E1  | `GET /analytics/options?parkId`          | Filter options: allowed parks, types, sources, sectors, earliest and latest data dates, park config summary                                                          | PM, RESEARCHER                                 | `parkId` optional (defaults to the user's park) | 200 `AnalyticsOptions`                                                |
+| E2  | `POST /reports/runs`                     | **Generate report** (main flow). Validates filters, runs all sections in one read-only transaction, assembles the snapshot, writes the audit row, returns the report | PM, RESEARCHER                                 | `AnalyticsFilter`                               | 201 `ReportRunResponse` (`status` SUCCEEDED or EMPTY)                 |
+| E3  | `GET /reports/runs/:runId`               | Reload a stored report (page refresh, history, deep link)                                                                                                            | PM (own park), RESEARCHER (own runs)           | —                                               | 200 `ReportRunResponse`                                               |
+| E4  | `POST /reports/runs/:runId/exports`      | Render the snapshot as PDF or CSV, audit the attempt, stream the file                                                                                                | PM (own park), RESEARCHER (own runs)           | `{ format: "PDF" \| "CSV" }`                    | 200 file with `Content-Disposition: attachment` and `X-Report-Sha256` |
+| E5  | `GET /reports/runs?page&pageSize&status` | Report history with exports                                                                                                                                          | PM: all runs in own park; RESEARCHER: own runs | —                                               | 200 `{ items, total, page, pageSize }`                                |
 
 Why this shape and not the six separate `GET /analytics/*` endpoints sketched in the implementation plan:
 
@@ -556,20 +646,20 @@ Why this shape and not the six separate `GET /analytics/*` endpoints sketched in
 
 ### 7.4 Errors
 
-| Code | HTTP | When | UI behaviour |
-|---|---|---|---|
-| `VALIDATION_FAILED` | 400 | Zod failure (existing global mapping) | Field messages next to filters |
-| `INVALID_DATE_RANGE` | 400 | `to` in the future (Colombo today), range > 2 years | Message on the date field |
-| `UNAUTHENTICATED` | 401 | No session (existing guard) | Existing redirect to sign-in |
-| `FORBIDDEN` | 403 | Wrong role (existing guard) | Existing access-denied page |
-| `PARK_ACCESS_PENDING` | 403 | Researcher with no park | "Park access pending" panel, not an error page |
-| `PARK_FORBIDDEN` | 403 | `parkId` not the user's park (`assertParkAccess`) | Error banner |
-| `REPORT_NOT_FOUND` | 404 | Unknown run, or a run the user may not see (no existence leak) | "Report not found" with a link to the history |
-| `REPORT_NOT_EXPORTABLE` | 409 | Export of an EMPTY, TIMED_OUT or FAILED run | Export buttons disabled; this is a server backstop |
-| `EXPORT_RATE_LIMITED` | 429 | More than 10 exports per user per 5 minutes | "Try again in a moment" |
-| `EXPORT_FAILED` | 500 | Renderer threw; the attempt is audited as FAILED | Export error toast; report stays visible (G39 p. 7) |
-| `ANALYTICS_TIMEOUT` | 504 | Postgres `statement_timeout` (code `57014`) | Timeout banner, filters and previous report kept, Retry (G39 p. 6) |
-| `ANALYTICS_UNAVAILABLE` | 503 | Repository not configured or DB down | Generic unavailable message with Retry |
+| Code                    | HTTP | When                                                           | UI behaviour                                                       |
+| ----------------------- | ---- | -------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `VALIDATION_FAILED`     | 400  | Zod failure (existing global mapping)                          | Field messages next to filters                                     |
+| `INVALID_DATE_RANGE`    | 400  | `to` in the future (Colombo today), range > 2 years            | Message on the date field                                          |
+| `UNAUTHENTICATED`       | 401  | No session (existing guard)                                    | Existing redirect to sign-in                                       |
+| `FORBIDDEN`             | 403  | Wrong role (existing guard)                                    | Existing access-denied page                                        |
+| `PARK_ACCESS_PENDING`   | 403  | Researcher with no park                                        | "Park access pending" panel, not an error page                     |
+| `PARK_FORBIDDEN`        | 403  | `parkId` not the user's park (`assertParkAccess`)              | Error banner                                                       |
+| `REPORT_NOT_FOUND`      | 404  | Unknown run, or a run the user may not see (no existence leak) | "Report not found" with a link to the history                      |
+| `REPORT_NOT_EXPORTABLE` | 409  | Export of an EMPTY, TIMED_OUT or FAILED run                    | Export buttons disabled; this is a server backstop                 |
+| `EXPORT_RATE_LIMITED`   | 429  | More than 10 exports per user per 5 minutes                    | "Try again in a moment"                                            |
+| `EXPORT_FAILED`         | 500  | Renderer threw; the attempt is audited as FAILED               | Export error toast; report stays visible (G39 p. 7)                |
+| `ANALYTICS_TIMEOUT`     | 504  | Postgres `statement_timeout` (code `57014`)                    | Timeout banner, filters and previous report kept, Retry (G39 p. 6) |
+| `ANALYTICS_UNAVAILABLE` | 503  | Repository not configured or DB down                           | Generic unavailable message with Retry                             |
 
 Timeout implementation: the repository runs each report in `sql.begin('ISOLATION LEVEL REPEATABLE READ READ ONLY', ...)` with `SET LOCAL statement_timeout = '8s'`. That gives every section the same consistent snapshot. Error code `57014` maps to `ANALYTICS_TIMEOUT`. The service still writes a `TIMED_OUT` audit row. Tests inject a fake repository that throws the timeout error.
 
@@ -644,13 +734,13 @@ sequenceDiagram
 
 ### 7.7 Access matrix
 
-| Action | Park Manager | Researcher | Others |
-|---|---|---|---|
-| View options and generate a report | Own park | Granted park | 403 |
-| Read a run | Any run in own park | Own runs only | 403 |
-| Export a run | Any run in own park | Own runs only | 403 |
-| Report history | All runs in own park, showing who ran each one | Own runs | 403 |
-| Reporter phone, names or description in any response | Never | Never | — |
+| Action                                               | Park Manager                                   | Researcher    | Others |
+| ---------------------------------------------------- | ---------------------------------------------- | ------------- | ------ |
+| View options and generate a report                   | Own park                                       | Granted park  | 403    |
+| Read a run                                           | Any run in own park                            | Own runs only | 403    |
+| Export a run                                         | Any run in own park                            | Own runs only | 403    |
+| Report history                                       | All runs in own park, showing who ran each one | Own runs      | 403    |
+| Reporter phone, names or description in any response | Never                                          | Never         | —      |
 
 ---
 
@@ -752,13 +842,13 @@ Statistical clustering (Getis-Ord Gi\*, DBSCAN) is **Tier 2**. If added, documen
 
 Library: **pdfmake** on the server (§12). It uses the standard Helvetica fonts, so no font files are bundled.
 
-| Page | Content |
-|---|---|
+| Page                 | Content                                                                                                                                                                                                                                                                                 |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1. Cover and summary | Department line "Department of Wildlife Conservation — Sri Lanka (prototype)", title "Conservation Outcome Report", park name, period in Colombo time, report code, generated by (role and name; email omitted), generated time, filter summary, the K1–K4 KPI table, summary sentences |
-| 2. Incidents | Trend bar chart (vector SVG from `svg-charts.ts`), sector breakdown table (top 20 rows, then "+ n more rows in the CSV export"), data-quality notes |
-| 3. Spatial | Grid mini-map as vector SVG (park outline, hotspot cells by class, gap cells hatched, no tiles), legend, top hotspot table, priority cells table |
-| 4. Conflict | Two-series conflict chart, boundary-stretch table, the "sources are not deduplicated" statement |
-| Every page | Header with park and report code; footer with "Page n of m", the snapshot SHA-256 (first 16 characters), "Synthetic demo data" when the park contains seeded data, and "Generated by Wana Rakshaka prototype — not an official government document" |
+| 2. Incidents         | Trend bar chart (vector SVG from `svg-charts.ts`), sector breakdown table (top 20 rows, then "+ n more rows in the CSV export"), data-quality notes                                                                                                                                     |
+| 3. Spatial           | Grid mini-map as vector SVG (park outline, hotspot cells by class, gap cells hatched, no tiles), legend, top hotspot table, priority cells table                                                                                                                                        |
+| 4. Conflict          | Two-series conflict chart, boundary-stretch table, the "sources are not deduplicated" statement                                                                                                                                                                                         |
+| Every page           | Header with park and report code; footer with "Page n of m", the snapshot SHA-256 (first 16 characters), "Synthetic demo data" when the park contains seeded data, and "Generated by Wana Rakshaka prototype — not an official government document"                                     |
 
 Notes:
 
@@ -793,13 +883,13 @@ CSV writer rules (our own ~60-line `csv-writer.ts`, no library):
 
 ### 10.1 Routes (`apps/ops/src/app/App.tsx`)
 
-| Path | Page | Roles | Notes |
-|---|---|---|---|
-| `/analytics` | `AnalyticsOverviewPage` | PARK_MANAGER, RESEARCHER | Filters, KPIs, trend, breakdown, data quality, priority cells, export bar |
-| `/analytics/map` | `AnalyticsMapPage` | same | The G39 "Spatial Heatmap View": hotspot and coverage layers |
-| `/analytics/patrol-gaps` | `PatrolGapsPage` | same | Gap KPIs, sector gap table, coverage map, neglected cells |
-| `/analytics/conflicts` | `ConflictTrendsPage` | same | Two-series trend, stretch chart, month × stretch matrix |
-| `/reports` | `ReportHistoryPage` | same | Run and export audit, re-open and re-export |
+| Path                     | Page                    | Roles                    | Notes                                                                     |
+| ------------------------ | ----------------------- | ------------------------ | ------------------------------------------------------------------------- |
+| `/analytics`             | `AnalyticsOverviewPage` | PARK_MANAGER, RESEARCHER | Filters, KPIs, trend, breakdown, data quality, priority cells, export bar |
+| `/analytics/map`         | `AnalyticsMapPage`      | same                     | The G39 "Spatial Heatmap View": hotspot and coverage layers               |
+| `/analytics/patrol-gaps` | `PatrolGapsPage`        | same                     | Gap KPIs, sector gap table, coverage map, neglected cells                 |
+| `/analytics/conflicts`   | `ConflictTrendsPage`    | same                     | Two-series trend, stretch chart, month × stretch matrix                   |
+| `/reports`               | `ReportHistoryPage`     | same                     | Run and export audit, re-open and re-export                               |
 
 - All four analytics routes share `AnalyticsLayout` and the same filters through URL search params (`?from=…&to=…&group=…&run=…`). Switching tabs keeps the filters and the current report. A reload, or a link sent to a colleague, restores the exact view, and with `run=` it reopens the same snapshot through E3.
 - Add the page titles to the title map: "Conservation analytics", "Hotspot map", "Patrol gaps", "Conflict trends" and "Report history", each followed by "| Wana Rakshaka".
@@ -888,17 +978,17 @@ apps/ops/src/features/analytics/
 
 **States:**
 
-| State | What the user sees |
-|---|---|
-| Before the first report | Filters with defaults; a hero empty card "Choose filters and generate a report", with three preset chips |
-| Generating | Generate button shows a spinner ("Compiling…") and is disabled; skeleton cards; the previous report stays visible but dimmed (`aria-busy`) |
-| SUCCEEDED | Content with the stagger reveal; the stamp animates to COMPILED; focus moves to the report heading; the live region announces "Report RPT-… compiled: 42 incidents" |
-| EMPTY | Empty-state card ("No records match these filters") with the server's suggestion chips (each one-click: "Widen to 12 months", "All categories"); filters stay; the export bar is disabled with the reason "Nothing to export" |
-| TIMED_OUT | Amber banner "The report took too long and was stopped. Your filters are kept." with Retry; the previous report stays visible |
-| Network or 503 | Same banner pattern with the server-unavailable message |
-| Export in progress | Pressed button shows a spinner and "Preparing PDF…"; the other export button stays enabled |
-| Export failed | Red toast "The PDF could not be generated. Your report is still here." with Retry; the report is untouched |
-| Researcher without park | `AccessPending` panel: "Park access pending — ask the Park Manager of the park you study." No filters |
+| State                   | What the user sees                                                                                                                                                                                                            |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Before the first report | Filters with defaults; a hero empty card "Choose filters and generate a report", with three preset chips                                                                                                                      |
+| Generating              | Generate button shows a spinner ("Compiling…") and is disabled; skeleton cards; the previous report stays visible but dimmed (`aria-busy`)                                                                                    |
+| SUCCEEDED               | Content with the stagger reveal; the stamp animates to COMPILED; focus moves to the report heading; the live region announces "Report RPT-… compiled: 42 incidents"                                                           |
+| EMPTY                   | Empty-state card ("No records match these filters") with the server's suggestion chips (each one-click: "Widen to 12 months", "All categories"); filters stay; the export bar is disabled with the reason "Nothing to export" |
+| TIMED_OUT               | Amber banner "The report took too long and was stopped. Your filters are kept." with Retry; the previous report stays visible                                                                                                 |
+| Network or 503          | Same banner pattern with the server-unavailable message                                                                                                                                                                       |
+| Export in progress      | Pressed button shows a spinner and "Preparing PDF…"; the other export button stays enabled                                                                                                                                    |
+| Export failed           | Red toast "The PDF could not be generated. Your report is still here." with Retry; the report is untouched                                                                                                                    |
+| Researcher without park | `AccessPending` panel: "Park access pending — ask the Park Manager of the park you study." No filters                                                                                                                         |
 
 ### 10.4 Page: Hotspot map (`/analytics/map`) — G39 Spatial Heatmap View
 
@@ -974,24 +1064,43 @@ Defined on `.an-root` and built on the existing `styles.css` variables:
 ```css
 .an-root {
   /* palette — from Implementation plan §8 */
-  --an-forest: var(--forest, #14352b);   --an-green: var(--green, #166534);
-  --an-canvas: var(--cream, #f6f8f5);    --an-surface: #ffffff;
-  --an-border: var(--border, #dce5dc);   --an-text: #1f2937;   --an-muted: #64748b;
-  --an-success: #15803d; --an-warning: #b45309; --an-critical: #b91c1c; --an-info: #1d4ed8;
+  --an-forest: var(--forest, #14352b);
+  --an-green: var(--green, #166534);
+  --an-canvas: var(--cream, #f6f8f5);
+  --an-surface: #ffffff;
+  --an-border: var(--border, #dce5dc);
+  --an-text: #1f2937;
+  --an-muted: #64748b;
+  --an-success: #15803d;
+  --an-warning: #b45309;
+  --an-critical: #b91c1c;
+  --an-info: #1d4ed8;
   /* chart series (categorical) */
-  --an-series-1: #166534; --an-series-2: #1d4ed8; --an-series-3: #7c3aed;
+  --an-series-1: #166534;
+  --an-series-2: #1d4ed8;
+  --an-series-3: #7c3aed;
   /* risk ramp (sequential, risk only) */
-  --an-risk-1: #fef3c7; --an-risk-2: #fcd34d; --an-risk-3: #f59e0b; --an-risk-4: #d97706; --an-risk-5: #b91c1c;
+  --an-risk-1: #fef3c7;
+  --an-risk-2: #fcd34d;
+  --an-risk-3: #f59e0b;
+  --an-risk-4: #d97706;
+  --an-risk-5: #b91c1c;
   --an-gap: #94a3b8;
   /* type */
   --an-font: "Plus Jakarta Sans", "Segoe UI", Arial, sans-serif;
-  --an-mono: ui-monospace, "Cascadia Mono", "Consolas", "SFMono-Regular", monospace;
+  --an-mono:
+    ui-monospace, "Cascadia Mono", "Consolas", "SFMono-Regular", monospace;
   /* shape and depth */
-  --an-radius-card: 14px; --an-radius-control: 10px; --an-radius-pill: 999px;
+  --an-radius-card: 14px;
+  --an-radius-control: 10px;
+  --an-radius-pill: 999px;
   --an-shadow-card: 0 1px 2px #14352b0d, 0 8px 24px #14352b0a;
   --an-shadow-raised: 0 12px 32px #14352b1f;
   /* motion */
-  --an-ease-out: cubic-bezier(.22, 1, .36, 1); --an-dur-fast: 160ms; --an-dur: 320ms; --an-dur-slow: 700ms;
+  --an-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --an-dur-fast: 160ms;
+  --an-dur: 320ms;
+  --an-dur-slow: 700ms;
 }
 ```
 
@@ -1003,14 +1112,14 @@ Notes on the tokens:
 
 ### 11.3 Typography
 
-| Use | Style |
-|---|---|
-| Kicker | 11px / 800 / 0.16em letter-spacing / uppercase / `--an-green` ("ANALYTICS & REPORTS") |
-| Page title | `clamp(30px, 3.2vw, 44px)` / 800, with the existing green `brand-dot` after it |
-| Card micro-label | 11px / 700 / 0.12em / uppercase / `--an-muted` (wireframe "TOTAL INCIDENTS") |
-| KPI value | 40px / 800, `font-variant-numeric: tabular-nums`; unit word 16px / 600 |
-| Ledger metadata | `--an-mono` 12px (report code, hashes, "n = 42" footers) — the wireframe's monospace strip |
-| Table | 14px body, 11px uppercase headers on `#f4f7f3` (workspace table style; light header, not m1's dark header, for dense data) |
+| Use              | Style                                                                                                                      |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Kicker           | 11px / 800 / 0.16em letter-spacing / uppercase / `--an-green` ("ANALYTICS & REPORTS")                                      |
+| Page title       | `clamp(30px, 3.2vw, 44px)` / 800, with the existing green `brand-dot` after it                                             |
+| Card micro-label | 11px / 700 / 0.12em / uppercase / `--an-muted` (wireframe "TOTAL INCIDENTS")                                               |
+| KPI value        | 40px / 800, `font-variant-numeric: tabular-nums`; unit word 16px / 600                                                     |
+| Ledger metadata  | `--an-mono` 12px (report code, hashes, "n = 42" footers) — the wireframe's monospace strip                                 |
+| Table            | 14px body, 11px uppercase headers on `#f4f7f3` (workspace table style; light header, not m1's dark header, for dense data) |
 
 ### 11.4 Layout
 
@@ -1023,17 +1132,17 @@ Notes on the tokens:
 
 ### 11.5 Components
 
-| Component | Spec |
-|---|---|
-| Buttons | Primary: `--an-forest` background, white text, 44px minimum height, 10px radius, icon + text, hover darkens to `#0f2a22` and lifts 1px. Secondary: white with a border. Both have the amber focus ring from `styles.css` |
-| Segmented `ViewToggle` | Pill track `#eaf0e7`; the active segment is a forest pill with white text; the pill slides between options (transform, 320ms) |
-| `KpiCard` | White card with an icon chip (lucide), micro-label, value with count-up, and a delta line. Delta: ▲/▼ glyph + text + colour (rise in incidents uses `--an-warning`, fall uses `--an-success`; meaning is in the words). A "?" button opens a popover with the metric definition from §4, so every number explains itself |
-| `ReportStamp` | Monospace chip: status dot + `RPT-…` + "// COMPILED 18:42" + copy-code button. Status colours: COMPILED green, EMPTY slate, TIMED OUT amber, FAILED red, always with the word |
-| Badges | Risk: CRITICAL red, HIGH amber, MEDIUM blue, LOW slate. Each has a text label and a light tinted background, as in the wireframe |
-| Tables | Sortable headers (`aria-sort`), zebra-free, 1px row dividers, row hover `#f4f7f3`, numeric columns right-aligned with tabular numerals |
-| Popovers and sheets | Native `<dialog>` with `showModal()`, so focus trapping and Escape are built in; `aria-labelledby` set |
-| Toasts | Bottom-right stack; `role="status"` for success, `role="alert"` for failure; auto-dismiss after 6s for success only |
-| Skeletons | Card-shaped blocks with a soft shimmer gradient |
+| Component              | Spec                                                                                                                                                                                                                                                                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Buttons                | Primary: `--an-forest` background, white text, 44px minimum height, 10px radius, icon + text, hover darkens to `#0f2a22` and lifts 1px. Secondary: white with a border. Both have the amber focus ring from `styles.css`                                                                                                 |
+| Segmented `ViewToggle` | Pill track `#eaf0e7`; the active segment is a forest pill with white text; the pill slides between options (transform, 320ms)                                                                                                                                                                                            |
+| `KpiCard`              | White card with an icon chip (lucide), micro-label, value with count-up, and a delta line. Delta: ▲/▼ glyph + text + colour (rise in incidents uses `--an-warning`, fall uses `--an-success`; meaning is in the words). A "?" button opens a popover with the metric definition from §4, so every number explains itself |
+| `ReportStamp`          | Monospace chip: status dot + `RPT-…` + "// COMPILED 18:42" + copy-code button. Status colours: COMPILED green, EMPTY slate, TIMED OUT amber, FAILED red, always with the word                                                                                                                                            |
+| Badges                 | Risk: CRITICAL red, HIGH amber, MEDIUM blue, LOW slate. Each has a text label and a light tinted background, as in the wireframe                                                                                                                                                                                         |
+| Tables                 | Sortable headers (`aria-sort`), zebra-free, 1px row dividers, row hover `#f4f7f3`, numeric columns right-aligned with tabular numerals                                                                                                                                                                                   |
+| Popovers and sheets    | Native `<dialog>` with `showModal()`, so focus trapping and Escape are built in; `aria-labelledby` set                                                                                                                                                                                                                   |
+| Toasts                 | Bottom-right stack; `role="status"` for success, `role="alert"` for failure; auto-dismiss after 6s for success only                                                                                                                                                                                                      |
+| Skeletons              | Card-shaped blocks with a soft shimmer gradient                                                                                                                                                                                                                                                                          |
 
 ### 11.6 Charts (Recharts)
 
@@ -1048,17 +1157,17 @@ Notes on the tokens:
 
 Purposeful, quick and fully disabled under `prefers-reduced-motion`. Built with CSS and a small rAF hook only.
 
-| Moment | Animation | Spec |
-|---|---|---|
-| Report compiled | Cards rise in with a stagger | `translateY(10px)` + opacity, 420ms `--an-ease-out`, 60ms stagger (same feel as `m1-stagger-in`) |
-| KPI values | Count-up from the previous value (not from 0 on refresh) | 700ms ease-out cubic, `useCountUp`; screen readers get the final value immediately via `aria-label` |
-| Report stamp | Stamp-in, "ink on a ledger" | scale 1.12 → 1 and opacity 0 → 1, 280ms, then a 600ms green dot pulse once |
-| Trend bars | Grow from the baseline | Recharts `animationDuration={700}` with easing `ease-out`; `isAnimationActive={!reducedMotion}` |
-| View toggle | Sliding pill and cross-fade of content | Pill 320ms; content opacity 160ms |
-| Map cells | Fade in by risk class (low first, critical last) | 5 steps × 60ms, opacity only, no movement |
-| Skeleton | Shimmer | Gradient sweep, 1.4s linear infinite |
-| Export button | idle → spinner → check | Width-stable morph; the check shows for 1.6s, then returns to idle |
-| Errors | No shaking or bouncing | Banners slide down 8px, 200ms; calm on purpose |
+| Moment          | Animation                                                | Spec                                                                                                |
+| --------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Report compiled | Cards rise in with a stagger                             | `translateY(10px)` + opacity, 420ms `--an-ease-out`, 60ms stagger (same feel as `m1-stagger-in`)    |
+| KPI values      | Count-up from the previous value (not from 0 on refresh) | 700ms ease-out cubic, `useCountUp`; screen readers get the final value immediately via `aria-label` |
+| Report stamp    | Stamp-in, "ink on a ledger"                              | scale 1.12 → 1 and opacity 0 → 1, 280ms, then a 600ms green dot pulse once                          |
+| Trend bars      | Grow from the baseline                                   | Recharts `animationDuration={700}` with easing `ease-out`; `isAnimationActive={!reducedMotion}`     |
+| View toggle     | Sliding pill and cross-fade of content                   | Pill 320ms; content opacity 160ms                                                                   |
+| Map cells       | Fade in by risk class (low first, critical last)         | 5 steps × 60ms, opacity only, no movement                                                           |
+| Skeleton        | Shimmer                                                  | Gradient sweep, 1.4s linear infinite                                                                |
+| Export button   | idle → spinner → check                                   | Width-stable morph; the check shows for 1.6s, then returns to idle                                  |
+| Errors          | No shaking or bouncing                                   | Banners slide down 8px, 200ms; calm on purpose                                                      |
 
 - `usePrefersReducedMotion()` is extracted from `Reveal.tsx` into a shared hook.
 - The global `styles.css` reduced-motion rule already stops CSS animations. The JS-driven count-up and Recharts animation check the hook too.
@@ -1081,41 +1190,41 @@ Purposeful, quick and fully disabled under `prefers-reduced-motion`. Built with 
 
 ### 12.1 Reused (already installed — no change)
 
-| Library | Where | M4 use |
-|---|---|---|
-| `recharts ^2.15.4` | ops | Trend, conflict and gap charts |
-| `leaflet ^1.9.4`, `react-leaflet ^4.2.1` | ops, ui | Analytics map, grid layers (`Rectangle` / `GeoJSON`) |
-| `@tanstack/react-query ^5.81.5` | ops | Options, run, history queries; generate/export mutations |
-| `react-router-dom ^6.30.1` | ops | Routes and URL search params for filters |
-| `lucide-react 0.468.0` | ops | Icons: `ChartNoAxesCombined`, `Filter`, `Map`, `Footprints`, `TriangleAlert`, `Download`, `FileText`, `ShieldCheck`, `RefreshCw` |
-| `zod ^3.25.67` | shared, api, ops | Contracts and URL-param parsing |
-| `fastify ^5.4`, `fastify-type-provider-zod 4.0.2` | api | Routes and validation |
-| `postgres ^3.4.7` + PostGIS 3.6 | api | Read-only analytics SQL |
-| `@fontsource/plus-jakarta-sans` | ui | Typeface (already loaded) |
-| `vitest`, `@vitest/coverage-v8 3.2.7`, Testing Library, jsdom | root, ops | Tests and coverage |
-| Node `crypto` (built-in) | api | SHA-256 of snapshots and files |
+| Library                                                       | Where            | M4 use                                                                                                                           |
+| ------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `recharts ^2.15.4`                                            | ops              | Trend, conflict and gap charts                                                                                                   |
+| `leaflet ^1.9.4`, `react-leaflet ^4.2.1`                      | ops, ui          | Analytics map, grid layers (`Rectangle` / `GeoJSON`)                                                                             |
+| `@tanstack/react-query ^5.81.5`                               | ops              | Options, run, history queries; generate/export mutations                                                                         |
+| `react-router-dom ^6.30.1`                                    | ops              | Routes and URL search params for filters                                                                                         |
+| `lucide-react 0.468.0`                                        | ops              | Icons: `ChartNoAxesCombined`, `Filter`, `Map`, `Footprints`, `TriangleAlert`, `Download`, `FileText`, `ShieldCheck`, `RefreshCw` |
+| `zod ^3.25.67`                                                | shared, api, ops | Contracts and URL-param parsing                                                                                                  |
+| `fastify ^5.4`, `fastify-type-provider-zod 4.0.2`             | api              | Routes and validation                                                                                                            |
+| `postgres ^3.4.7` + PostGIS 3.6                               | api              | Read-only analytics SQL                                                                                                          |
+| `@fontsource/plus-jakarta-sans`                               | ui               | Typeface (already loaded)                                                                                                        |
+| `vitest`, `@vitest/coverage-v8 3.2.7`, Testing Library, jsdom | root, ops        | Tests and coverage                                                                                                               |
+| Node `crypto` (built-in)                                      | api              | SHA-256 of snapshots and files                                                                                                   |
 
 ### 12.2 Added (pin exact versions in the lockfile; CI uses `--frozen-lockfile`)
 
-| Library | Package | Why | Notes |
-|---|---|---|---|
-| **pdfmake** (0.2.x, Node build) | `apps/api` dependency | Declarative, testable PDF layout: tables, headers and footers, page numbers, SVG nodes. Named as the candidate in Implementation plan §1 | Use standard Helvetica fonts (no font files). Add `@types/pdfmake` as a dev dependency if types aren't bundled |
-| **pdfjs-dist** (4.x, legacy build) | root dev dependency | **Tests only:** extract text from the generated PDF and assert real content (title, code, KPI numbers, filters, page count). The implementation plan says "a nonempty PDF buffer alone is insufficient" | Never shipped to the browser or server runtime |
+| Library                            | Package               | Why                                                                                                                                                                                                     | Notes                                                                                                          |
+| ---------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **pdfmake** (0.2.x, Node build)    | `apps/api` dependency | Declarative, testable PDF layout: tables, headers and footers, page numbers, SVG nodes. Named as the candidate in Implementation plan §1                                                                | Use standard Helvetica fonts (no font files). Add `@types/pdfmake` as a dev dependency if types aren't bundled |
+| **pdfjs-dist** (4.x, legacy build) | root dev dependency   | **Tests only:** extract text from the generated PDF and assert real content (title, code, KPI numbers, filters, page count). The implementation plan says "a nonempty PDF buffer alone is insufficient" | Never shipped to the browser or server runtime                                                                 |
 
 That is the complete list: **one runtime dependency**. CSV, dates, count-up, skeletons, toasts and dialogs need no library.
 
 ### 12.3 Considered and rejected
 
-| Option | Reason |
-|---|---|
-| Puppeteer / Playwright for HTML → PDF | Downloads a ~150 MB browser, slow cold starts, fragile on CI and Docker. pdfmake + our SVG charts give the same look deterministically |
-| jsPDF in the browser | The export would then be built from client data, which breaks "render the audited snapshot" and the server-side audit of the outcome |
-| papaparse / csv-stringify | Writing is about 60 lines; our writer adds the formula-injection guard explicitly and is fully covered by tests |
-| leaflet.heat / heatmap.js | Blurred kernel layer: no exact counts, no accessible equivalent, doesn't line up with gap cells. Unmaintained since 2015 (leaflet.heat) |
-| framer-motion / motion | ~30–50 KB for effects CSS already handles; the project already has GSAP for the marketing page |
-| date-fns / dayjs / luxon | Colombo has a fixed offset and no daylight saving. `Intl.DateTimeFormat` with `timeZone: "Asia/Colombo"` on the client and `AT TIME ZONE` in SQL are enough and tested at boundaries |
-| Turf.js | All geometry runs in PostGIS on the server; there is no client-side geometry |
-| MSW for UI tests | The project's convention is `vi.stubGlobal("fetch")`; stay consistent |
+| Option                                | Reason                                                                                                                                                                               |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Puppeteer / Playwright for HTML → PDF | Downloads a ~150 MB browser, slow cold starts, fragile on CI and Docker. pdfmake + our SVG charts give the same look deterministically                                               |
+| jsPDF in the browser                  | The export would then be built from client data, which breaks "render the audited snapshot" and the server-side audit of the outcome                                                 |
+| papaparse / csv-stringify             | Writing is about 60 lines; our writer adds the formula-injection guard explicitly and is fully covered by tests                                                                      |
+| leaflet.heat / heatmap.js             | Blurred kernel layer: no exact counts, no accessible equivalent, doesn't line up with gap cells. Unmaintained since 2015 (leaflet.heat)                                              |
+| framer-motion / motion                | ~30–50 KB for effects CSS already handles; the project already has GSAP for the marketing page                                                                                       |
+| date-fns / dayjs / luxon              | Colombo has a fixed offset and no daylight saving. `Intl.DateTimeFormat` with `timeZone: "Asia/Colombo"` on the client and `AT TIME ZONE` in SQL are enough and tested at boundaries |
+| Turf.js                               | All geometry runs in PostGIS on the server; there is no client-side geometry                                                                                                         |
+| MSW for UI tests                      | The project's convention is `vi.stubGlobal("fetch")`; stay consistent                                                                                                                |
 
 ---
 
@@ -1123,28 +1232,28 @@ That is the complete list: **one runtime dependency**. CSV, dates, count-up, ske
 
 ### 13.1 SOLID mapping
 
-| Principle | Where it shows |
-|---|---|
+| Principle                 | Where it shows                                                                                                                                                                                                            |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **S**ingle responsibility | `routes.ts` does HTTP only; `service.ts` does rules and orchestration; `repository.ts` does read SQL; `audit-repository.ts` does append-only writes; `domain/*` holds pure calculations; each exporter handles one format |
-| **O**pen/closed | `ExporterRegistry`: a new format means a new class and registration, with no service edit. Report sections are assembled from a list, so a Tier 2 section (response time) is added without touching the others |
-| **L**iskov substitution | `AnalyticsRepository` real and in-memory implementations pass the same contract tests (a shared `describe` run against both when `M4_TEST_DATABASE_URL` is set) |
-| **I**nterface segregation | Read-only `AnalyticsRepository` is separate from the write-only `ReportAuditRepository`. The service can't accidentally write analytics data, and exporters see only `ConservationReport`, never repositories |
-| **D**ependency inversion | `createAnalyticsService({ analytics, audit, exporters, clock })` depends on interfaces. `server.ts` is the composition root, the same as the existing modules |
+| **O**pen/closed           | `ExporterRegistry`: a new format means a new class and registration, with no service edit. Report sections are assembled from a list, so a Tier 2 section (response time) is added without touching the others            |
+| **L**iskov substitution   | `AnalyticsRepository` real and in-memory implementations pass the same contract tests (a shared `describe` run against both when `M4_TEST_DATABASE_URL` is set)                                                           |
+| **I**nterface segregation | Read-only `AnalyticsRepository` is separate from the write-only `ReportAuditRepository`. The service can't accidentally write analytics data, and exporters see only `ConservationReport`, never repositories             |
+| **D**ependency inversion  | `createAnalyticsService({ analytics, audit, exporters, clock })` depends on interfaces. `server.ts` is the composition root, the same as the existing modules                                                             |
 
 ### 13.2 Design patterns (each used for a reason)
 
-| Pattern | Class / function | Problem it solves |
-|---|---|---|
-| Repository | `AnalyticsRepository`, `ReportAuditRepository` | Separates SQL from rules; enables fast in-memory tests |
-| Strategy | `ReportExporter` (`PdfExporter`, `CsvExporter`) | Interchangeable output formats |
-| Registry / Factory | `ExporterRegistry.get(format)` | Looks up an exporter by format without `switch` statements in the service |
-| Builder (assembler) | `ReportAssembler` | Builds a complex `ConservationReport` step by step from section results, then validates it with the Zod schema before it is stored |
-| Value object | `NormalizedFilter` (from `normalizeFilter`) | Immutable, validated window/bucket/previous-period object; rules live in one place |
-| Template method | `BaseSvgChart.render()` with `drawBars` / `drawAxes` hooks (only if a second chart shares the frame) | Shared chart frame for the PDF; skip it if only one chart needs it (no speculative abstraction) |
-| Facade | `AnalyticsService` | One simple API for routes over several repositories and exporters |
-| Adapter | `toLeafletPosition()` in `@wr/ui` (reuse from `PatrolMap`), `toCoordinates()` in the repository | Converts at the GeoJSON `[lng, lat]` ↔ `{latitude, longitude}` boundary once |
-| State machine (UI) | `useExport` reducer: `idle → exporting → done / failed → idle` | No impossible button states; easy to test |
-| Container / presentational (UI) | Pages fetch and own state; components are pure props → markup | Components test without fetch; pages test the flows |
+| Pattern                         | Class / function                                                                                     | Problem it solves                                                                                                                  |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Repository                      | `AnalyticsRepository`, `ReportAuditRepository`                                                       | Separates SQL from rules; enables fast in-memory tests                                                                             |
+| Strategy                        | `ReportExporter` (`PdfExporter`, `CsvExporter`)                                                      | Interchangeable output formats                                                                                                     |
+| Registry / Factory              | `ExporterRegistry.get(format)`                                                                       | Looks up an exporter by format without `switch` statements in the service                                                          |
+| Builder (assembler)             | `ReportAssembler`                                                                                    | Builds a complex `ConservationReport` step by step from section results, then validates it with the Zod schema before it is stored |
+| Value object                    | `NormalizedFilter` (from `normalizeFilter`)                                                          | Immutable, validated window/bucket/previous-period object; rules live in one place                                                 |
+| Template method                 | `BaseSvgChart.render()` with `drawBars` / `drawAxes` hooks (only if a second chart shares the frame) | Shared chart frame for the PDF; skip it if only one chart needs it (no speculative abstraction)                                    |
+| Facade                          | `AnalyticsService`                                                                                   | One simple API for routes over several repositories and exporters                                                                  |
+| Adapter                         | `toLeafletPosition()` in `@wr/ui` (reuse from `PatrolMap`), `toCoordinates()` in the repository      | Converts at the GeoJSON `[lng, lat]` ↔ `{latitude, longitude}` boundary once                                                       |
+| State machine (UI)              | `useExport` reducer: `idle → exporting → done / failed → idle`                                       | No impossible button states; easy to test                                                                                          |
+| Container / presentational (UI) | Pages fetch and own state; components are pure props → markup                                        | Components test without fetch; pages test the flows                                                                                |
 
 ### 13.3 Conventions
 
@@ -1185,30 +1294,30 @@ Add root scripts `test:m4` and `test:m4:coverage`. The SQL repository is tested 
 
 ### 14.2 Test inventory
 
-| File | Type | Key cases (positive / negative / edge / error) |
-|---|---|---|
-| `shared/analytics.test.ts` | unit | Valid filter; `from > to`; range of 731 vs 732 days; unknown type; strict rejects extra keys; config defaults applied; invalid config bounds |
-| `domain/filter.test.ts` | unit | Colombo midnight boundaries (`18:29:59.999Z` belongs to the previous day, `18:30:00Z` to the next); month and week bucket choice at 31/32 and 120/121 days; previous period length; presets resolved from an injected clock; leap day 2028-02-29 |
-| `domain/metrics.test.ts` | unit | Percent change: up, down, prev=0 → NEW_ACTIVITY, both 0 → NO_CHANGE, rounding; risk class breaks with max 1, 5 or 100; hotspot rule with fewer than 10 vs 10 or more cells; priority score cap at 90 days and never patrolled; shares sum to 100 ± rounding |
-| `domain/narrative.test.ts` | unit | Each template triggers only under its rule; no sentence when the sample is under 5; no "rose 0%" |
-| `domain/report-code.test.ts` | unit | Format, zero padding, park code sanitizing |
-| `domain/report-assembler.test.ts` | unit | Full assembly from fixture sections; Zod-valid output; deterministic canonical hash (same input → same hash; key order irrelevant) |
-| `export/csv-writer.test.ts` | unit | Quoting of comma, quote, CR, LF; doubled quotes; CRLF; BOM; formula guard for `=`, `+`, `-`, `@`, tab and CR; negative numbers **not** escaped; empty and null cells |
-| `export/csv-exporter.test.ts` | unit | Exact header; one row per KPI, bucket, breakdown, gap and conflict; values match the snapshot; no phone or description field present (privacy); row limit → `EXPORT_TOO_LARGE` |
-| `export/pdf-exporter.test.ts` | unit (pdfjs-dist) | Extracted text contains the title, park, period, report code, each KPI value, the filter summary, "Page 1 of N", the sources-not-deduplicated sentence and the synthetic-data notice; page count ≤ 12; renderer error → rejection propagated |
-| `export/svg-charts.test.ts` | unit | Bar heights proportional; zero series draws an axis and a "No data" label; labels escaped (no SVG injection from sector names) |
-| `service.test.ts` | unit with fakes | PM own park OK, other park `PARK_FORBIDDEN`; Researcher without park `PARK_ACCESS_PENDING`; future `to` rejected; empty → EMPTY run audited with suggestions; partial data → SUCCEEDED; park not configured → `configured=false`; timeout → TIMED_OUT audited and 504 thrown; audit write failure → 503; export of EMPTY → 409; exporter failure → FAILED audited; export success audited with hash; Researcher can't read another user's run (404) |
-| `routes.test.ts` | Fastify inject | 401 without a cookie; 403 for Ranger, Liaison and Super Admin; 400 on invalid body with `VALIDATION_FAILED`; 201 report shape; `Content-Type` and `Content-Disposition` on export; `X-Report-Sha256` present; `Cache-Control: no-store`; foreign origin on POST rejected; rate limit 429 on the 11th export; 503 when no repository |
-| `repository.db.test.ts` | integration, `skipIf(!M4_TEST_DATABASE_URL)`, rollback | Fixture park with boundary and 3×3 grid: incident in a known cell counted once; incident at a cell edge counted once; unresolved and NULL excluded from cells but counted in the total; outside-boundary counted; track segment beyond the gap or length limits ignored; buffer covers the adjacent cell; window boundary at Colombo midnight; conflict sources separated; nearest-stretch tie-break; `statement_timeout` raises 57014 (with `pg_sleep` in a fixture function) |
-| `grid/build-grid.db.test.ts` | integration | Cell count and clipped area against the analytic area; sliver rule; idempotent rebuild |
-| `ops …/useAnalyticsFilters.test.ts` | unit | URL ↔ filter round-trip; invalid URL values fall back to defaults with a message; preset recomputes dates |
-| `ops …/FilterBar.test.tsx` | UI | Labels present; invalid range shows a message, focuses the field and **keeps typed values**; Generate disabled while compiling |
-| `ops …/AnalyticsOverviewPage.test.tsx` | UI | Success renders KPIs, stamp code and the trend table toggle; EMPTY shows the empty state and suggestion chips (clicking one updates the filter); 504 shows the timeout banner with filters and the previous report intact, and Retry calls again; export failure shows the toast while the report is still rendered; Researcher pending panel |
-| `ops …/ExportBar.test.tsx` | UI | State machine: idle → exporting → done → idle; failure path; disabled with a reason when there is no report; download helper called with the server's filename |
-| `ops …/AnalyticsMapPage.test.tsx` | UI | Legend and excluded count shown; `CellTable` alternative lists cells; layer toggles (react-leaflet mocked to plain elements) |
-| `ops …/ConflictTrendsPage.test.tsx` | UI | Two series labelled separately; the not-deduplicated caption present; matrix numbers rendered |
-| `ops …/ReportHistoryPage.test.tsx` | UI | Rows, status badges with text, Open link with `run=`, pagination, PM sees the "By" column and Researcher doesn't |
-| `ops …/format.test.ts`, `useCountUp.test.ts` | unit | Colombo formatting; reduced motion → final value immediately |
+| File                                         | Type                                                   | Key cases (positive / negative / edge / error)                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| -------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `shared/analytics.test.ts`                   | unit                                                   | Valid filter; `from > to`; range of 731 vs 732 days; unknown type; strict rejects extra keys; config defaults applied; invalid config bounds                                                                                                                                                                                                                                                                                                                                   |
+| `domain/filter.test.ts`                      | unit                                                   | Colombo midnight boundaries (`18:29:59.999Z` belongs to the previous day, `18:30:00Z` to the next); month and week bucket choice at 31/32 and 120/121 days; previous period length; presets resolved from an injected clock; leap day 2028-02-29                                                                                                                                                                                                                               |
+| `domain/metrics.test.ts`                     | unit                                                   | Percent change: up, down, prev=0 → NEW_ACTIVITY, both 0 → NO_CHANGE, rounding; risk class breaks with max 1, 5 or 100; hotspot rule with fewer than 10 vs 10 or more cells; priority score cap at 90 days and never patrolled; shares sum to 100 ± rounding                                                                                                                                                                                                                    |
+| `domain/narrative.test.ts`                   | unit                                                   | Each template triggers only under its rule; no sentence when the sample is under 5; no "rose 0%"                                                                                                                                                                                                                                                                                                                                                                               |
+| `domain/report-code.test.ts`                 | unit                                                   | Format, zero padding, park code sanitizing                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `domain/report-assembler.test.ts`            | unit                                                   | Full assembly from fixture sections; Zod-valid output; deterministic canonical hash (same input → same hash; key order irrelevant)                                                                                                                                                                                                                                                                                                                                             |
+| `export/csv-writer.test.ts`                  | unit                                                   | Quoting of comma, quote, CR, LF; doubled quotes; CRLF; BOM; formula guard for `=`, `+`, `-`, `@`, tab and CR; negative numbers **not** escaped; empty and null cells                                                                                                                                                                                                                                                                                                           |
+| `export/csv-exporter.test.ts`                | unit                                                   | Exact header; one row per KPI, bucket, breakdown, gap and conflict; values match the snapshot; no phone or description field present (privacy); row limit → `EXPORT_TOO_LARGE`                                                                                                                                                                                                                                                                                                 |
+| `export/pdf-exporter.test.ts`                | unit (pdfjs-dist)                                      | Extracted text contains the title, park, period, report code, each KPI value, the filter summary, "Page 1 of N", the sources-not-deduplicated sentence and the synthetic-data notice; page count ≤ 12; renderer error → rejection propagated                                                                                                                                                                                                                                   |
+| `export/svg-charts.test.ts`                  | unit                                                   | Bar heights proportional; zero series draws an axis and a "No data" label; labels escaped (no SVG injection from sector names)                                                                                                                                                                                                                                                                                                                                                 |
+| `service.test.ts`                            | unit with fakes                                        | PM own park OK, other park `PARK_FORBIDDEN`; Researcher without park `PARK_ACCESS_PENDING`; future `to` rejected; empty → EMPTY run audited with suggestions; partial data → SUCCEEDED; park not configured → `configured=false`; timeout → TIMED_OUT audited and 504 thrown; audit write failure → 503; export of EMPTY → 409; exporter failure → FAILED audited; export success audited with hash; Researcher can't read another user's run (404)                            |
+| `routes.test.ts`                             | Fastify inject                                         | 401 without a cookie; 403 for Ranger, Liaison and Super Admin; 400 on invalid body with `VALIDATION_FAILED`; 201 report shape; `Content-Type` and `Content-Disposition` on export; `X-Report-Sha256` present; `Cache-Control: no-store`; foreign origin on POST rejected; rate limit 429 on the 11th export; 503 when no repository                                                                                                                                            |
+| `repository.db.test.ts`                      | integration, `skipIf(!M4_TEST_DATABASE_URL)`, rollback | Fixture park with boundary and 3×3 grid: incident in a known cell counted once; incident at a cell edge counted once; unresolved and NULL excluded from cells but counted in the total; outside-boundary counted; track segment beyond the gap or length limits ignored; buffer covers the adjacent cell; window boundary at Colombo midnight; conflict sources separated; nearest-stretch tie-break; `statement_timeout` raises 57014 (with `pg_sleep` in a fixture function) |
+| `grid/build-grid.db.test.ts`                 | integration                                            | Cell count and clipped area against the analytic area; sliver rule; idempotent rebuild                                                                                                                                                                                                                                                                                                                                                                                         |
+| `ops …/useAnalyticsFilters.test.ts`          | unit                                                   | URL ↔ filter round-trip; invalid URL values fall back to defaults with a message; preset recomputes dates                                                                                                                                                                                                                                                                                                                                                                      |
+| `ops …/FilterBar.test.tsx`                   | UI                                                     | Labels present; invalid range shows a message, focuses the field and **keeps typed values**; Generate disabled while compiling                                                                                                                                                                                                                                                                                                                                                 |
+| `ops …/AnalyticsOverviewPage.test.tsx`       | UI                                                     | Success renders KPIs, stamp code and the trend table toggle; EMPTY shows the empty state and suggestion chips (clicking one updates the filter); 504 shows the timeout banner with filters and the previous report intact, and Retry calls again; export failure shows the toast while the report is still rendered; Researcher pending panel                                                                                                                                  |
+| `ops …/ExportBar.test.tsx`                   | UI                                                     | State machine: idle → exporting → done → idle; failure path; disabled with a reason when there is no report; download helper called with the server's filename                                                                                                                                                                                                                                                                                                                 |
+| `ops …/AnalyticsMapPage.test.tsx`            | UI                                                     | Legend and excluded count shown; `CellTable` alternative lists cells; layer toggles (react-leaflet mocked to plain elements)                                                                                                                                                                                                                                                                                                                                                   |
+| `ops …/ConflictTrendsPage.test.tsx`          | UI                                                     | Two series labelled separately; the not-deduplicated caption present; matrix numbers rendered                                                                                                                                                                                                                                                                                                                                                                                  |
+| `ops …/ReportHistoryPage.test.tsx`           | UI                                                     | Rows, status badges with text, Open link with `run=`, pagination, PM sees the "By" column and Researcher doesn't                                                                                                                                                                                                                                                                                                                                                               |
+| `ops …/format.test.ts`, `useCountUp.test.ts` | unit                                                   | Colombo formatting; reduced motion → final value immediately                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
 ### 14.3 Database test environment
 
@@ -1243,15 +1352,15 @@ The implementation plan requires "six months of labeled synthetic analytics data
 
 **Content per park (Yala in full; Wilpattu and Sinharaja lighter):**
 
-| Data | Yala | Notes |
-|---|---|---|
-| Park boundary | Simplified polygon (~40 vertices) approximating the Block I area | Labelled "approximate demo boundary" in the module README |
-| Sectors | 5 interior sectors (Southern Ridge, Palatupana Corridor, Menik Ganga, Patanangala Coast, Kumana Edge) + 4 boundary stretches (Galge Stretch, Palatupana Gate Stretch, Kataragama Fringe, Buttala Fringe) | Interior sector names reuse the existing patrol route sector names |
-| Grid | 1 km cells, built by `build-grid.ts` | Sinharaja uses 500 m |
-| Incidents | ~180 over 6 months, clustered with Gaussian noise around 4 hotspot centres, with a rising trend in Southern Ridge (the story for the demo) | Mix of sources, about 8% UNRESOLVED community reports with landmark text, ~5% REJECTED, realistic status progression and response times |
-| Patrols | ~60 sessions with GPS tracks along the existing route lines plus 2 new routes, leaving one hotspot sector deliberately under-patrolled | Gives a non-trivial priority cells list |
-| Collars and alerts | 4 elephant collars, ~40 geofence breaches concentrated on 2 boundary stretches in the harvest months (Aug–Sep), plus a few LOW_BATTERY / SIGNAL_LOST alerts (not counted as conflict) | M3 tables |
-| Settlements | 6 villages near the boundary stretches | Context for the conflict view |
+| Data               | Yala                                                                                                                                                                                                     | Notes                                                                                                                                   |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Park boundary      | Simplified polygon (~40 vertices) approximating the Block I area                                                                                                                                         | Labelled "approximate demo boundary" in the module README                                                                               |
+| Sectors            | 5 interior sectors (Southern Ridge, Palatupana Corridor, Menik Ganga, Patanangala Coast, Kumana Edge) + 4 boundary stretches (Galge Stretch, Palatupana Gate Stretch, Kataragama Fringe, Buttala Fringe) | Interior sector names reuse the existing patrol route sector names                                                                      |
+| Grid               | 1 km cells, built by `build-grid.ts`                                                                                                                                                                     | Sinharaja uses 500 m                                                                                                                    |
+| Incidents          | ~180 over 6 months, clustered with Gaussian noise around 4 hotspot centres, with a rising trend in Southern Ridge (the story for the demo)                                                               | Mix of sources, about 8% UNRESOLVED community reports with landmark text, ~5% REJECTED, realistic status progression and response times |
+| Patrols            | ~60 sessions with GPS tracks along the existing route lines plus 2 new routes, leaving one hotspot sector deliberately under-patrolled                                                                   | Gives a non-trivial priority cells list                                                                                                 |
+| Collars and alerts | 4 elephant collars, ~40 geofence breaches concentrated on 2 boundary stretches in the harvest months (Aug–Sep), plus a few LOW_BATTERY / SIGNAL_LOST alerts (not counted as conflict)                    | M3 tables                                                                                                                               |
+| Settlements        | 6 villages near the boundary stretches                                                                                                                                                                   | Context for the conflict view                                                                                                           |
 
 **Demo script (maps to Implementation plan §9, step 7):**
 
@@ -1276,19 +1385,19 @@ The implementation plan requires "six months of labeled synthetic analytics data
 
 ### 16.1 Phases
 
-| Phase | Deliverable | Tier | Exit check | Status |
-|---|---|---|---|---|
-| P0 Contracts | `shared/analytics.ts` + tests; `0009_analytics.sql`; `analytics-schema.ts` | 1 | Migrate twice on a local PostGIS; shared tests green | ✅ Done — 7 contract tests; full migrations applied then rerun cleanly on isolated local PostGIS |
-| P1 Domain | `filter.ts`, `metrics.ts`, `report-code.ts`, `report-assembler.ts`, `narrative.ts` + tests | 1 | 100% domain coverage | ✅ Done — 12 tests; 100% lines, statements, branches and functions; lint/typecheck pass |
-| P2 Seed | Boundary, sectors, grid build, demo incidents, patrols, alerts | 1 | Seed twice, no duplicates; counts as specified | ✅ Done — local repeat-seed and grid DB tests pass; 270 incidents, 90 patrols, 66 alerts |
-| P3 Repository | Read SQL for KPIs, trend, breakdown, hotspots, gaps, conflicts; audit repository; DB tests | 1 | DB tests green on an isolated database; query < 2 s on the seed | ✅ Done — seeded report and spatial/GPS/audit isolation checks pass locally |
-| P4 Service + routes | E1–E5, errors, access, timeout, rate limit, server registration | 1 | `routes.test.ts` and `service.test.ts` green | ✅ Done — E1–E5 wired; service/routes and isolated DB tests pass; workspace lint, typecheck, tests and local migration checks pass |
-| P5 Exports | CSV writer and exporter, PDF exporter + SVG charts | 1 | PDF text and CSV value tests green; files open correctly | ⏳ Not started |
-| P6 UI core | Layout, filters, overview page, export bar, all states | 1 | UI tests green; manual keyboard pass | ⏳ Not started |
-| P7 UI spatial and conflicts | Map page, patrol gaps page, conflict page, history page | 1 | UI tests green | ⏳ Not started |
-| P8 Polish | Motion, count-up, stamp, skeletons, insight sentences, a11y fixes | 1 (motion is small) | Reduced-motion check | ⏳ Not started |
-| P9 Evidence | `vitest.m4.config.ts` ≥ 85%, screenshots, traceability rows, docs updates, AI prompt log | 1 | Coverage report saved; README status updated | ⏳ Not started |
-| T2 extras | Median response time KPI (K5), Getis-Ord clustering, minimum covered-fraction coverage, Sinhala/Tamil PDF fonts, LO read access to conflict view | 2 | Only if Tier 1 is done and green |
+| Phase                       | Deliverable                                                                                                                                      | Tier                | Exit check                                                      | Status                                                                                                                             |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| P0 Contracts                | `shared/analytics.ts` + tests; `0009_analytics.sql`; `analytics-schema.ts`                                                                       | 1                   | Migrate twice on a local PostGIS; shared tests green            | ✅ Done — 7 contract tests; full migrations applied then rerun cleanly on isolated local PostGIS                                   |
+| P1 Domain                   | `filter.ts`, `metrics.ts`, `report-code.ts`, `report-assembler.ts`, `narrative.ts` + tests                                                       | 1                   | 100% domain coverage                                            | ✅ Done — 12 tests; 100% lines, statements, branches and functions; lint/typecheck pass                                            |
+| P2 Seed                     | Boundary, sectors, grid build, demo incidents, patrols, alerts                                                                                   | 1                   | Seed twice, no duplicates; counts as specified                  | ✅ Done — local repeat-seed and grid DB tests pass; 270 incidents, 90 patrols, 66 alerts                                           |
+| P3 Repository               | Read SQL for KPIs, trend, breakdown, hotspots, gaps, conflicts; audit repository; DB tests                                                       | 1                   | DB tests green on an isolated database; query < 2 s on the seed | ✅ Done — seeded report and spatial/GPS/audit isolation checks pass locally                                                        |
+| P4 Service + routes         | E1–E5, errors, access, timeout, rate limit, server registration                                                                                  | 1                   | `routes.test.ts` and `service.test.ts` green                    | ✅ Done — E1–E5 wired; service/routes and isolated DB tests pass; workspace lint, typecheck, tests and local migration checks pass |
+| P5 Exports                  | CSV writer and exporter, PDF exporter + SVG charts                                                                                               | 1                   | PDF text and CSV value tests green; files open correctly        | ✅ Done — deterministic PDF/CSV exporters, PDF text/page and CSV safety/size tests pass; byte hash returned/audited              |
+| P6 UI core                  | Layout, filters, overview page, export bar, all states                                                                                           | 1                   | UI tests green; manual keyboard pass                            | ⏳ Not started                                                                                                                     |
+| P7 UI spatial and conflicts | Map page, patrol gaps page, conflict page, history page                                                                                          | 1                   | UI tests green                                                  | ⏳ Not started                                                                                                                     |
+| P8 Polish                   | Motion, count-up, stamp, skeletons, insight sentences, a11y fixes                                                                                | 1 (motion is small) | Reduced-motion check                                            | ⏳ Not started                                                                                                                     |
+| P9 Evidence                 | `vitest.m4.config.ts` ≥ 85%, screenshots, traceability rows, docs updates, AI prompt log                                                         | 1                   | Coverage report saved; README status updated                    | ⏳ Not started                                                                                                                     |
+| T2 extras                   | Median response time KPI (K5), Getis-Ord clustering, minimum covered-fraction coverage, Sinhala/Tamil PDF fonts, LO read access to conflict view | 2                   | Only if Tier 1 is done and green                                |
 
 ### 16.2 Pull requests
 
@@ -1310,7 +1419,7 @@ Each PR passes `lint`, `typecheck`, `test` and both builds before merging. If th
 - ✅ PM and Researcher access rules enforced on the server; Ranger, Liaison and Super Admin denied; cross-park denied.
 - [ ] No contact details in any analytics response, PDF or CSV (asserted by tests).
 - ✅ Each report generation is audited (filters, user, time, outcome, duration, hash); each export is audited (format, outcome, size, hash).
-- [ ] PDF and CSV are rendered from the snapshot; their content is asserted by tests.
+- ✅ PDF and CSV are rendered from the snapshot; their content is asserted by tests.
 - [ ] Empty, timeout and export-failure states keep filters and the report.
 - [ ] `vitest.m4.config.ts` ≥ 85% lines, branches, functions and statements; DB tests pass on an isolated database.
 - [ ] Lint and typecheck are clean; `0009` migrates twice; the seed runs twice with no duplicates.
@@ -1324,15 +1433,15 @@ Each PR passes `lint`, `typecheck`, `test` and both builds before merging. If th
 
 ### 17.1 Risks
 
-| Risk | Likelihood | Mitigation |
-|---|---|---|
-| Time: deadline is 9 Oct | High | Phases are ordered by demonstrability; Tier 2 cut first |
-| Seed touches other modules' tables | Medium | Owner agreement; namespaced UUIDs; `--remove`; never on production |
-| Migration number clash (`0009`) with another member | Medium | Announce the number before starting; rename before merge if needed (filename is the migration key) |
-| Spatial queries slow on Neon free tier | Low–medium | Precomputed grid, GIST indexes, bounded windows (≤ 2 years), 8 s timeout path already designed |
-| pdfmake type or ESM interop issues under tsx | Low | Spike it in P0; the fallback is pdfkit directly (pdfmake's own engine) with the same exporter interface |
-| Approximate park boundaries mistaken for official data | Low | "Approximate demo boundary" and "Synthetic demo data" labels in the UI, PDF and README |
-| Sensitive locations leak through exports | Low | Cell-level aggregation only (§8.5); no point coordinates in snapshots |
+| Risk                                                   | Likelihood | Mitigation                                                                                              |
+| ------------------------------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------- |
+| Time: deadline is 9 Oct                                | High       | Phases are ordered by demonstrability; Tier 2 cut first                                                 |
+| Seed touches other modules' tables                     | Medium     | Owner agreement; namespaced UUIDs; `--remove`; never on production                                      |
+| Migration number clash (`0009`) with another member    | Medium     | Announce the number before starting; rename before merge if needed (filename is the migration key)      |
+| Spatial queries slow on Neon free tier                 | Low–medium | Precomputed grid, GIST indexes, bounded windows (≤ 2 years), 8 s timeout path already designed          |
+| pdfmake type or ESM interop issues under tsx           | Low        | Spike it in P0; the fallback is pdfkit directly (pdfmake's own engine) with the same exporter interface |
+| Approximate park boundaries mistaken for official data | Low        | "Approximate demo boundary" and "Synthetic demo data" labels in the UI, PDF and README                  |
+| Sensitive locations leak through exports               | Low        | Cell-level aggregation only (§8.5); no point coordinates in snapshots                                   |
 
 ### 17.2 Decisions recorded
 
@@ -1354,36 +1463,36 @@ Each PR passes `lint`, `typecheck`, `test` and both builds before merging. If th
 
 ## Appendix A — Flow traceability
 
-| # | G39 source | Flow step | Implementation | Test | Status |
-|---|---|---|---|---|---|
-| A1 | p. 4 main | Select analytics module | Workspace tile → `/analytics`; route guard | `App.test` route; Workspace tile test | ⏳ |
-| A2 | p. 4 main | System prompts filters | `FilterBar` with defaults from E1 | `FilterBar.test` | ⏳ |
-| A3 | p. 5 main | User sets park / timeframe / category, clicks Generate | URL filters → `POST /reports/runs` | `AnalyticsOverviewPage.test`, `routes.test` | ⏳ |
-| A4 | p. 5 main | System validates filters | Zod + `normalizeFilter` + clock check | `analytics.test`, `filter.test`, `service.test` | ⏳ |
-| A5 | p. 5 main | Search incidents and patrol data | Repository read-only transaction | `repository.db.test` | ⏳ |
-| A6 | p. 5 main | Compute frequency, gaps, hotspots | §4 metrics, §8 algorithms | `metrics.test`, DB tests | ⏳ |
-| A7 | p. 5 main | Show report with tables and charts | Overview page sections | `AnalyticsOverviewPage.test` | ⏳ |
-| A8 | p. 5 main | Click Export, file compiled | E4 + exporters | `pdf-exporter.test`, `csv-exporter.test`, `routes.test` | ⏳ |
-| A9 | p. 5 main | User downloads file | Blob download, server filename | `ExportBar.test` | ⏳ |
-| A10 | p. 5 alt | Toggle spatial heatmap | `/analytics/map` from the same snapshot | `AnalyticsMapPage.test` | ⏳ |
-| A11 | p. 5 alt | Hotspots + patrol breadcrumbs on map | Hotspot + coverage layers | `AnalyticsMapPage.test`, DB tests | ⏳ |
-| A12 | p. 5 alt | Review clusters to reallocate patrols | Priority cells list | `metrics.test` (score), page test | ⏳ |
-| A13 | p. 5 alt | Select HWC category | Conflict page / category group | `ConflictTrendsPage.test` | ⏳ |
-| A14 | p. 5 alt | Aggregate collar alerts + villager reports | Separate series | DB tests (source separation), page test (caption) | ⏳ |
-| A15 | p. 5 alt | Plot recurring boundary conflict trends | Month × stretch matrix | `StretchMatrix` test, DB nearest-stretch test | ⏳ |
-| A16 | p. 6 alt | Export skipped | Run audited with no export | `service.test`, history page test | ⏳ |
-| A17 | p. 6 post | Analysis rendered on dashboard | SUCCEEDED state | Page test | ⏳ |
-| A18 | p. 6 post | Query logged in audit history | `report_runs` + `/reports` | `service.test`, `ReportHistoryPage.test` | ⏳ |
-| A19 | p. 6 post (changed, C9) | Document downloaded **if requested** | Conditional export | `service.test` | ✅ |
-| A20 | p. 6 exc | No records → notify, suggest widening | EMPTY + suggestions | `service.test`, page test | ⏳ |
-| A21 | p. 6 exc | Timeout → abort, keep filters, retry | 504 + banner + Retry | `service.test`, `routes.test`, page test, DB timeout test | ⏳ |
-| A22 | p. 7 exc | Export failure → notify, keep report | FAILED export + toast | `service.test`, page test | ⏳ |
-| A23 | p. 7 seq | `ConservationReport` created | Snapshot in `report_runs` | `report-assembler.test` | ⏳ |
-| A24 | Our critique | Remove "confidence %"; add sample sizes | Data-quality strip | Page test | ⏳ |
-| A25 | Case study p. 2 | Park flexibility | `config.analytics` per park | `analytics.test` (config), seed differences shown | ⏳ |
-| A26 | User groups §4.5 | Researcher read-only, no contact details | Access matrix §7.7; SQL never selects them | `routes.test`, `csv-exporter.test` | ⏳ |
+| #   | G39 source              | Flow step                                              | Implementation                             | Test                                                      | Status |
+| --- | ----------------------- | ------------------------------------------------------ | ------------------------------------------ | --------------------------------------------------------- | ------ |
+| A1  | p. 4 main               | Select analytics module                                | Workspace tile → `/analytics`; route guard | `App.test` route; Workspace tile test                     | ⏳     |
+| A2  | p. 4 main               | System prompts filters                                 | `FilterBar` with defaults from E1          | `FilterBar.test`                                          | ⏳     |
+| A3  | p. 5 main               | User sets park / timeframe / category, clicks Generate | URL filters → `POST /reports/runs`         | `AnalyticsOverviewPage.test`, `routes.test`               | ⏳     |
+| A4  | p. 5 main               | System validates filters                               | Zod + `normalizeFilter` + clock check      | `analytics.test`, `filter.test`, `service.test`           | ⏳     |
+| A5  | p. 5 main               | Search incidents and patrol data                       | Repository read-only transaction           | `repository.db.test`                                      | ⏳     |
+| A6  | p. 5 main               | Compute frequency, gaps, hotspots                      | §4 metrics, §8 algorithms                  | `metrics.test`, DB tests                                  | ⏳     |
+| A7  | p. 5 main               | Show report with tables and charts                     | Overview page sections                     | `AnalyticsOverviewPage.test`                              | ⏳     |
+| A8  | p. 5 main               | Click Export, file compiled                            | E4 + exporters                             | `exporters.test`, `routes.test`                           | ✅     |
+| A9  | p. 5 main               | User downloads file                                    | Blob download, server filename             | `ExportBar.test`                                          | ⏳     |
+| A10 | p. 5 alt                | Toggle spatial heatmap                                 | `/analytics/map` from the same snapshot    | `AnalyticsMapPage.test`                                   | ⏳     |
+| A11 | p. 5 alt                | Hotspots + patrol breadcrumbs on map                   | Hotspot + coverage layers                  | `AnalyticsMapPage.test`, DB tests                         | ⏳     |
+| A12 | p. 5 alt                | Review clusters to reallocate patrols                  | Priority cells list                        | `metrics.test` (score), page test                         | ⏳     |
+| A13 | p. 5 alt                | Select HWC category                                    | Conflict page / category group             | `ConflictTrendsPage.test`                                 | ⏳     |
+| A14 | p. 5 alt                | Aggregate collar alerts + villager reports             | Separate series                            | DB tests (source separation), page test (caption)         | ⏳     |
+| A15 | p. 5 alt                | Plot recurring boundary conflict trends                | Month × stretch matrix                     | `StretchMatrix` test, DB nearest-stretch test             | ⏳     |
+| A16 | p. 6 alt                | Export skipped                                         | Run audited with no export                 | `service.test`, history page test                         | ⏳     |
+| A17 | p. 6 post               | Analysis rendered on dashboard                         | SUCCEEDED state                            | Page test                                                 | ⏳     |
+| A18 | p. 6 post               | Query logged in audit history                          | `report_runs` + `/reports`                 | `service.test`, `ReportHistoryPage.test`                  | ⏳     |
+| A19 | p. 6 post (changed, C9) | Document downloaded **if requested**                   | Conditional export                         | `service.test`                                            | ✅     |
+| A20 | p. 6 exc                | No records → notify, suggest widening                  | EMPTY + suggestions                        | `service.test`, page test                                 | ⏳     |
+| A21 | p. 6 exc                | Timeout → abort, keep filters, retry                   | 504 + banner + Retry                       | `service.test`, `routes.test`, page test, DB timeout test | ⏳     |
+| A22 | p. 7 exc                | Export failure → notify, keep report                   | FAILED export + toast                      | `service.test`, page test                                 | ⏳     |
+| A23 | p. 7 seq                | `ConservationReport` created                           | Snapshot in `report_runs`                  | `report-assembler.test`                                   | ⏳     |
+| A24 | Our critique            | Remove "confidence %"; add sample sizes                | Data-quality strip                         | Page test                                                 | ⏳     |
+| A25 | Case study p. 2         | Park flexibility                                       | `config.analytics` per park                | `analytics.test` (config), seed differences shown         | ⏳     |
+| A26 | User groups §4.5        | Researcher read-only, no contact details               | Access matrix §7.7; SQL never selects them | `routes.test`, `csv-exporter.test`                        | ⏳     |
 
-All Appendix A flows: ⏳ Not started. A flow is marked ✅ only after its listed test exists and passes.
+Appendix A flows without ✅ remain ⏳. A flow is marked ✅ only after its listed test exists and passes.
 
 ## Appendix B — Edge-case checklist
 
@@ -1442,4 +1551,17 @@ All Appendix A flows: ⏳ Not started. A flow is marked ✅ only after its liste
 - ✅ P4 tests: all 14 service/routes tests pass; isolated PostGIS repository-history and spatial tests pass. The report query remains below the 2-second fixture gate.
 - ✅ P4 checks: `corepack pnpm lint`, `corepack pnpm typecheck`, and `corepack pnpm test` pass (28 files passed, 6 database-gated files skipped; 184 tests passed, 11 skipped). Prettier check passes for new source/tests.
 - ✅ Migration check: `corepack pnpm db:migrate` ran twice against the isolated local `wildlife_m4_test` PostGIS database; both reported “already up to date.”
-- ⏳ P5 exporters are next. M4 is not complete end-to-end; no shared Neon changes were made.
+- ✅ P5 exporters are complete. M4 is not complete end-to-end; no shared Neon changes were made.
+
+### P5 start — 2026-10-08
+
+- 🟡 P5 investigation started. The requested footer hash of the complete PDF would be self-referential because changing the footer changes the bytes being hashed.
+- ✅ User decision: print the immutable snapshot SHA-256 in the footer; retain the actual completed-file SHA-256 in `X-Report-Sha256` and the export audit.
+
+### P5 completion — 2026-10-08
+
+- ✅ Added registered CSV and PDF exporters, RFC 4180/formula-safe CSV output, deterministic PDF rendering with SVG trend/conflict/map visuals, and bounded failure behavior (5,000 CSV rows; 12 PDF pages).
+- ✅ PDF carries the selected report identity, filters, KPIs, summaries, trend, data-quality, spatial aggregates, priorities, conflicts, page count, snapshot hash, demo provenance when present, and prototype disclaimer. The byte hash remains in the response/audit per the user's hash decision.
+- ✅ Focused analytics tests: 47 passed, 4 isolated-database tests skipped. PDF.js extracted actual text from the generated PDF; its 4-page output was deterministic across repeated renders. CSV BOM, quoting, injection guards, period values, privacy, and export limits are tested.
+- ✅ Required phase checks: `corepack pnpm lint`, `corepack pnpm typecheck`, and `corepack pnpm test` passed. Workspace suite: 31 files passed, 6 skipped; 204 tests passed, 11 skipped. No P5 database change was needed; no shared Neon changes were made.
+- ⏳ P6 UI core is next. P7–P9 remain not started; M4 is not complete end-to-end.
