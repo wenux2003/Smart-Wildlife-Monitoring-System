@@ -10,7 +10,6 @@ import type { AnalyticsRepository } from "./types.js";
 import {
   buckets,
   colomboDate,
-  type NormalizedFilter,
 } from "./domain/filter.js";
 import {
   classBreaks,
@@ -174,8 +173,35 @@ export function createAnalyticsRepository(
  COALESCE(bool_or(t.recorded_at>=${f.window.fromUtc}),false) covered,max(t.next_at) last_patrolled_at
  FROM analysis_grid_cells g LEFT JOIN analysis_sectors s ON s.id=g.sector_id LEFT JOIN tracks t ON ST_Intersects(g.geom_m,t.geom)
  WHERE g.park_id=${id} AND g.cell_size_m=${config.gridCellMeters} AND (${sector}::uuid IS NULL OR g.sector_id=${sector}) GROUP BY g.park_id,g.cell_size_m,g.col,g.row,s.name ORDER BY g.col,g.row`;
-          const [quality] =
-            await tx`WITH sessions AS(SELECT ps.id FROM patrol_sessions ps JOIN patrol_assignments a ON a.id=ps.assignment_id JOIN patrol_routes r ON r.id=a.route_id WHERE r.park_id=${id} AND ps.started_at<${f.window.toUtcExclusive} AND COALESCE(ps.ended_at,${f.window.toUtcExclusive}::timestamptz)>=${f.window.fromUtc}), q AS(SELECT s.id,count(g.client_record_id) FILTER(WHERE g.accuracy_m IS NULL OR g.accuracy_m<=${config.maxPointAccuracyMeters}) valid,count(g.client_record_id) FILTER(WHERE g.accuracy_m>${config.maxPointAccuracyMeters}) dropped FROM sessions s LEFT JOIN patrol_gps_points g ON g.session_id=s.id AND g.recorded_at>=${f.window.fromUtc} AND g.recorded_at<${f.window.toUtcExclusive} GROUP BY s.id) SELECT count(*) FILTER(WHERE valid<2)::int missing,COALESCE(sum(dropped),0)::int dropped FROM q`;
+          const [quality] = await tx<
+            { missing: number; dropped: number; has_points: boolean }[]
+          >`WITH sessions AS(
+            SELECT ps.id,r.park_id
+  FROM patrol_sessions ps
+  JOIN patrol_assignments a ON a.id=ps.assignment_id
+  JOIN patrol_routes r ON r.id=a.route_id
+  WHERE r.park_id=${id}
+    AND ps.started_at<${f.window.toUtcExclusive}
+    AND COALESCE(ps.ended_at,${f.window.toUtcExclusive}::timestamptz)>=${f.window.fromUtc}
+), q AS(
+  SELECT s.id,
+    count(g.client_record_id) FILTER(WHERE g.accuracy_m IS NULL OR g.accuracy_m<=${config.maxPointAccuracyMeters}) valid,
+    count(g.client_record_id) FILTER(WHERE g.accuracy_m>${config.maxPointAccuracyMeters}) dropped,
+    count(g.client_record_id) FILTER(WHERE ${sector}::uuid IS NULL OR EXISTS(
+      SELECT 1 FROM analysis_sectors area
+      WHERE area.id=${sector} AND area.park_id=s.park_id
+        AND area.kind='SECTOR' AND ST_Covers(area.area,g.position)
+    )) points
+  FROM sessions s
+  LEFT JOIN patrol_gps_points g ON g.session_id=s.id
+    AND g.recorded_at>=${f.window.fromUtc}
+    AND g.recorded_at<${f.window.toUtcExclusive}
+  GROUP BY s.id,s.park_id
+)
+SELECT count(*) FILTER(WHERE valid<2)::int missing,
+  COALESCE(sum(dropped),0)::int dropped,
+  COALESCE(sum(points),0)>0 has_points
+FROM q`;
           const area = cells.reduce((n, c) => n + c.area_m2, 0) / 1e6,
             gap =
               cells
@@ -305,7 +331,9 @@ export function createAnalyticsRepository(
             addStretch(r, "collarBreaches");
           }
           return {
-            park: { id, code: p.code, name: p.name },
+            hasPatrolPoints: quality.has_points,
+            sections: {
+              park: { id, code: p.code, name: p.name },
             filters: f.filters,
             window: f.window,
             generatedAt: generatedAt.toISOString(),
@@ -394,7 +422,8 @@ export function createAnalyticsRepository(
                 (a, b) => b.score - a.score || a.cellId.localeCompare(b.cellId),
               )
               .slice(0, 5),
-            conflicts: { series, byStretch: [...stretches.values()] },
+              conflicts: { series, byStretch: [...stretches.values()] },
+            },
           };
         },
       );

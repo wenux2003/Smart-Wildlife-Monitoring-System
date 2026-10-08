@@ -1,8 +1,17 @@
 import postgres from "postgres";
-import { ReportRunResponseSchema, AnalyticsFilterSchema } from "@wr/shared";
-import type { ReportAuditRepository, StoredRun } from "./types.js";
+import {
+  ReportExportSchema,
+  ReportRunResponseSchema,
+  AnalyticsFilterSchema,
+} from "@wr/shared";
+import type {
+  ReportAuditRepository,
+  ReportHistoryRecord,
+  StoredRun,
+} from "./types.js";
 import { reportCode } from "./domain/report-code.js";
 import { colomboDate } from "./domain/filter.js";
+import { emptyReportSuggestions } from "./domain/suggestions.js";
 type Row = {
   id: string;
   code: string;
@@ -16,6 +25,7 @@ type Row = {
   snapshot_sha256: string | null;
   duration_ms: number;
   created_at: Date;
+  exports?: unknown;
 };
 function map(r: Row): StoredRun {
   return {
@@ -27,7 +37,7 @@ function map(r: Row): StoredRun {
       report: r.snapshot,
       suggestions:
         r.status === "EMPTY"
-          ? ["Widen the date range", "Try all categories"]
+          ? emptyReportSuggestions(AnalyticsFilterSchema.parse(r.filters))
           : [],
     }),
     parkId: r.park_id,
@@ -75,8 +85,22 @@ export function createReportAuditRepository(
             await tx`SELECT count(*)::int total FROM report_runs r WHERE ${condition}`;
           const rows = await tx<
             Row[]
-          >`SELECT r.*,u.name requester_name FROM report_runs r JOIN auth_users u ON u.id=r.requested_by WHERE ${condition} ORDER BY r.created_at DESC,r.id LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}`;
-          return { items: rows.map(map), total: count.total };
+          >`SELECT r.*,u.name requester_name,
+  COALESCE((SELECT json_agg(json_build_object(
+    'id',e.id,'format',e.format,'status',e.status,'byteSize',e.byte_size,
+    'fileSha256',e.file_sha256,'errorCode',e.error_code,
+    'createdAt',to_char(e.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+  ) ORDER BY e.created_at DESC,e.id) FROM report_exports e WHERE e.run_id=r.id),'[]'::json) exports
+  FROM report_runs r JOIN auth_users u ON u.id=r.requested_by
+  WHERE ${condition} ORDER BY r.created_at DESC,r.id
+  LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}`;
+              return {
+                items: rows.map((row): ReportHistoryRecord => ({
+                  run: map(row),
+                  exports: ReportExportSchema.array().parse(row.exports),
+                })),
+                total: count.total,
+              };
         },
       );
     },

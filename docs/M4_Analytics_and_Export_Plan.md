@@ -1278,11 +1278,11 @@ The implementation plan requires "six months of labeled synthetic analytics data
 
 | Phase | Deliverable | Tier | Exit check | Status |
 |---|---|---|---|---|
-| P0 Contracts | `shared/analytics.ts` + tests; `0009_analytics.sql`; `analytics-schema.ts` | 1 | Migrate twice on a local PostGIS; shared tests green | ✅ Complete — 7 contract tests; full migrations applied then rerun cleanly on isolated local PostGIS |
-| P1 Domain | `filter.ts`, `metrics.ts`, `report-code.ts`, `report-assembler.ts`, `narrative.ts` + tests | 1 | 100% domain coverage | ✅ Complete — 12 tests; 100% lines, statements, branches and functions; lint/typecheck pass |
-| P2 Seed | Boundary, sectors, grid build, demo incidents, patrols, alerts | 1 | Seed twice, no duplicates; counts as specified | ✅ Complete — local repeat-seed and grid DB tests pass; 270 incidents, 90 patrols, 66 alerts |
-| P3 Repository | Read SQL for KPIs, trend, breakdown, hotspots, gaps, conflicts; audit repository; DB tests | 1 | DB tests green on an isolated database; query < 2 s on the seed | ✅ Complete — seeded report and spatial/GPS/audit isolation checks pass locally |
-| P4 Service + routes | E1–E5, errors, access, timeout, rate limit, server registration | 1 | `routes.test.ts` and `service.test.ts` green | ⏳ Not started |
+| P0 Contracts | `shared/analytics.ts` + tests; `0009_analytics.sql`; `analytics-schema.ts` | 1 | Migrate twice on a local PostGIS; shared tests green | ✅ Done — 7 contract tests; full migrations applied then rerun cleanly on isolated local PostGIS |
+| P1 Domain | `filter.ts`, `metrics.ts`, `report-code.ts`, `report-assembler.ts`, `narrative.ts` + tests | 1 | 100% domain coverage | ✅ Done — 12 tests; 100% lines, statements, branches and functions; lint/typecheck pass |
+| P2 Seed | Boundary, sectors, grid build, demo incidents, patrols, alerts | 1 | Seed twice, no duplicates; counts as specified | ✅ Done — local repeat-seed and grid DB tests pass; 270 incidents, 90 patrols, 66 alerts |
+| P3 Repository | Read SQL for KPIs, trend, breakdown, hotspots, gaps, conflicts; audit repository; DB tests | 1 | DB tests green on an isolated database; query < 2 s on the seed | ✅ Done — seeded report and spatial/GPS/audit isolation checks pass locally |
+| P4 Service + routes | E1–E5, errors, access, timeout, rate limit, server registration | 1 | `routes.test.ts` and `service.test.ts` green | ✅ Done — E1–E5 wired; service/routes and isolated DB tests pass; workspace lint, typecheck, tests and local migration checks pass |
 | P5 Exports | CSV writer and exporter, PDF exporter + SVG charts | 1 | PDF text and CSV value tests green; files open correctly | ⏳ Not started |
 | P6 UI core | Layout, filters, overview page, export bar, all states | 1 | UI tests green; manual keyboard pass | ⏳ Not started |
 | P7 UI spatial and conflicts | Map page, patrol gaps page, conflict page, history page | 1 | UI tests green | ⏳ Not started |
@@ -1307,9 +1307,9 @@ Each PR passes `lint`, `typecheck`, `test` and both builds before merging. If th
 ### 16.3 Definition of done (M4)
 
 - [ ] Every G39 p. 4–7 flow in Appendix A works and has a passing test.
-- [ ] PM and Researcher access rules enforced on the server; Ranger, Liaison and Super Admin denied; cross-park denied.
+- ✅ PM and Researcher access rules enforced on the server; Ranger, Liaison and Super Admin denied; cross-park denied.
 - [ ] No contact details in any analytics response, PDF or CSV (asserted by tests).
-- [ ] Each report generation is audited (filters, user, time, outcome, duration, hash); each export is audited (format, outcome, size, hash).
+- ✅ Each report generation is audited (filters, user, time, outcome, duration, hash); each export is audited (format, outcome, size, hash).
 - [ ] PDF and CSV are rendered from the snapshot; their content is asserted by tests.
 - [ ] Empty, timeout and export-failure states keep filters and the report.
 - [ ] `vitest.m4.config.ts` ≥ 85% lines, branches, functions and statements; DB tests pass on an isolated database.
@@ -1374,7 +1374,7 @@ Each PR passes `lint`, `typecheck`, `test` and both builds before merging. If th
 | A16 | p. 6 alt | Export skipped | Run audited with no export | `service.test`, history page test | ⏳ |
 | A17 | p. 6 post | Analysis rendered on dashboard | SUCCEEDED state | Page test | ⏳ |
 | A18 | p. 6 post | Query logged in audit history | `report_runs` + `/reports` | `service.test`, `ReportHistoryPage.test` | ⏳ |
-| A19 | p. 6 post (changed, C9) | Document downloaded **if requested** | Conditional export | `service.test` | ⏳ |
+| A19 | p. 6 post (changed, C9) | Document downloaded **if requested** | Conditional export | `service.test` | ✅ |
 | A20 | p. 6 exc | No records → notify, suggest widening | EMPTY + suggestions | `service.test`, page test | ⏳ |
 | A21 | p. 6 exc | Timeout → abort, keep filters, retry | 504 + banner + Retry | `service.test`, `routes.test`, page test, DB timeout test | ⏳ |
 | A22 | p. 7 exc | Export failure → notify, keep report | FAILED export + toast | `service.test`, page test | ⏳ |
@@ -1435,3 +1435,11 @@ All Appendix A flows: ⏳ Not started. A flow is marked ✅ only after its liste
 - Next: P4 service and protected routes (E1–E5), access/error handling, export rate limiting, server registration, service/route tests. Then P5–P9 remain.
 - M4 is not yet available end to end: API registration, export renderers and Ops UI are still pending.
 - Validation completed through P3 is recorded above. No new tests were run for this documentation-only pause update. No shared Neon database changes were made during this continuation.
+
+### P4 completion — 2026-10-08
+
+- ✅ P4: added the analytics facade/service, protected E1–E5 routes, repository/audit wiring, park/role enforcement, server-side preset resolution, timeout auditing, export rate limiting and export/history audit handling.
+- ✅ P4 tests: all 14 service/routes tests pass; isolated PostGIS repository-history and spatial tests pass. The report query remains below the 2-second fixture gate.
+- ✅ P4 checks: `corepack pnpm lint`, `corepack pnpm typecheck`, and `corepack pnpm test` pass (28 files passed, 6 database-gated files skipped; 184 tests passed, 11 skipped). Prettier check passes for new source/tests.
+- ✅ Migration check: `corepack pnpm db:migrate` ran twice against the isolated local `wildlife_m4_test` PostGIS database; both reported “already up to date.”
+- ⏳ P5 exporters are next. M4 is not complete end-to-end; no shared Neon changes were made.

@@ -32,9 +32,10 @@ it.skipIf(!url)(
         { now: () => now },
       );
       const start = performance.now();
-      const sections = await repo.load(filter, now);
+      const result = await repo.load(filter, now);
       expect(performance.now() - start).toBeLessThan(2000);
-      const { report, snapshotSha256 } = assembleReport(sections);
+      expect(result.hasPatrolPoints).toBe(true);
+      const { report, snapshotSha256 } = assembleReport(result.sections);
       expect(report.kpis.totalIncidents).toBe(171);
       expect(report.kpis.collarBreaches).toBe(40);
       expect(report.trend.reduce((n, b) => n + b.count, 0)).toBe(171);
@@ -75,13 +76,34 @@ it.skipIf(!url)(
           "11111111-1111-4111-8111-111111111111",
         ),
       ).toBeNull();
+      await audit.insertExport({
+        runId,
+        requestedBy: user.id,
+        format: "CSV",
+        status: "SUCCEEDED",
+        byteSize: 13,
+        fileSha256: "a".repeat(64),
+        errorCode: null,
+      });
+      const history = await audit.history(park.id, user.id, 1, 20);
+      const auditedRun = history.items.find(
+        (record) => record.run.runId === runId,
+      );
+      expect(auditedRun?.exports).toHaveLength(1);
+      expect(auditedRun?.exports[0]).toMatchObject({
+        format: "CSV",
+        status: "SUCCEEDED",
+        byteSize: 13,
+        fileSha256: "a".repeat(64),
+      });
       expect(
-        (await audit.history(park.id, user.id, 1, 20)).items.some(
-          (r) => r.runId === runId,
-        ),
+        history.items.some((record) => record.run.runId === runId),
       ).toBe(true);
     } finally {
-      if (runId) await db`DELETE FROM report_runs WHERE id=${runId}`;
+      if (runId) {
+        await db`DELETE FROM report_exports WHERE run_id=${runId}`;
+        await db`DELETE FROM report_runs WHERE id=${runId}`;
+      }
       await repo.close?.();
       await audit.close?.();
       await db.end();

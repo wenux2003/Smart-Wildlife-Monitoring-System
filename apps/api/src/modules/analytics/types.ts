@@ -8,9 +8,16 @@ import type { NormalizedFilter } from "./domain/filter.js";
 import type { ReportSections } from "./domain/report-assembler.js";
 export interface AnalyticsRepository {
   options(parkId: string): Promise<AnalyticsOptions>;
-  load(filter: NormalizedFilter, generatedAt: Date): Promise<ReportSections>;
+  load(
+    filter: NormalizedFilter,
+    generatedAt: Date,
+  ): Promise<AnalyticsQueryResult>;
   close?(): Promise<void>;
 }
+export type AnalyticsQueryResult = {
+  sections: ReportSections;
+  hasPatrolPoints: boolean;
+};
 export type StoredRun = ReportRunResponse & {
   parkId: string;
   requestedBy: string;
@@ -33,6 +40,20 @@ export type ExportAttempt = {
   fileSha256: string | null;
   errorCode: string | null;
 };
+export type ReportFormat = ExportAttempt["format"];
+export type StoredReportExport = {
+  id: string;
+  format: ReportFormat;
+  status: "SUCCEEDED" | "FAILED";
+  byteSize: number | null;
+  fileSha256: string | null;
+  errorCode: string | null;
+  createdAt: string;
+};
+export type ReportHistoryRecord = {
+  run: StoredRun;
+  exports: StoredReportExport[];
+};
 export interface ReportAuditRepository {
   insertRun(input: NewRun): Promise<StoredRun>;
   getRun(
@@ -46,7 +67,7 @@ export interface ReportAuditRepository {
     page: number,
     pageSize: number,
     status?: string,
-  ): Promise<{ items: StoredRun[]; total: number }>;
+  ): Promise<{ items: ReportHistoryRecord[]; total: number }>;
   insertExport(input: ExportAttempt): Promise<void>;
   close?(): Promise<void>;
 }

@@ -42,13 +42,14 @@ it.skipIf(!url)(
         ),
         now,
       );
-      expect(r.kpis.totalIncidents).toBe(5);
-      expect(r.dataQuality.excludedNoLocation).toBe(2);
-      expect(r.dataQuality.outsideBoundary).toBe(1);
-      expect(r.hotspots.cells.reduce((n, c) => n + c.count, 0)).toBe(2);
-      expect(r.patrolGaps.cells).toHaveLength(9);
-      expect(r.patrolGaps.parkAreaKm2).toBeCloseTo(9, 5);
-      expect(r.patrolGaps.gapAreaKm2).toBeCloseTo(9, 5);
+      expect(r.hasPatrolPoints).toBe(false);
+      expect(r.sections.kpis.totalIncidents).toBe(5);
+      expect(r.sections.dataQuality.excludedNoLocation).toBe(2);
+      expect(r.sections.dataQuality.outsideBoundary).toBe(1);
+      expect(r.sections.hotspots.cells.reduce((n, c) => n + c.count, 0)).toBe(2);
+      expect(r.sections.patrolGaps.cells).toHaveLength(9);
+      expect(r.sections.patrolGaps.parkAreaKm2).toBeCloseTo(9, 5);
+      expect(r.sections.patrolGaps.gapAreaKm2).toBeCloseTo(9, 5);
       const ranger = randomUUID(),
         route = randomUUID(),
         assignment = randomUUID(),
@@ -71,8 +72,9 @@ it.skipIf(!url)(
         ),
         now,
       );
-      expect(tracked.dataQuality.droppedGpsPoints).toBe(1);
-      expect(tracked.patrolGaps.coveredAreaKm2).toBeCloseTo(1, 5);
+      expect(tracked.hasPatrolPoints).toBe(true);
+      expect(tracked.sections.dataQuality.droppedGpsPoints).toBe(1);
+      expect(tracked.sections.patrolGaps.coveredAreaKm2).toBeCloseTo(1, 5);
       await sql`DELETE FROM patrol_sessions WHERE id=${session}`;
       await sql`DELETE FROM patrol_assignments WHERE id=${assignment}`;
       await sql`DELETE FROM patrol_routes WHERE id=${route}`;
