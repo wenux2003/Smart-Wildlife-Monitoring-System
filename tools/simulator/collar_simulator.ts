@@ -1,10 +1,9 @@
-import fetch from "node-fetch";
 
-const API_URL = "http://localhost:3000/api/alerts/pings";
+const API_URL = "http://localhost:3000/api/pings";
 
 // Simulated collar data
 const collars = [
-  { id: "c1111111-1111-1111-1111-111111111111", lat: 6.37, lng: 81.33, speed: 1.5, battery: 95 },
+  { id: "5c9b986b-a25e-4c74-a690-36b043213568", lat: 6.37, lng: 81.33, speed: 1.5, battery: 95 },
   { id: "c2222222-2222-2222-2222-222222222222", lat: 6.40, lng: 81.35, speed: 0.0, battery: 15 },
 ];
 
