@@ -122,18 +122,6 @@ export function AlertsPage() {
         </aside>
 
         <div className="flex-1 bg-[#bad2e3] relative" style={{ zIndex: 0, minHeight: 0 }}>
-          {/* Floating Draw Button */}
-          <div className="absolute top-4 right-4 z-[400]">
-            <button 
-              onClick={() => setIsDrawing(!isDrawing)}
-              className={`px-4 py-2 rounded-md shadow-md transition-colors flex items-center gap-2 ${isDrawing ? 'bg-[#166534] text-white' : 'bg-white text-[#14352B] hover:bg-gray-50 border border-gray-200'}`}
-              title={isDrawing ? "Cancel Drawing" : "Draw Geofence Zone"}
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-              <span className="font-medium text-sm">{isDrawing ? "Cancel Drawing" : "Draw Zone"}</span>
-            </button>
-          </div>
-
           <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%', zIndex: 0 }}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             
@@ -222,8 +210,20 @@ export function AlertsPage() {
             />
           </MapContainer>
 
+          {/* Floating Draw Button */}
+          <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 9999 }}>
+            <button 
+              onClick={() => setIsDrawing(!isDrawing)}
+              className={`px-4 py-2 rounded-md shadow-lg transition-colors flex items-center gap-2 font-bold ${isDrawing ? 'bg-[#166534] text-white' : 'bg-white text-[#14352B] hover:bg-gray-50 border-2 border-[#166534]'}`}
+              title={isDrawing ? "Cancel Drawing" : "Draw Geofence Zone"}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+              <span>{isDrawing ? "CANCEL DRAWING" : "DRAW ZONE"}</span>
+            </button>
+          </div>
+
           {isDrawing && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-md border border-[#DCE5DC] z-[400] text-sm text-[#14352B] flex items-center gap-2">
+            <div style={{ position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)', zIndex: 9999 }} className="bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-md border border-[#DCE5DC] text-sm text-[#14352B] flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-[#166534] animate-pulse"></div>
               Click on the map to draw points. Right-click when finished.
             </div>
