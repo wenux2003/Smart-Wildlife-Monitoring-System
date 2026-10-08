@@ -181,6 +181,22 @@ describe("M4 analytics service", () => {
     expect(history.items).toHaveLength(0);
   });
 
+  it("filters report history by inclusive Colombo calendar dates and status", async () => {
+    const { service } = create();
+    const run = await service.generate(manager, baseFilter);
+    const result = await service.history(manager, {
+      from: "2026-10-08",
+      to: "2026-10-08",
+      status: "SUCCEEDED",
+    });
+    expect(result.items.map((item) => item.id)).toContain(run.runId);
+    const outsideRange = await service.history(manager, {
+      from: "2026-10-09",
+      to: "2026-10-10",
+    });
+    expect(outsideRange.items).toHaveLength(0);
+  });
+
   it("renders only successful snapshots and audits both export outcomes", async () => {
     const exporter = {
       format: "CSV" as const,

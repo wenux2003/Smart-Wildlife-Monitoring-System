@@ -116,6 +116,7 @@ export const DataQualitySchema = z.object({
   excludedNoLocation: z.number().int().nonnegative(),
   excludedRejected: z.number().int().nonnegative(),
   outsideBoundary: z.number().int().nonnegative(),
+  sessionsAnalyzed: z.number().int().nonnegative().optional(),
   sessionsWithoutTrack: z.number().int().nonnegative(),
   droppedGpsPoints: z.number().int().nonnegative(),
   alertsWithoutLocation: z.number().int().nonnegative(),
@@ -184,6 +185,32 @@ export const StretchConflictRowSchema = z.object({
   byMonth: z.array(StretchConflictMonthSchema),
 });
 
+const GeoJsonRingSchema = z.array(CoordinatesSchema).min(4);
+const GeoJsonPolygonSchema = z.array(GeoJsonRingSchema).min(1);
+const GeoJsonMultiPolygonSchema = z.array(GeoJsonPolygonSchema).min(1);
+
+export const AnalyticsSpatialContextSchema = z.object({
+  parkBoundary: GeoJsonMultiPolygonSchema.nullable(),
+  sectors: z.array(
+    z.object({
+      id: z.string().uuid(),
+      code: z.string(),
+      name: z.string(),
+      kind: z.enum(["SECTOR", "BOUNDARY_STRETCH"]),
+      polygon: GeoJsonMultiPolygonSchema,
+    }),
+  ),
+  settlements: z.array(
+    z.object({
+      id: z.string().uuid(),
+      name: z.string(),
+      location: CoordinatesSchema,
+      nearestStretchId: z.string().uuid().nullable(),
+      nearestStretchName: z.string().nullable(),
+    }),
+  ),
+});
+
 export const ConservationReportSchema = z.object({
   schemaVersion: z.literal(1),
   syntheticDemo: z.boolean().optional(),
@@ -229,6 +256,11 @@ export const ConservationReportSchema = z.object({
     series: z.array(ConflictSeriesPointSchema),
     byStretch: z.array(StretchConflictRowSchema),
   }),
+  spatialContext: AnalyticsSpatialContextSchema.default({
+    parkBoundary: null,
+    sectors: [],
+    settlements: [],
+  }),
   summarySentences: z.array(z.string()).max(4),
 });
 export type ConservationReport = z.infer<typeof ConservationReportSchema>;
@@ -267,6 +299,10 @@ export const AnalyticsSectorSchema = z.object({
 export const ParkAnalyticsConfigSummarySchema = z.object({
   gridCellMeters: z.number().int().positive(),
   trackBufferMeters: z.number().int().positive(),
+  maxPointAccuracyMeters: z.number().int().positive(),
+  maxSegmentGapSeconds: z.number().int().positive(),
+  maxSegmentLengthMeters: z.number().int().positive(),
+  boundaryStretchBufferMeters: z.number().int().positive(),
   gapNeglectDays: z.number().int().positive(),
   hotspotMinCount: z.number().int().positive(),
   configured: z.boolean(),
@@ -315,8 +351,18 @@ export const ReportHistoryQuerySchema = z
     page: z.coerce.number().int().positive().default(1),
     pageSize: z.coerce.number().int().min(1).max(100).default(20),
     status: ReportRunStatusSchema.optional(),
+    from: IsoDateSchema.optional(),
+    to: IsoDateSchema.optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (query) =>
+      query.from === undefined ||
+      query.to === undefined ||
+      query.from <= query.to,
+    { path: ["to"], message: "End date must be on or after start date." },
+  );
+export type ReportHistoryQuery = z.infer<typeof ReportHistoryQuerySchema>;
 
 export const ReportHistoryResponseSchema = z.object({
   items: z.array(ReportHistoryItemSchema),
@@ -324,6 +370,7 @@ export const ReportHistoryResponseSchema = z.object({
   page: z.number().int().positive(),
   pageSize: z.number().int().positive(),
 });
+export type ReportHistoryResponse = z.infer<typeof ReportHistoryResponseSchema>;
 
 export const ReportExportRequestSchema = z
   .object({ format: ReportFormatSchema })

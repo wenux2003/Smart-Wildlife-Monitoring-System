@@ -76,16 +76,18 @@ export function createReportAuditRepository(
       >`SELECT r.*,u.name requester_name FROM report_runs r JOIN auth_users u ON u.id=r.requested_by WHERE r.id=${id} AND r.park_id=${parkId} AND (${userId}::uuid IS NULL OR r.requested_by=${userId})`;
       return row ? map(row) : null;
     },
-    async history(parkId, userId, page, pageSize, status) {
+    async history(parkId, userId, page, pageSize, status, from, to) {
       return sql.begin(
         "isolation level repeatable read read only",
         async (tx) => {
-          const condition = tx`r.park_id=${parkId} AND (${userId}::uuid IS NULL OR r.requested_by=${userId}) AND (${status ?? null}::text IS NULL OR r.status=${status ?? null})`;
+          const condition = tx`r.park_id=${parkId}
+            AND (${userId}::uuid IS NULL OR r.requested_by=${userId})
+            AND (${status ?? null}::text IS NULL OR r.status=${status ?? null})
+            AND (${from ?? null}::date IS NULL OR r.created_at>=(${from ?? null}::date::timestamp AT TIME ZONE 'Asia/Colombo'))
+            AND (${to ?? null}::date IS NULL OR r.created_at<(((${to ?? null}::date+1)::timestamp) AT TIME ZONE 'Asia/Colombo'))`;
           const [count] =
             await tx`SELECT count(*)::int total FROM report_runs r WHERE ${condition}`;
-          const rows = await tx<
-            Row[]
-          >`SELECT r.*,u.name requester_name,
+          const rows = await tx<Row[]>`SELECT r.*,u.name requester_name,
   COALESCE((SELECT json_agg(json_build_object(
     'id',e.id,'format',e.format,'status',e.status,'byteSize',e.byte_size,
     'fileSha256',e.file_sha256,'errorCode',e.error_code,
@@ -94,13 +96,13 @@ export function createReportAuditRepository(
   FROM report_runs r JOIN auth_users u ON u.id=r.requested_by
   WHERE ${condition} ORDER BY r.created_at DESC,r.id
   LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}`;
-              return {
-                items: rows.map((row): ReportHistoryRecord => ({
-                  run: map(row),
-                  exports: ReportExportSchema.array().parse(row.exports),
-                })),
-                total: count.total,
-              };
+          return {
+            items: rows.map((row): ReportHistoryRecord => ({
+              run: map(row),
+              exports: ReportExportSchema.array().parse(row.exports),
+            })),
+            total: count.total,
+          };
         },
       );
     },

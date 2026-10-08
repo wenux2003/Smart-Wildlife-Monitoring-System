@@ -28,6 +28,7 @@ export function FilterBar({
   onGenerate,
   pending,
   error,
+  categoryLocked = false,
 }: {
   filter: AnalyticsFilter;
   options: AnalyticsOptions;
@@ -35,6 +36,7 @@ export function FilterBar({
   onGenerate: () => void;
   pending: boolean;
   error: string;
+  categoryLocked?: boolean;
 }) {
   const [moreOpen, setMoreOpen] = useState(false);
   const [validationError, setValidationError] = useState("");
@@ -117,6 +119,7 @@ export function FilterBar({
           <select
             aria-label="Category"
             value={filter.categoryGroup}
+            disabled={categoryLocked}
             onChange={(event) => {
               if (isCategoryGroup(event.target.value))
                 onChange({ categoryGroup: event.target.value });

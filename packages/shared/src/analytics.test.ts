@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   AnalyticsFilterSchema,
+  ConservationReportSchema,
   ParkAnalyticsConfigSchema,
   ReportExportRequestSchema,
   ReportHistoryQuerySchema,
@@ -129,6 +130,12 @@ describe("M4 shared contracts", () => {
     expect(
       ReportHistoryQuerySchema.safeParse({ pageSize: "101" }).success,
     ).toBe(false);
+    expect(
+      ReportHistoryQuerySchema.safeParse({
+        from: "2026-02-02",
+        to: "2026-02-01",
+      }).success,
+    ).toBe(false);
   });
 
   it("requires snapshots and hashes only for successful report runs", () => {
@@ -164,6 +171,7 @@ describe("M4 shared contracts", () => {
         excludedNoLocation: 0,
         excludedRejected: 0,
         outsideBoundary: 0,
+        sessionsAnalyzed: 0,
         sessionsWithoutTrack: 0,
         droppedGpsPoints: 0,
         alertsWithoutLocation: 0,
@@ -181,6 +189,7 @@ describe("M4 shared contracts", () => {
       },
       priorityCells: [],
       conflicts: { series: [], byStretch: [] },
+      spatialContext: { parkBoundary: null, sectors: [], settlements: [] },
       summarySentences: [],
     };
     const emptyRun = {
@@ -212,5 +221,16 @@ describe("M4 shared contracts", () => {
         snapshotSha256: "a".repeat(64),
       }).success,
     ).toBe(false);
+    const olderSnapshot = ConservationReportSchema.parse({
+      ...report,
+      dataQuality: { ...report.dataQuality, sessionsAnalyzed: undefined },
+      spatialContext: undefined,
+    });
+    expect(olderSnapshot.dataQuality.sessionsAnalyzed).toBeUndefined();
+    expect(olderSnapshot.spatialContext).toEqual({
+      parkBoundary: null,
+      sectors: [],
+      settlements: [],
+    });
   });
 });

@@ -65,6 +65,10 @@ const options: AnalyticsOptions = {
   config: {
     gridCellMeters: 1000,
     trackBufferMeters: 50,
+    maxPointAccuracyMeters: 100,
+    maxSegmentGapSeconds: 600,
+    maxSegmentLengthMeters: 1000,
+    boundaryStretchBufferMeters: 2000,
     gapNeglectDays: 14,
     hotspotMinCount: 3,
     configured: true,
@@ -109,6 +113,7 @@ const report: ConservationReport = {
     excludedNoLocation: 3,
     excludedRejected: 2,
     outsideBoundary: 0,
+    sessionsAnalyzed: 4,
     sessionsWithoutTrack: 1,
     droppedGpsPoints: 0,
     alertsWithoutLocation: 0,
@@ -168,6 +173,7 @@ const report: ConservationReport = {
     ],
     byStretch: [],
   },
+  spatialContext: { parkBoundary: null, sectors: [], settlements: [] },
   summarySentences: ["Incidents increased by 11% from the previous period."],
 };
 

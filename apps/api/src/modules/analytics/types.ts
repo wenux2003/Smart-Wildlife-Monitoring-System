@@ -67,6 +67,8 @@ export interface ReportAuditRepository {
     page: number,
     pageSize: number,
     status?: string,
+    from?: string,
+    to?: string,
   ): Promise<{ items: ReportHistoryRecord[]; total: number }>;
   insertExport(input: ExportAttempt): Promise<void>;
   close?(): Promise<void>;

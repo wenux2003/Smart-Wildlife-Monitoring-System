@@ -46,6 +46,16 @@ type Cell = {
   covered: boolean;
   last_patrolled_at: Date | null;
 };
+type GeoJsonMultiPolygon = { coordinates: number[][][][] };
+
+function toCoordinates(geometry: GeoJsonMultiPolygon) {
+  return geometry.coordinates.map((polygon) =>
+    polygon.map((ring) =>
+      ring.map(([longitude, latitude]) => ({ longitude, latitude })),
+    ),
+  );
+}
+
 function dateBucket(day: string, unit: string): string {
   if (unit === "MONTH") return day.slice(0, 7) + "-01";
   if (unit === "WEEK") {
@@ -89,6 +99,10 @@ export function createAnalyticsRepository(
         config: {
           gridCellMeters: config.gridCellMeters,
           trackBufferMeters: config.trackBufferMeters,
+          maxPointAccuracyMeters: config.maxPointAccuracyMeters,
+          maxSegmentGapSeconds: config.maxSegmentGapSeconds,
+          maxSegmentLengthMeters: config.maxSegmentLengthMeters,
+          boundaryStretchBufferMeters: config.boundaryStretchBufferMeters,
           gapNeglectDays: config.gapNeglectDays,
           hotspotMinCount: config.hotspotMinCount,
           configured: p.configured,
@@ -171,7 +185,12 @@ export function createAnalyticsRepository(
  FROM analysis_grid_cells g LEFT JOIN analysis_sectors s ON s.id=g.sector_id LEFT JOIN tracks t ON ST_Intersects(g.geom_m,t.geom)
  WHERE g.park_id=${id} AND g.cell_size_m=${config.gridCellMeters} AND (${sector}::uuid IS NULL OR g.sector_id=${sector}) GROUP BY g.park_id,g.cell_size_m,g.col,g.row,s.name ORDER BY g.col,g.row`;
           const [quality] = await tx<
-            { missing: number; dropped: number; has_points: boolean }[]
+            {
+              sessions: number;
+              missing: number;
+              dropped: number;
+              has_points: boolean;
+            }[]
           >`WITH sessions AS(
             SELECT ps.id,r.park_id
   FROM patrol_sessions ps
@@ -195,7 +214,8 @@ export function createAnalyticsRepository(
     AND g.recorded_at<${f.window.toUtcExclusive}
   GROUP BY s.id,s.park_id
 )
-SELECT count(*) FILTER(WHERE valid<2)::int missing,
+SELECT count(*)::int sessions,
+  count(*) FILTER(WHERE valid<2)::int missing,
   COALESCE(sum(dropped),0)::int dropped,
   COALESCE(sum(points),0)>0 has_points
 FROM q`;
@@ -327,6 +347,38 @@ FROM q`;
             if (month) month.collarBreaches += r.count;
             addStretch(r, "collarBreaches");
           }
+          const [boundary] = await tx<
+            { geometry: GeoJsonMultiPolygon | null }[]
+          >`SELECT ST_AsGeoJSON(boundary)::json geometry FROM parks WHERE id=${id}`;
+          const sectorGeometry = await tx<
+            {
+              id: string;
+              code: string;
+              name: string;
+              kind: "SECTOR" | "BOUNDARY_STRETCH";
+              geometry: GeoJsonMultiPolygon;
+            }[]
+          >`SELECT id,code,name,kind,ST_AsGeoJSON(area)::json geometry FROM analysis_sectors WHERE park_id=${id} ORDER BY kind,name,id`;
+          const settlements = await tx<
+            {
+              id: string;
+              name: string;
+              longitude: number;
+              latitude: number;
+              stretch_id: string | null;
+              stretch_name: string | null;
+            }[]
+          >`SELECT st.id,st.name,ST_X(st.location)::float8 longitude,ST_Y(st.location)::float8 latitude,nearest.id stretch_id,nearest.name stretch_name
+FROM settlements st
+LEFT JOIN LATERAL (
+  SELECT s.id,s.name FROM analysis_sectors s
+  WHERE s.park_id=st.park_id AND s.kind='BOUNDARY_STRETCH'
+    AND ST_DWithin(s.area::geography,st.location::geography,${config.boundaryStretchBufferMeters})
+  ORDER BY ST_Distance(s.area::geography,st.location::geography),s.id
+  LIMIT 1
+) nearest ON true
+WHERE st.park_id=${id}
+ORDER BY nearest.name,st.name,st.id`;
           return {
             hasPatrolPoints: quality.has_points,
             sections: {
@@ -370,6 +422,7 @@ FROM q`;
                 outsideBoundary: accepted
                   .filter((r) => !r.unlocated && !r.cell_id)
                   .reduce((n, r) => n + r.count, 0),
+                sessionsAnalyzed: quality.sessions,
                 sessionsWithoutTrack: quality.missing,
                 droppedGpsPoints: quality.dropped,
                 alertsWithoutLocation: alerts
@@ -426,6 +479,28 @@ FROM q`;
                 )
                 .slice(0, 5),
               conflicts: { series, byStretch: [...stretches.values()] },
+              spatialContext: {
+                parkBoundary: boundary?.geometry
+                  ? toCoordinates(boundary.geometry)
+                  : null,
+                sectors: sectorGeometry.map((item) => ({
+                  id: item.id,
+                  code: item.code,
+                  name: item.name,
+                  kind: item.kind,
+                  polygon: toCoordinates(item.geometry),
+                })),
+                settlements: settlements.map((item) => ({
+                  id: item.id,
+                  name: item.name,
+                  location: {
+                    longitude: item.longitude,
+                    latitude: item.latitude,
+                  },
+                  nearestStretchId: item.stretch_id,
+                  nearestStretchName: item.stretch_name,
+                })),
+              },
             },
           };
         },

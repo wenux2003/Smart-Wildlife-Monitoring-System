@@ -273,37 +273,39 @@ export function AnalyticsOverviewPage() {
                 : "Park operations overview"}
             </p>
           </div>
-          <div className="an-history-link" aria-disabled="true">
+          <Link
+            className="an-history-link"
+            to={{ pathname: "/reports", search: searchParams.toString() }}
+          >
             Report history <ArrowRight size={16} />
-            <span>Available in next phase</span>
-          </div>
+          </Link>
         </header>
 
         <nav className="an-tabs" aria-label="Analytics sections">
           <Link to="/analytics" aria-current="page">
             Overview
           </Link>
-          <button
-            type="button"
-            disabled
-            title="Available in the next implementation phase"
+          <Link
+            to={{ pathname: "/analytics/map", search: searchParams.toString() }}
           >
             Hotspot map
-          </button>
-          <button
-            type="button"
-            disabled
-            title="Available in the next implementation phase"
+          </Link>
+          <Link
+            to={{
+              pathname: "/analytics/patrol-gaps",
+              search: searchParams.toString(),
+            }}
           >
             Patrol gaps
-          </button>
-          <button
-            type="button"
-            disabled
-            title="Available in the next implementation phase"
+          </Link>
+          <Link
+            to={{
+              pathname: "/analytics/conflicts",
+              search: searchParams.toString(),
+            }}
           >
             Conflict trends
-          </button>
+          </Link>
         </nav>
 
         <FilterBar
@@ -320,14 +322,15 @@ export function AnalyticsOverviewPage() {
             <button type="button" className="is-selected" aria-pressed="true">
               <TableProperties size={16} /> Tabular view
             </button>
-            <button
-              type="button"
-              disabled
-              aria-disabled="true"
-              title="Spatial view is available in the next implementation phase"
+            <Link
+              to={{
+                pathname: "/analytics/map",
+                search: searchParams.toString(),
+              }}
+              className="an-view-link"
             >
               <Map size={16} /> Spatial view
-            </button>
+            </Link>
           </div>
           <div className="an-report-stamp" aria-live="polite">
             {displayedRun?.status === "SUCCEEDED" && displayedRun.report ? (

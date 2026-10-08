@@ -49,6 +49,7 @@ export function reportFixture(): ConservationReport {
       excludedNoLocation: 0,
       excludedRejected: 0,
       outsideBoundary: 0,
+      sessionsAnalyzed: 0,
       sessionsWithoutTrack: 0,
       droppedGpsPoints: 0,
       alertsWithoutLocation: 0,
@@ -66,6 +67,7 @@ export function reportFixture(): ConservationReport {
     },
     priorityCells: [],
     conflicts: { series: [], byStretch: [] },
+    spatialContext: { parkBoundary: null, sectors: [], settlements: [] },
     summarySentences: [],
   };
 }
@@ -86,6 +88,7 @@ export function reportFixtureSections(): ReportSections {
     patrolGaps: report.patrolGaps,
     priorityCells: report.priorityCells,
     conflicts: report.conflicts,
+    spatialContext: report.spatialContext,
   };
 }
 
@@ -117,6 +120,10 @@ export function analyticsMemoryRepository(
         config: {
           gridCellMeters: 1000,
           trackBufferMeters: 50,
+          maxPointAccuracyMeters: 100,
+          maxSegmentGapSeconds: 600,
+          maxSegmentLengthMeters: 1000,
+          boundaryStretchBufferMeters: 2000,
           gapNeglectDays: 14,
           hotspotMinCount: 3,
           configured: false,
@@ -195,13 +202,15 @@ export function reportAuditMemoryRepository() {
         return null;
       return run;
     },
-    async history(parkId, userId, page, pageSize, status) {
+    async history(parkId, userId, page, pageSize, status, from, to) {
       const filtered = [...runs.values()]
         .filter(
           (run) =>
             run.parkId === parkId &&
             (userId === null || run.requestedBy === userId) &&
-            (!status || run.status === status),
+            (!status || run.status === status) &&
+            (!from || run.createdAt.slice(0, 10) >= from) &&
+            (!to || run.createdAt.slice(0, 10) <= to),
         )
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
       return {

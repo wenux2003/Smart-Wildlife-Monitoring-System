@@ -97,6 +97,11 @@ export function WorkspacePage() {
                     name: "Conservation analytics",
                     link: "/analytics",
                   },
+                  {
+                    icon: ChartNoAxesCombined,
+                    name: "Report history",
+                    link: "/reports",
+                  },
                 ]
               : []),
           ].map(({ icon: Icon, name, link }) => (
@@ -115,8 +120,8 @@ export function WorkspacePage() {
         </div>
         {user.role !== "PARK_MANAGER" && user.role !== "RESEARCHER" && (
           <p className="workspace-footnote">
-            Operational park data is available only to authorized park staff
-            and researchers.
+            Operational park data is available only to authorized park staff and
+            researchers.
           </p>
         )}
         <Link className="inline-link" to="/">

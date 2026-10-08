@@ -22,6 +22,26 @@ const AnalyticsOverviewPage = lazy(() =>
     ({ AnalyticsOverviewPage: page }) => ({ default: page }),
   ),
 );
+const AnalyticsMapPage = lazy(() =>
+  import("../features/analytics/pages/AnalyticsMapPage.js").then(
+    ({ AnalyticsMapPage: page }) => ({ default: page }),
+  ),
+);
+const PatrolGapsPage = lazy(() =>
+  import("../features/analytics/pages/PatrolGapsPage.js").then(
+    ({ PatrolGapsPage: page }) => ({ default: page }),
+  ),
+);
+const ConflictTrendsPage = lazy(() =>
+  import("../features/analytics/pages/ConflictTrendsPage.js").then(
+    ({ ConflictTrendsPage: page }) => ({ default: page }),
+  ),
+);
+const ReportHistoryPage = lazy(() =>
+  import("../features/analytics/pages/ReportHistoryPage.js").then(
+    ({ ReportHistoryPage: page }) => ({ default: page }),
+  ),
+);
 
 type RoleName =
   "SUPER_ADMIN" | "PARK_MANAGER" | "RANGER" | "LIAISON_OFFICER" | "RESEARCHER";
@@ -143,6 +163,10 @@ export function App() {
       "/change-password": "Change password",
       "/ranger": "Ranger app access",
       "/analytics": "Conservation analytics",
+      "/analytics/map": "Hotspot map",
+      "/analytics/patrol-gaps": "Patrol gaps",
+      "/analytics/conflicts": "Conflict trends",
+      "/reports": "Report history",
     };
     document.title = `${titles[location.pathname] ?? "Page not found"} | Wana Rakshaka`;
   }, [location.pathname]);
@@ -242,6 +266,30 @@ export function App() {
             </Suspense>
           }
         />
+        {[
+          { path: "/analytics/map", Page: AnalyticsMapPage },
+          { path: "/analytics/patrol-gaps", Page: PatrolGapsPage },
+          { path: "/analytics/conflicts", Page: ConflictTrendsPage },
+          { path: "/reports", Page: ReportHistoryPage },
+        ].map(({ path, Page }) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <Suspense
+                fallback={
+                  <main className="center-state" role="status">
+                    Loading analytics…
+                  </main>
+                }
+              >
+                <RoleRoute roles={["PARK_MANAGER", "RESEARCHER"]}>
+                  <Page />
+                </RoleRoute>
+              </Suspense>
+            }
+          />
+        ))}
         <Route
           path="/ranger"
           element={

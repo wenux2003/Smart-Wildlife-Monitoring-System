@@ -43,6 +43,15 @@ it.skipIf(!url)(
       expect(report.patrolGaps.gapAreaKm2).toBeGreaterThan(0);
       expect(report.patrolGaps.coveredAreaKm2).toBeGreaterThan(0);
       expect(report.dataQuality.excludedNoLocation).toBeGreaterThan(0);
+      expect(report.spatialContext.parkBoundary?.length).toBeGreaterThan(0);
+      expect(report.spatialContext.sectors.length).toBeGreaterThan(0);
+      expect(
+        report.spatialContext.sectors.every((sector) =>
+          sector.polygon.every((polygon) =>
+            polygon.every((ring) => ring.length >= 4),
+          ),
+        ),
+      ).toBe(true);
       expect(JSON.stringify(report)).not.toMatch(
         /reporter_phone|description|reporter_id/,
       );
@@ -96,8 +105,20 @@ it.skipIf(!url)(
         byteSize: 13,
         fileSha256: "a".repeat(64),
       });
+      expect(history.items.some((record) => record.run.runId === runId)).toBe(
+        true,
+      );
+      const datedHistory = await audit.history(
+        park.id,
+        user.id,
+        1,
+        20,
+        "SUCCEEDED",
+        "2026-10-08",
+        "2026-10-08",
+      );
       expect(
-        history.items.some((record) => record.run.runId === runId),
+        datedHistory.items.some((record) => record.run.runId === runId),
       ).toBe(true);
     } finally {
       if (runId) {

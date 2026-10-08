@@ -346,6 +346,8 @@ export function createAnalyticsService(
           filters.page,
           filters.pageSize,
           filters.status,
+          filters.from,
+          filters.to,
         );
       } catch (error) {
         if (isConnectionFailure(error)) throw unavailable();

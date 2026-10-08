@@ -16,6 +16,18 @@ vi.mock("../components/Reveal.js", () => ({
 vi.mock("../features/analytics/pages/AnalyticsOverviewPage.js", () => ({
   AnalyticsOverviewPage: () => <main><h1>Analytics overview</h1></main>,
 }));
+vi.mock("../features/analytics/pages/AnalyticsMapPage.js", () => ({
+  AnalyticsMapPage: () => <main><h1>Hotspot map view</h1></main>,
+}));
+vi.mock("../features/analytics/pages/PatrolGapsPage.js", () => ({
+  PatrolGapsPage: () => <main><h1>Patrol gap view</h1></main>,
+}));
+vi.mock("../features/analytics/pages/ConflictTrendsPage.js", () => ({
+  ConflictTrendsPage: () => <main><h1>Conflict trends view</h1></main>,
+}));
+vi.mock("../features/analytics/pages/ReportHistoryPage.js", () => ({
+  ReportHistoryPage: () => <main><h1>Report history view</h1></main>,
+}));
 
 afterEach(() => {
   cleanup();
@@ -73,8 +85,16 @@ describe("role-aware Ops routes", () => {
       .getAllByRole("link", { name: "Open" })
       .find((link) => link.getAttribute("href") === "/analytics");
     expect(analyticsLink).toBeTruthy();
+    expect(screen.getAllByRole("link", { name: "Open" }).some(
+      (link) => link.getAttribute("href") === "/reports",
+    )).toBe(true);
     fireEvent.click(analyticsLink!);
     expect(await screen.findByRole("heading", { name: "Analytics overview" })).toBeInTheDocument();
+  });
+
+  it("guards the report history route for Park Managers and Researchers", async () => {
+    mountApp("/reports", account({ role: "PARK_MANAGER" }));
+    expect(await screen.findByRole("heading", { name: "Report history view" })).toBeInTheDocument();
   });
 
   it("forces a temporary-password account to change the password before the workspace", async () => {
