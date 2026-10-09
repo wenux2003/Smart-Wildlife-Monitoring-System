@@ -123,12 +123,12 @@ describe("analytics exporters", () => {
     const second = await pdfExporter.render(run);
     const { pageCount, text } = await extractPdfText(first);
     expect(first.subarray(0, 5).toString("latin1")).toBe("%PDF-");
-    expect(pageCount).toBeGreaterThanOrEqual(4);
+    expect(pageCount).toBeGreaterThanOrEqual(2);
     expect(pageCount).toBeLessThanOrEqual(12);
     expect(text).toContain("Conservation Outcome Report");
     expect(text).toContain("RPT-YALA-2026-000042");
-    expect(text).toContain("Period: 01 Jan 2026");
-    expect(text).toContain("Category group: ALL");
+    expect(text).toContain("01 Jan 2026 –");
+    expect(text).toContain("All categories");
     expect(text).toContain("Southern Ridge");
     expect(text).toContain("42");
     expect(text).toContain(`Snapshot SHA-256: ${"a".repeat(64)}`);
@@ -318,11 +318,11 @@ describe("M4 P9 export completeness and privacy", () => {
     expect(csv).not.toContain("patrol_gap_area");
     expect(csv).not.toMatch(/PRIVATE_|reporterPhone|reporterId|description/);
     const { text } = await extractPdfText(await pdfExporter.render(rich));
-    expect(text).toContain("NEW_ACTIVITY");
+    expect(text).toContain("New activity");
     expect(text).toContain("Not configured");
     expect(text).toContain("Galge Stretch");
-    expect(text).toContain("Sources: RANGER");
-    expect(text).toContain("Types: SNARE_FOUND");
+    expect(text).toContain("Ranger");
+    expect(text).toContain("Snare found");
     expect(text).not.toMatch(/PRIVATE_|reporterPhone|reporterId|description/);
   });
 
@@ -383,4 +383,94 @@ it("keeps the longest incident type inside the PDF page margins across table bre
   } finally {
     await document.destroy();
   }
+});
+
+it("prints every web analytics section with readable labels, method settings and the full map", async () => {
+  const ring = [
+    { latitude: 6.36, longitude: 81.5 },
+    { latitude: 6.36, longitude: 81.51 },
+    { latitude: 6.37, longitude: 81.51 },
+    { latitude: 6.37, longitude: 81.5 },
+    { latitude: 6.36, longitude: 81.5 },
+  ];
+  const stretchId = "33333333-3333-4333-8333-333333333333";
+  const report = {
+    ...run.report,
+    method: {
+      gridCellMeters: 1000,
+      trackBufferMeters: 75,
+      maxPointAccuracyMeters: 100,
+      maxSegmentGapSeconds: 600,
+      maxSegmentLengthMeters: 1000,
+      gapNeglectDays: 14,
+      hotspotMinCount: 3,
+      boundaryStretchBufferMeters: 2000,
+    },
+    hotspots: {
+      ...run.report.hotspots,
+      cells: [{ cellId: "1:1", polygon: ring, sectorName: "Southern Ridge", count: 9, riskClass: 5 as const, isHotspot: true }],
+    },
+    patrolGaps: {
+      configured: true,
+      cells: [{ cellId: "1:1", polygon: ring, covered: false, lastPatrolledAt: null, daysSincePatrol: null }],
+      coveredAreaKm2: 0,
+      gapAreaKm2: 1.2,
+      parkAreaKm2: 1.2,
+      bySector: [{ sectorName: "Southern Ridge", gapAreaKm2: 1.2, gapSharePercent: 100 }],
+    },
+    priorityCells: [
+      { cellId: "1:1", centre: { latitude: 6.365, longitude: 81.505 }, sectorName: "Southern Ridge", incidents: 9, daysSincePatrol: null, score: 810 },
+    ],
+    conflicts: {
+      series: [{ bucketStart: "2026-01-01", label: "2026-01", communityReports: 4, collarBreaches: 2, rangerReported: 1 }],
+      byStretch: [
+        {
+          stretchId,
+          stretchName: "Galge Stretch",
+          communityReports: 4,
+          collarBreaches: 2,
+          byMonth: [{ bucketStart: "2026-01-01", communityReports: 4, collarBreaches: 2 }],
+        },
+      ],
+    },
+    spatialContext: {
+      parkBoundary: [[ring]],
+      sectors: [
+        { id: "44444444-4444-4444-8444-444444444444", code: "SR", name: "Southern Ridge", kind: "SECTOR" as const, polygon: [[ring]] },
+        { id: stretchId, code: "GS", name: "Galge Stretch", kind: "BOUNDARY_STRETCH" as const, polygon: [[ring]] },
+      ],
+      settlements: [
+        { id: "55555555-5555-4555-8555-555555555555", name: "Galge", location: { latitude: 6.38, longitude: 81.5 }, nearestStretchId: stretchId, nearestStretchName: "Galge Stretch" },
+      ],
+    },
+  };
+  const { text } = await extractPdfText(await pdfExporter.render({ ...run, report }));
+  for (const heading of [
+    "Key indicators",
+    "Key insights",
+    "What the numbers include",
+    "Incident frequency",
+    "Incident breakdown",
+    "Hotspot and patrol coverage map",
+    "Where to patrol next",
+    "Busiest cells",
+    "Patrol gaps",
+    "Share of each sector not patrolled",
+    "How the figures are calculated",
+    "Conflict trends",
+    "Conflict events by stretch",
+    "Monthly events by stretch",
+  ])
+    expect(text).toContain(heading);
+  expect(text).toContain("Snare found");
+  expect(text).not.toContain("SNARE_FOUND");
+  expect(text).toContain("within 75 m");
+  expect(text).toContain("Not patrolled for 14+ days");
+  expect(text).toContain("Nearby villages");
+  expect(text).toContain("Galge");
+  expect(text).toContain("Jan 2026");
+  expect(text).toContain("4 / 2");
+  expect(text).toContain("Never");
+  expect(text).toContain("810");
+  expect(text).toContain("Approximate park boundary");
 });

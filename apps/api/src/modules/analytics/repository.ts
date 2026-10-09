@@ -391,6 +391,16 @@ ORDER BY nearest.name,st.name,st.id`;
             hasPatrolPoints: quality.has_points,
             sections: {
               syntheticDemo: p.config.analyticsDemo != null,
+              method: {
+                gridCellMeters: config.gridCellMeters,
+                trackBufferMeters: config.trackBufferMeters,
+                maxPointAccuracyMeters: config.maxPointAccuracyMeters,
+                maxSegmentGapSeconds: config.maxSegmentGapSeconds,
+                maxSegmentLengthMeters: config.maxSegmentLengthMeters,
+                gapNeglectDays: config.gapNeglectDays,
+                hotspotMinCount: config.hotspotMinCount,
+                boundaryStretchBufferMeters: config.boundaryStretchBufferMeters,
+              },
               park: { id, code: p.code, name: p.name },
               filters: f.filters,
               window: f.window,

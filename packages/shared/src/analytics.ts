@@ -212,9 +212,24 @@ export const AnalyticsSpatialContextSchema = z.object({
   ),
 });
 
+/** Park analysis settings used for a report, kept so exports can explain the method later. */
+export const ReportMethodSchema = z.object({
+  gridCellMeters: z.number().int().positive(),
+  trackBufferMeters: z.number().int().positive(),
+  maxPointAccuracyMeters: z.number().int().positive(),
+  maxSegmentGapSeconds: z.number().int().positive(),
+  maxSegmentLengthMeters: z.number().int().positive(),
+  gapNeglectDays: z.number().int().positive(),
+  hotspotMinCount: z.number().int().positive(),
+  boundaryStretchBufferMeters: z.number().int().positive(),
+});
+export type ReportMethod = z.infer<typeof ReportMethodSchema>;
+
 export const ConservationReportSchema = z.object({
   schemaVersion: z.literal(1),
   syntheticDemo: z.boolean().optional(),
+  // Optional so reports saved before this field existed remain valid.
+  method: ReportMethodSchema.optional(),
   park: z.object({
     id: z.string().uuid(),
     code: z.string(),
