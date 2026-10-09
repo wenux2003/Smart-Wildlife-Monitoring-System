@@ -284,11 +284,9 @@ export function createAlertRepository(url: string): AlertRepository {
       return result.length > 0 ? result[0].config : {};
     },
     async updateParkAlertConfig(parkId: string, alertConfig: AlertsConfig) {
-      // Use a single atomic JSONB merge to avoid the read-modify-write race condition.
-      // jsonb_set merges into the existing config column without overwriting sibling keys.
       await sql`
         UPDATE parks 
-        SET config = COALESCE(config, '{}'::jsonb) || jsonb_build_object('alerts', ${JSON.stringify(alertConfig)}::jsonb)
+        SET config = COALESCE(config, '{}'::jsonb) || jsonb_build_object('alerts', ${sql.json(alertConfig)})
         WHERE id = ${parkId}
       `;
       return alertConfig;

@@ -16,11 +16,12 @@ type AlertsMapProps = {
   setSelectedCollar: (id: string | null) => void;
   isDrawing: boolean;
   setNewPolygon: (poly: [number, number][]) => void;
+  onDeleteZone?: (index: number) => void;
 };
 
 export function AlertsMap({
   center, zoom, collars, pings, alerts, config,
-  selectedCollar, setSelectedCollar, isDrawing, setNewPolygon
+  selectedCollar, setSelectedCollar, isDrawing, setNewPolygon, onDeleteZone
 }: AlertsMapProps) {
   return (
     <div className="flex-1 bg-[#bad2e3] relative" style={{ zIndex: 0, minHeight: 0 }}>
@@ -100,6 +101,24 @@ export function AlertsMap({
             <Popup>
               <strong>{zone.name}</strong><br/>
               Alert on {zone.alertOn} ({zone.severity})
+              {onDeleteZone && (
+                <div style={{ marginTop: '8px' }}>
+                  <button 
+                    onClick={() => onDeleteZone(i)}
+                    style={{
+                      background: '#ef4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '4px 8px',
+                      cursor: 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >
+                    Delete Zone
+                  </button>
+                </div>
+              )}
             </Popup>
           </Polygon>
         ))}

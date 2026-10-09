@@ -1,7 +1,7 @@
 import type { AlertsConfig } from "./types.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { AlertListSchema, AlertSchema, AlertDispatchSchema, AlertDispatchListSchema, CollarListSchema, CollarPingListSchema, Role, AlertContextSchema, RangerDistanceSchema } from "@wr/shared";
+import { AlertListSchema, AlertSchema, AlertDispatchSchema, AlertDispatchListSchema, CollarListSchema, CollarPingListSchema, Role, AlertContextSchema, RangerDistanceSchema, Severity } from "@wr/shared";
 import { AppError } from "../../core/errors.js";
 import type { AlertRepository } from "./repository.js";
 import { createAlertService } from "./service.js";
@@ -107,6 +107,12 @@ export async function alertRoutes(
         body: z.object({
           geofenceCenter: z.array(z.number()).length(2).optional(),
           geofenceRadiusKm: z.number().optional(),
+          geofenceZones: z.array(z.object({
+            name: z.string(),
+            polygon: z.array(z.array(z.number()).length(2)),
+            alertOn: z.enum(["enter", "exit"]),
+            severity: z.nativeEnum(Severity)
+          })).optional(),
           immobilitySpeedThreshold: z.number().optional(),
           lowBatteryThreshold: z.number().optional(),
         }),

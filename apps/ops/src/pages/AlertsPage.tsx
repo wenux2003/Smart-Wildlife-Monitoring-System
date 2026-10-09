@@ -120,6 +120,14 @@ export function AlertsPage() {
           setSelectedCollar={setSelectedCollar}
           isDrawing={isDrawing}
           setNewPolygon={completeDrawing}
+          onDeleteZone={(index) => {
+            if (!config) return;
+            const newZones = config.geofenceZones.filter((_, i) => i !== index);
+            updateConfigMutation.mutate({
+              ...config,
+              geofenceZones: newZones
+            });
+          }}
         />
       </main>
       
