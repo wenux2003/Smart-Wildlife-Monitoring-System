@@ -181,11 +181,14 @@ export function createAnalyticsRepository(
  WITH points AS (SELECT q.session_id,q.position,q.recorded_at,q.client_record_id FROM patrol_gps_points q JOIN patrol_sessions ps ON ps.id=q.session_id JOIN patrol_assignments pa ON pa.id=ps.assignment_id JOIN patrol_routes pr ON pr.id=pa.route_id
  WHERE pr.park_id=${id} AND q.recorded_at>=${new Date(Date.parse(f.window.fromUtc) - 90 * 86400000)} AND q.recorded_at<${f.window.toUtcExclusive} AND (q.accuracy_m IS NULL OR q.accuracy_m<=${config.maxPointAccuracyMeters})),
  pairs AS(SELECT *,lead(position) OVER w next_position,lead(recorded_at) OVER w next_at FROM points WINDOW w AS(PARTITION BY session_id ORDER BY recorded_at,client_record_id)),
- tracks AS(SELECT recorded_at,next_at,ST_MakeLine(ST_Transform(position,32644),ST_Transform(next_position,32644)) line FROM pairs WHERE next_at>recorded_at AND extract(epoch FROM next_at-recorded_at)<=${config.maxSegmentGapSeconds} AND ST_Distance(ST_Transform(position,32644),ST_Transform(next_position,32644))<=${config.maxSegmentLengthMeters}),
+ -- MATERIALIZED: compute the segments and the touched cells once each. Without table statistics (a freshly
+ -- seeded database) the planner otherwise inlines these steps into nested loops and repeats the whole
+ -- window/geometry pipeline for every grid cell, which exceeded the statement timeout in CI.
+ tracks AS MATERIALIZED(SELECT recorded_at,next_at,ST_MakeLine(ST_Transform(position,32644),ST_Transform(next_position,32644)) line FROM pairs WHERE next_at>recorded_at AND extract(epoch FROM next_at-recorded_at)<=${config.maxSegmentGapSeconds} AND ST_Distance(ST_Transform(position,32644),ST_Transform(next_position,32644))<=${config.maxSegmentLengthMeters}),
  -- A cell is covered when a valid segment passes within the buffer distance. ST_DWithin is the exact form of
  -- "intersects the buffered segment" and, driven from the segments, uses the GiST index on geom_m instead of
  -- comparing every buffered polygon with every cell.
- touched AS(SELECT g.col,g.row,bool_or(t.recorded_at>=${f.window.fromUtc}) covered,max(t.next_at) last_patrolled_at
+ touched AS MATERIALIZED(SELECT g.col,g.row,bool_or(t.recorded_at>=${f.window.fromUtc}) covered,max(t.next_at) last_patrolled_at
  FROM tracks t JOIN analysis_grid_cells g ON g.park_id=${id} AND g.cell_size_m=${config.gridCellMeters} AND ST_DWithin(g.geom_m,t.line,${config.trackBufferMeters})
  GROUP BY g.col,g.row)
  SELECT g.col::text||':'||g.row::text cell_id,s.name sector_name,ST_AsGeoJSON(g.geom)::json polygon,ST_AsGeoJSON(ST_Centroid(g.geom))::json centre,g.area_m2,
