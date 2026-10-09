@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -100,6 +101,94 @@ function show() {
   );
 }
 describe("Ops camera review", () => {
+  it.each(["WILDLIFE", "AUTHORIZED_PERSON"])(
+    "does not expose a resulting incident link after %s review",
+    async (classification) => {
+      show();
+      await screen.findByText("PENDING");
+      fireEvent.change(screen.getByLabelText("Classification"), {
+        target: { value: classification },
+      });
+      fireEvent.change(screen.getByLabelText("Review notes"), {
+        target: { value: "Human review confirms no suspicious activity." },
+      });
+      fireEvent.click(
+        screen.getByRole("button", { name: "Save human review" }),
+      );
+      await screen.findByText("No images awaiting review.");
+      fireEvent.click(
+        screen.getByLabelText("Include previously reviewed images"),
+      );
+      expect(
+        await screen.findByRole("heading", {
+          name: classification.replaceAll("_", " "),
+        }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("link", { name: "Open resulting incident" }),
+      ).not.toBeInTheDocument();
+      const reviewRequest = request.mock.calls.find(
+        (call) => call[1]?.method === "PATCH",
+      );
+      expect(reviewRequest?.[0]).toBe(`/api/camera-images/${id}/review`);
+      expect(JSON.parse(reviewRequest![1].body)).toMatchObject({
+        classification,
+        notes: "Human review confirms no suspicious activity.",
+        expectedRevision: 1,
+      });
+    },
+  );
+  it("prevents human review submission with empty or whitespace-only notes", async () => {
+    show();
+    await screen.findByText("PENDING");
+    const saveReview = screen.getByRole("button", {
+      name: "Save human review",
+    });
+    expect(saveReview).toBeDisabled();
+    fireEvent.click(saveReview);
+    fireEvent.change(screen.getByLabelText("Review notes"), {
+      target: { value: " \n\t " },
+    });
+    expect(saveReview).toBeDisabled();
+    fireEvent.click(saveReview);
+    expect(
+      request.mock.calls.filter((call) => call[1]?.method === "PATCH"),
+    ).toHaveLength(0);
+    fireEvent.change(screen.getByLabelText("Review notes"), {
+      target: { value: "Another view is needed." },
+    });
+    expect(saveReview).toBeEnabled();
+    fireEvent.click(saveReview);
+    await screen.findByText("This image remains in the review queue.");
+    expect(
+      request.mock.calls.filter((call) => call[1]?.method === "PATCH"),
+    ).toHaveLength(1);
+  });
+  it("shows the loading state until camera images arrive", async () => {
+    let finishLoading!: () => void;
+    request.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishLoading = () =>
+            resolve({
+              ok: true,
+              status: 200,
+              json: async () => images,
+            });
+        }),
+    );
+    show();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Loading camera images",
+    );
+    expect(
+      screen.queryByText("No images awaiting review."),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("PENDING")).not.toBeInTheDocument();
+    await act(async () => finishLoading());
+    expect(await screen.findByText("PENDING")).toBeInTheDocument();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
   it("keeps UNSURE images reviewable and only links incidents after explicit suspicious review", async () => {
     show();
     await screen.findByText("PENDING");
@@ -170,7 +259,9 @@ describe("Ops camera review", () => {
       json: async () => ({ message: "Camera queue unavailable" }),
     }));
     show();
-    await screen.findByText("An unexpected error occurred. Please try again later.");
+    await screen.findByText(
+      "An unexpected error occurred. Please try again later.",
+    );
     expect(screen.queryByText("Camera queue unavailable")).toBeNull();
     fireEvent.click(screen.getByText("Select test photo"));
     fireEvent.change(screen.getByLabelText("Latitude"), {

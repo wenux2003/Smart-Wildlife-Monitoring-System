@@ -6,6 +6,7 @@ import "@testing-library/jest-dom/vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { saveOfflineIncident, saveOfflineMedia } from "@wr/offline";
+import type { IncidentDetail } from "@wr/shared";
 import { MyIncidentsPage } from "./MyIncidentsPage.js";
 import { IncidentSync } from "../components/IncidentSync.js";
 import { incidentDb, syncIncidents } from "../lib/incidents.js";
@@ -69,7 +70,156 @@ function show(id?: string) {
     </QueryClientProvider>,
   );
 }
+function serveIncidentDetail(
+  incident: Partial<IncidentDetail["incident"]> = {},
+  evidence: Partial<Pick<IncidentDetail, "media" | "history">> = {},
+) {
+  state.captureOnly = false;
+  const detail: IncidentDetail = {
+    incident: {
+      ...input,
+      source: "RANGER",
+      status: "VERIFIED",
+      reporterId: state.user.id,
+      reporterPhone: null,
+      photoUrl: null,
+      locationText: null,
+      revision: 1,
+      assignedTo: null,
+      assignedAt: null,
+      firstResponseAt: null,
+      resolvedAt: null,
+      outcomeNotes: null,
+      receivedAt: input.capturedAt,
+      reportedAt: input.capturedAt,
+      createdAt: input.capturedAt,
+      updatedAt: input.capturedAt,
+      ...incident,
+    },
+    media: [],
+    history: [],
+    messages: [],
+    followUps: [],
+    ...evidence,
+  };
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string) => ({
+      ok: true,
+      status: 200,
+      json: async () =>
+        url === `/api/incidents/${input.id}` ? detail : [detail.incident],
+    })),
+  );
+}
+
 describe("Ranger saved reports and sync feedback", () => {
+  it("shows the assigned-to-you notice in detail for the logged-in responder", async () => {
+    serveIncidentDetail({
+      source: "COMMUNITY",
+      reporterId: null,
+      assignedTo: state.user.id,
+    });
+    show(input.id);
+    expect(
+      await screen.findByText(
+        "Assigned to you. Coordinate the response with your park operator.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText(input.description)).toBeInTheDocument();
+  });
+  it("displays outcome notes in resolved incident detail", async () => {
+    serveIncidentDetail({
+      status: "RESOLVED",
+      outcomeNotes: "Removed the snare and released the animal.",
+      resolvedAt: "2026-10-07T12:00:00.000Z",
+    });
+    show(input.id);
+    expect(
+      await screen.findByText(
+        "Outcome: Removed the snare and released the animal.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Status: RESOLVED/)).toBeInTheDocument();
+  });
+  it("renders server history with event labels, timestamps and notes", async () => {
+    const assignedAt = "2026-10-07T10:30:00.000Z";
+    const startedAt = "2026-10-07T11:00:00.000Z";
+    serveIncidentDetail(
+      {},
+      {
+        history: [
+          {
+            id: "55555555-5555-4555-8555-555555555555",
+            incidentId: input.id,
+            actorId: state.user.id,
+            eventType: "RESPONDER_ASSIGNED",
+            oldStatus: "VERIFIED",
+            newStatus: "VERIFIED",
+            notes: "Respond to the southern entrance.",
+            createdAt: assignedAt,
+          },
+          {
+            id: "66666666-6666-4666-8666-666666666666",
+            incidentId: input.id,
+            actorId: state.user.id,
+            eventType: "RESPONSE_STARTED",
+            oldStatus: "VERIFIED",
+            newStatus: "IN_PROGRESS",
+            notes: "Ranger response started.",
+            createdAt: startedAt,
+          },
+        ],
+      },
+    );
+    show(input.id);
+    const assignment = await screen.findByText(
+      /RESPONDER ASSIGNED Respond to the southern entrance\./,
+    );
+    expect(assignment).toHaveTextContent(new Date(assignedAt).toLocaleString());
+    const response = screen.getByText(
+      /RESPONSE STARTED Ranger response started\./,
+    );
+    expect(response).toHaveTextContent(new Date(startedAt).toLocaleString());
+  });
+  it("renders evidence once when legacy photoUrl matches server media", async () => {
+    const dataUrl = "data:image/jpeg;base64,/9j/AAAA";
+    serveIncidentDetail(
+      { photoUrl: dataUrl },
+      {
+        media: [
+          {
+            id: "55555555-5555-4555-8555-555555555555",
+            incidentId: input.id,
+            dataUrl,
+            createdAt: input.capturedAt,
+          },
+        ],
+      },
+    );
+    show(input.id);
+    expect(await screen.findByAltText("Incident evidence")).toHaveAttribute(
+      "src",
+      dataUrl,
+    );
+    expect(
+      screen.getAllByRole("img", { name: "Incident evidence" }),
+    ).toHaveLength(1);
+    expect(screen.getByText("Photo: SYNCED")).toBeInTheDocument();
+  });
+  it("shows sign-in-to-sync guidance in capture-only mode", async () => {
+    await saveOfflineIncident(incidentDb, state.user.id, input);
+    show();
+    await screen.findByText(input.description);
+    const signIn = screen.getByRole("link", {
+      name: "Sign in as the original ranger",
+    });
+    expect(signIn).toHaveAttribute("href", "/login");
+    expect(signIn.closest("p")).toHaveTextContent(
+      "Offline capture mode. Sign in as the original ranger to synchronize.",
+    );
+    expect(fetch).not.toHaveBeenCalled();
+  });
   it("shows legacy evidence when the server has no media records", async () => {
     state.captureOnly = false;
     const photoUrl = "https://example.org/legacy.jpg";
