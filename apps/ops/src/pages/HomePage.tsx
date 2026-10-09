@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowDown,
-  ArrowRight,
   ArrowUpRight,
   Activity,
   Binoculars,
@@ -19,6 +18,8 @@ import {
 } from "lucide-react";
 import { Brand } from "../components/Brand.js";
 import { Reveal } from "../components/Reveal.js";
+import { ConservationStories } from "../components/ConservationStories.js";
+import { LandingFeedback } from "../components/LandingFeedback.js";
 import { useAuth } from "../auth/AuthContext.js";
 
 const capabilities = [
@@ -26,25 +27,29 @@ const capabilities = [
     icon: Binoculars,
     title: "Every observation matters.",
     name: "Incident reporting",
+    audience: "Public reports · Staff review",
     copy: "Bring ranger observations, community reports and camera-trap reviews into one shared picture.",
   },
   {
     icon: Footprints,
     title: "Leave fewer blind spots.",
     name: "Ranger patrols",
-    copy: "Plan routes, capture field observations and understand where patrol effort is needed most.",
+    audience: "Ranger accounts",
+    copy: "Record patrol tracks and waypoints, capture field observations and see where patrol effort is needed most.",
   },
   {
     icon: Radio,
     title: "Know when to respond.",
     name: "Wildlife monitoring",
+    audience: "Park operations teams",
     copy: "Connect collar movements with alerts and coordinate the people closest to the situation.",
   },
   {
     icon: ChartNoAxesCombined,
     title: "See the bigger picture.",
     name: "Conservation insights",
-    copy: "Explore incident patterns, patrol coverage and conflict trends to support better decisions.",
+    audience: "Managers & approved researchers",
+    copy: "Explore incident patterns, patrol coverage and conflict trends, then export reports to support better decisions.",
   },
 ];
 export function HomePage() {
@@ -71,6 +76,9 @@ export function HomePage() {
             </a>
             <a href="#how-it-works" onClick={() => setMenuOpen(false)}>
               How it works
+            </a>
+            <a href="#conservation-stories" onClick={() => setMenuOpen(false)}>
+              Field stories
             </a>
             <Link className="nav-signin" to={user ? "/dashboard" : "/login"}>
               {user ? "My workspace" : "Sign in"}
@@ -121,33 +129,24 @@ export function HomePage() {
                   <ArrowUpRight size={18} />
                 </a>
                 <Link
-                  className="button button-cream"
+                  className="button button-ghost-light"
                   to={user ? "/dashboard" : "/register"}
                 >
-                  {user ? "Open your workspace" : "Join the mission"}
+                  {user ? "Open your workspace" : "Register as a researcher"}
                   <ArrowUpRight size={18} />
                 </Link>
-                <a className="hero-secondary" href="#platform">
-                  Explore the platform
-                  <ArrowRight size={17} />
-                </a>
               </div>
+              <p className="hero-note">
+                <ShieldCheck size={15} aria-hidden="true" /> No account needed
+                to report an incident. Staff accounts are created by park
+                managers.
+              </p>
             </Reveal>
           </div>
-          <div className="hero-bottom content-width">
-            <span>
-              <Leaf size={15} /> Made for conservation. Built around people.
-            </span>
+          <div className="hero-bottom hero-bottom-center content-width">
             <a href="#mission" aria-label="Scroll to our mission">
               <ArrowDown size={17} />
             </a>
-          </div>
-          <div className="hero-caption">
-            <span className="caption-cross">+</span>
-            <div>
-              WILD SPACES. SHARED FUTURES.
-              <small>Protecting what cannot be replaced.</small>
-            </div>
           </div>
         </section>
         <div className="purpose-strip">
@@ -187,7 +186,7 @@ export function HomePage() {
                   around the people protecting Sri Lanka’s natural heritage.
                 </p>
                 <a className="inline-link" href="#how-it-works">
-                  A simpler way to work together <ArrowUpRight size={17} />
+                  See how it works <ArrowDown size={17} />
                 </a>
               </div>
             </div>
@@ -203,32 +202,29 @@ export function HomePage() {
                   <br />a lasting difference.
                 </h2>
                 <p>
-                  A shared vision for conservation.
-                  <br />
+                  A shared vision for conservation. <br />
                   Four connected areas of work.
                 </p>
               </div>
             </Reveal>
             <div className="capability-grid">
-              {capabilities.map(({ icon: Icon, title, name, copy }, index) => (
-                <Reveal key={name} delay={index * 70}>
-                  <article className="capability-card">
-                    <div className="capability-top">
-                      <Icon size={27} strokeWidth={1.4} />
-                      <span>0{index + 1}</span>
-                    </div>
-                    <p className="capability-name">{name}</p>
-                    <h3>{title}</h3>
-                    <p>{copy}</p>
-                    <span className="development-tag">In development</span>
-                  </article>
-                </Reveal>
-              ))}
+              {capabilities.map(
+                ({ icon: Icon, title, name, copy, audience }, index) => (
+                  <Reveal key={name} delay={index * 70}>
+                    <article className="capability-card">
+                      <div className="capability-top">
+                        <Icon size={27} strokeWidth={1.4} />
+                        <span>0{index + 1}</span>
+                      </div>
+                      <p className="capability-name">{name}</p>
+                      <h3>{title}</h3>
+                      <p>{copy}</p>
+                      <span className="capability-audience">{audience}</span>
+                    </article>
+                  </Reveal>
+                ),
+              )}
             </div>
-            <p className="platform-note">
-              The platform is taking shape. Account access is available now;
-              conservation workflows are being developed.
-            </p>
           </div>
         </section>
         <section
@@ -244,8 +240,7 @@ export function HomePage() {
                 to informed action.
               </h2>
               <p>
-                Designed to keep the whole team
-                <br />
+                Designed to keep the whole team <br />
                 moving in the same direction.
               </p>
             </div>
@@ -254,25 +249,30 @@ export function HomePage() {
                 [
                   "Observe",
                   "Capture what’s happening in the field, from wildlife sightings to signs of conflict.",
+                  "Rangers · villagers · camera traps · collars",
                 ],
                 [
                   "Coordinate",
                   "Bring the right context to the people who can review, verify and respond.",
+                  "Liaison officers · park managers · rangers",
                 ],
                 [
                   "Understand",
                   "Turn records into a clearer picture of the park and its conservation needs.",
+                  "Park managers · approved researchers",
                 ],
-              ].map(([title, copy], i) => (
+              ].map(([title, copy, who], i) => (
                 <div key={title}>
                   <span className="step-number">0{i + 1}</span>
                   <h3>{title}</h3>
                   <p>{copy}</p>
+                  <span className="step-who">{who}</span>
                 </div>
               ))}
             </div>
           </Reveal>
         </section>
+        <ConservationStories />
         <section className="join-section">
           <div className="join-texture" aria-hidden="true" />
           <Reveal>
@@ -286,40 +286,69 @@ export function HomePage() {
                   <br />
                   <em>worth protecting.</em>
                 </h2>
-                <p>Your next chapter in conservation starts here.</p>
+                <p>Two ways to get involved, whoever you are.</p>
               </div>
-              <Link
-                className="button button-cream"
-                to={user ? "/dashboard" : "/register"}
-              >
-                {user ? "Open workspace" : "Create your account"}
-                <ArrowUpRight size={19} />
-              </Link>
+              <div className="join-paths">
+                <div className="join-path">
+                  <Binoculars size={22} aria-hidden="true" />
+                  <h3>Saw something in the field?</h3>
+                  <p>
+                    Report elephants near homes, crop damage, snares or an
+                    injured animal. No account needed.
+                  </p>
+                  <a className="button button-cream" href={communityReportUrl}>
+                    Report an incident <ArrowUpRight size={18} />
+                  </a>
+                </div>
+                <div className="join-path">
+                  <ChartNoAxesCombined size={22} aria-hidden="true" />
+                  <h3>Researcher or conservation partner?</h3>
+                  <p>
+                    Create an account, then ask the park manager for access to
+                    the park you study.
+                  </p>
+                  <Link
+                    className="button button-ghost-light"
+                    to={user ? "/dashboard" : "/register"}
+                  >
+                    {user ? "Open workspace" : "Create a researcher account"}
+                    <ArrowUpRight size={18} />
+                  </Link>
+                </div>
+              </div>
             </div>
           </Reveal>
         </section>
         <section className="faq section-space content-width">
-          <div>
+          <div className="faq-intro">
             <p className="section-kicker">A LITTLE MORE CLARITY</p>
             <h2>Before you step in.</h2>
+            <p>
+              Answers about who the platform is for, how access works and what
+              happens to a report once it is sent.
+            </p>
           </div>
           <div className="faq-list">
             {[
               [
                 "Who is Wana Rakshaka for?",
-                "The platform is designed for rangers, park managers, liaison officers and conservation researchers working in Sri Lanka.",
+                "The platform is designed for rangers, park managers, liaison officers and conservation researchers working in Sri Lanka, and for anyone living near a park who wants to report a wildlife incident.",
+              ],
+              [
+                "What happens after I report an incident?",
+                "A liaison officer or park manager reviews the report, confirms the location if needed and assigns a ranger to respond. The outcome is recorded with the incident, and the report also feeds the park’s conflict and hotspot analysis.",
               ],
               [
                 "Can I create an account?",
                 "Yes. New accounts start as Researchers, with no park data access until a park manager grants access to their park. Staff accounts are created by park managers.",
               ],
               [
-                "Is the entire platform available?",
-                "Account registration and sign-in are available. Incident, patrol, alert and analytics workflows are still in development for this university project.",
+                "Can anyone use the staff tools?",
+                "No. Anyone can submit a community incident report without a staff account. Incident review, patrols, wildlife monitoring and conservation reports are restricted to the appropriate roles and park assignments. Registering as a Researcher does not unlock park data; a park manager must grant access first.",
               ],
               [
                 "Will it work without a connection?",
-                "Offline incident collection and patrol recording are planned for the Ranger app. Account creation and sign-in currently need an internet connection.",
+                "After signing in and loading assigned patrols online, Rangers can record incidents and patrol activity offline. Saved records synchronize when a connection is available. Map tiles, sign-in and conservation analytics need a connection.",
               ],
             ].map(([question, answer]) => (
               <details key={question}>
@@ -332,6 +361,7 @@ export function HomePage() {
             ))}
           </div>
         </section>
+        <LandingFeedback />
       </main>
       <footer className="site-footer content-width">
         <div>
@@ -357,6 +387,24 @@ export function HomePage() {
             · Cropped, mirrored and tinted.
           </small>
         </div>
+        <nav className="footer-links" aria-label="Footer">
+          <div>
+            <span>Explore</span>
+            <a href="#mission">Our mission</a>
+            <a href="#platform">The platform</a>
+            <a href="#how-it-works">How it works</a>
+            <a href="#conservation-stories">Field stories</a>
+            <a href="#feedback">Share feedback</a>
+          </div>
+          <div>
+            <span>Get involved</span>
+            <a href={communityReportUrl}>Community report</a>
+            <Link to={user ? "/dashboard" : "/register"}>
+              {user ? "My workspace" : "Researcher registration"}
+            </Link>
+            {!user && <Link to="/login">Staff sign in</Link>}
+          </div>
+        </nav>
         <div className="footer-right">
           <span>
             <MapPin size={14} /> Sri Lanka

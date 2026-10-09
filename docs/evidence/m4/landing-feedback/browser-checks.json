@@ -1,0 +1,25 @@
+{
+  "source": "Production Ops build with synthetic API fixtures; no shared database access",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "noHorizontalOverflow": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "noHorizontalOverflow": true
+    }
+  ],
+  "checkedAt": "2026-10-09T11:24:33.373Z",
+  "accessPanelRemoved": true,
+  "feedbackAtEnd": true,
+  "nativeValidation": true,
+  "keyboardRatingSelection": true,
+  "localOnlySaving": true,
+  "storedAcrossRefresh": true,
+  "addMoreResetsForm": true,
+  "noPostRequests": true,
+  "uncaughtExceptions": []
+}

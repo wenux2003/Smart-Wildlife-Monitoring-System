@@ -1,0 +1,77 @@
+[
+  {
+    "id": "village-fields",
+    "title": "Paddy field in sri lanka.jpg",
+    "src": "/images/stories/village-fields.webp",
+    "credit": "HarshaX4",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Paddy_field_in_sri_lanka.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/be/Paddy_field_in_sri_lanka.jpg/1280px-Paddy_field_in_sri_lanka.jpg",
+    "width": 1200,
+    "height": 800,
+    "bytes": 274910,
+    "changes": "Resized and WebP-compressed; displayed with a responsive crop."
+  },
+  {
+    "id": "road-crossing",
+    "title": "Who's crossing.jpg",
+    "credit": "Indrajith1598",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Who%27s_crossing.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e9/Who%27s_crossing.jpg",
+    "src": "/images/stories/road-crossing.webp",
+    "bytes": 79678
+  },
+  {
+    "id": "park-track",
+    "title": "Jeep Safari in Yala National Park,Sri Lanka.jpg",
+    "src": "/images/stories/park-track.webp",
+    "credit": "Hanavihash",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Jeep_Safari_in_Yala_National_Park,Sri_Lanka.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5b/Jeep_Safari_in_Yala_National_Park%2CSri_Lanka.jpg",
+    "width": 746,
+    "height": 746,
+    "bytes": 112676,
+    "changes": "Resized and WebP-compressed; displayed with a responsive crop."
+  },
+  {
+    "id": "camera-trap",
+    "title": "Camera trap 4.jpg",
+    "credit": "MSGNP",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Camera_trap_4.jpg",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Camera_trap_4.jpg",
+    "src": "/images/stories/camera-trap.webp",
+    "bytes": 180856
+  },
+  {
+    "id": "elephant-care",
+    "title": "Udawalawe Elephant Transit Home 2017-10-27 (31).jpg",
+    "src": "/images/stories/elephant-care.webp",
+    "credit": "Z thomas",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Udawalawe_Elephant_Transit_Home_2017-10-27_(31).jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/Udawalawe_Elephant_Transit_Home_2017-10-27_%2831%29.jpg/1280px-Udawalawe_Elephant_Transit_Home_2017-10-27_%2831%29.jpg",
+    "width": 1200,
+    "height": 900,
+    "bytes": 374116,
+    "changes": "Resized and WebP-compressed; displayed with a responsive crop."
+  },
+  {
+    "id": "elephant-fence",
+    "title": "Electric fence for Elephants B-295 Sri Lanka.JPG",
+    "credit": "Cherubino",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Electric_fence_for_Elephants_B-295_Sri_Lanka.JPG",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "sourceUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7d/Electric_fence_for_Elephants_B-295_Sri_Lanka.JPG/1280px-Electric_fence_for_Elephants_B-295_Sri_Lanka.JPG",
+    "src": "/images/stories/elephant-fence.webp",
+    "bytes": 357184
+  }
+]

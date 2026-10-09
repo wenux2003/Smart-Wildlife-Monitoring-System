@@ -1,0 +1,93 @@
+{
+  "source": "Production Ops build with synthetic API fixtures; no shared database access",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "noHorizontalOverflow": true,
+      "sectionSpacing": [
+        {
+          "section": "mission",
+          "top": 72,
+          "bottom": 72
+        },
+        {
+          "section": "platform",
+          "top": 72,
+          "bottom": 72
+        },
+        {
+          "section": "how-it-works",
+          "top": 72,
+          "bottom": 72
+        },
+        {
+          "section": "conservation-stories",
+          "top": 72,
+          "bottom": 72
+        },
+        {
+          "section": "join",
+          "top": 60,
+          "bottom": 60
+        },
+        {
+          "section": "faq",
+          "top": 72,
+          "bottom": 72
+        },
+        {
+          "section": "feedback",
+          "top": 72,
+          "bottom": 72
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "noHorizontalOverflow": true,
+      "sectionSpacing": [
+        {
+          "section": "mission",
+          "top": 48,
+          "bottom": 48
+        },
+        {
+          "section": "platform",
+          "top": 48,
+          "bottom": 48
+        },
+        {
+          "section": "how-it-works",
+          "top": 48,
+          "bottom": 48
+        },
+        {
+          "section": "conservation-stories",
+          "top": 48,
+          "bottom": 48
+        },
+        {
+          "section": "join",
+          "top": 48,
+          "bottom": 48
+        },
+        {
+          "section": "faq",
+          "top": 48,
+          "bottom": 48
+        },
+        {
+          "section": "feedback",
+          "top": 48,
+          "bottom": 48
+        }
+      ]
+    }
+  ],
+  "checkedAt": "2026-10-09T11:39:22.941Z",
+  "exploreButtonRemoved": true,
+  "uncaughtExceptions": [],
+  "noPostRequests": true
+}

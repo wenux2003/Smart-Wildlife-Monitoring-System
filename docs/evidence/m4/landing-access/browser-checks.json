@@ -1,0 +1,30 @@
+{
+  "source": "Production Ops build with synthetic API fixtures; no shared database access",
+  "viewports": [
+    {
+      "page": "landing platform",
+      "width": 1440,
+      "height": 900,
+      "noHorizontalOverflow": true
+    },
+    {
+      "page": "landing platform",
+      "width": 780,
+      "height": 1000,
+      "noHorizontalOverflow": true
+    },
+    {
+      "page": "landing platform",
+      "width": 390,
+      "height": 844,
+      "noHorizontalOverflow": true
+    }
+  ],
+  "checkedAt": "2026-10-09T09:38:08.417Z",
+  "anonymousPublicPage": true,
+  "informationalCardsOnly": true,
+  "publicCommunityReportLink": true,
+  "researcherSignupClearlyLabelled": true,
+  "roleAndParkRequirementsExplained": true,
+  "uncaughtExceptions": []
+}

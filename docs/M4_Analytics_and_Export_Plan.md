@@ -1684,3 +1684,43 @@ Unchecked items above are supplemental exact-scenario checks, not claimed as com
 - User requested all pending changes be committed with a summary and description. The workspace refinement commit includes the compact dashboard/analytics layout, six larger dashboard cards without the Ranger launcher, removal of legacy analytics/report account headers, and refresh-stable incident styles with corrected route titles.
 - Earlier uncommitted notes above and in evidence folders describe their validation checkpoints. All those refinements and their evidence are included in this commit. Historical compact-dashboard screenshots show the former Ranger card; the later six-card evidence records the final dashboard.
 - Validation uses the passing checks already recorded for each follow-up; no implementation changed during commit preparation. No database changes were required.
+
+### Public landing feature and access wording — 2026-10-09
+
+- ✅ Replaced outdated development labels with audience badges and a public-reporting/protected-workspace explanation. Public visitors can submit incidents; staff tools remain restricted by existing role and park checks. Researcher registration is explicitly labelled and still requires manager-granted park access for park data. Updated stale feature/offline FAQs.
+- ✅ Ops typecheck, landing lint and production build pass. Anonymous desktop/tablet/phone checks verify audience labels, informational feature cards, public reporting links, access wording and no horizontal overflow or runtime exceptions. [Screenshots and browser evidence](./evidence/m4/landing-access/README.md).
+- No access-control or database changes were made. This landing-page follow-up remains uncommitted.
+
+### Public conservation stories and custom parallax carousel — 2026-10-09
+
+- ✅ Added Conservation in action after How it works, with six licensed Sri Lankan sample photos and stories about community reporting, ranger teamwork, wildlife care, monitoring and habitat protection. Added Field stories navigation and photo credits. Samples are clearly labelled; no private records or unverified platform achievements are exposed.
+- ✅ The user chose a custom draggable parallax carousel after the requested React Bits Pro license key was unavailable. Implemented mouse dragging, native phone swiping, previous/next controls, Home/End/arrow keys and reduced-motion support, without new dependencies or paid component code.
+- ✅ Ops typecheck, changed-file lint and production build pass. Real-browser interaction and photo-load checks pass at desktop/tablet/phone widths; desktop and phone screenshots reviewed. [Evidence and screenshots](./evidence/m4/conservation-stories/README.md). Existing pending landing edits were preserved. These changes remain uncommitted.
+
+### Landing feedback and access-panel removal — 2026-10-09
+
+- ✅ Removed the Public reporting, protected workspaces panel and its unused styles. Added a matching feedback section after the FAQ and before the footer, with a Share feedback footer link.
+- ✅ The frontend form collects a rating, topic, optional name and message, validates input and handles storage errors. Feedback is saved only in this browser; the confirmation explicitly says it has not been sent to the team. No backend or database changes were required.
+- ✅ Three focused feedback tests, Ops typecheck, changed-file lint and production build pass; no bundle warning. Anonymous desktop/phone browser checks verify keyboard input, validation, local persistence, reset behavior and zero POST requests/runtime exceptions. [Tests, browser evidence and screenshots](./evidence/m4/landing-feedback/README.md). This follow-up remains uncommitted.
+
+### Landing presentation and automatic carousel — 2026-10-09
+
+- ✅ Removed the pictured carousel helper/navigation/status/scrollbar, sample badges, disclosure block, FAQ park-access callout and feedback rating selector. The legacy public-access panel remains removed. Photo attribution is retained discreetly in each card caption.
+- ✅ Added slow automatic movement that reverses at either end, pauses on hover, dragging, keyboard focus, offscreen content and background tabs, and respects reduced motion. Manual mouse dragging, native phone swiping and keyboard navigation remain available.
+- ✅ Three updated feedback tests, Ops typecheck, changed-file lint and production build pass; no bundle warning. Real-browser desktop/phone checks verify automatic/manual movement, pause/resume, end reversal, reduced motion, image loading and feedback without a rating. [Tests, evidence and screenshots](./evidence/m4/landing-presentation/README.md). No database changes; this follow-up remains uncommitted.
+
+### Landing hero action and tighter section spacing — 2026-10-09
+
+- ✅ Removed the Explore the platform hero button and unused icon/style. Reduced landing section padding from 100 to 72 px on desktop and 65 to 48 px on phones; reduced join-section padding to 60/48 px.
+- ✅ Hero removal passed changed-file lint. Final Ops production build and desktop/phone browser measurements pass, with no horizontal overflow or runtime exceptions. Section-transition screenshots visually reviewed. [Evidence](./evidence/m4/landing-spacing/README.md). No database changes; these refinements remain uncommitted.
+
+### Feedback label and centered hero arrow — 2026-10-09
+
+- ✅ Removed the feedback preview helper, changed the action to Send feedback and centered the hero down arrow. Existing frontend-only feedback behavior is retained.
+- ✅ Changed-file lint, final Ops production build and desktop/phone browser alignment checks pass. [Evidence and screenshots](./evidence/m4/landing-final-controls/README.md). These refinements remain uncommitted.
+
+### Public landing refinement commit checkpoint — 2026-10-09
+
+- User requested committing all pending changes. This commit includes the feature/access wording, public reporting/researcher paths, six current conservation workflow photos with attribution, automatic parallax carousel, frontend feedback form, helper removals, tighter spacing and centered hero arrow, plus all documentation and evidence.
+- ✅ Final three feedback tests, Ops typecheck and changed-file lint pass. Current production build and desktop/phone alignment checks passed at the preceding checkpoint; final browser checks also verify all six current photos and automatic/manual carousel behavior. [Final commit evidence](./evidence/m4/landing-commit/README.md).
+- Earlier uncommitted notes and screenshots describe historical checkpoints; all those pending refinements and evidence are included in this user-requested commit. No API, database or access-control changes were required.

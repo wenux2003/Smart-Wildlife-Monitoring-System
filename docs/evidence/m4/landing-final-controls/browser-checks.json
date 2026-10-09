@@ -1,0 +1,23 @@
+{
+  "source": "Production Ops build with synthetic API fixtures; no shared database access",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "arrowCenter": 712.5,
+      "noHorizontalOverflow": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "arrowCenter": 195,
+      "noHorizontalOverflow": true
+    }
+  ],
+  "checkedAt": "2026-10-09T11:55:00.778Z",
+  "previewHelperRemoved": true,
+  "buttonLabel": "Send feedback",
+  "heroArrowCentered": true,
+  "uncaughtExceptions": [],
+  "noPostRequests": true
+}

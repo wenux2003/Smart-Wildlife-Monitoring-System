@@ -1,0 +1,29 @@
+{
+  "source": "Production Ops build with synthetic API fixtures; no shared database access",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "noHorizontalOverflow": true
+    },
+    {
+      "width": 780,
+      "height": 1000,
+      "noHorizontalOverflow": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "noHorizontalOverflow": true
+    }
+  ],
+  "checkedAt": "2026-10-09T11:17:49.166Z",
+  "sixLocalPhotosLoaded": true,
+  "mouseDragging": true,
+  "touchSwipe": true,
+  "arrowButtons": true,
+  "keyboardHomeEndArrows": true,
+  "reducedMotionDisablesParallax": true,
+  "photoCreditsAndSampleDisclosure": true,
+  "uncaughtExceptions": []
+}

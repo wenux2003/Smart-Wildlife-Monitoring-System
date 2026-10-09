@@ -107,3 +107,41 @@ Outcome: committed previous work as `e6c1d35`, inspected existing Ranger-only pa
 User requests: remove the old account header from all analytics/report pages; remove the Ranger patrol card and enlarge the remaining six dashboard cards; fix Incidents/Community inbox losing styling on refresh until Camera review is opened; then commit all uncommitted work.
 
 Outcome: removed the legacy header in all analytics/report states, enlarged the six internal dashboard launchers, and made shared incident CSS/fonts explicit dependencies of the incident layout. Corrected incident-route browser titles. Targeted tests, typechecks, lint, Ops/Ranger builds and cache-disabled browser checks pass. Evidence is recorded under `docs/evidence/m4/dashboard-six-cards/` and `docs/evidence/m4/incident-route-styles/`. All pending refinements and evidence are included in the workspace refinement commit.
+
+### 2026-10-09 — Public landing capabilities and access explanation
+
+User request: replace outdated In development labels on the landing page and present completed features appropriately without giving ordinary public visitors access to staff tools.
+
+Outcome: added feature audience labels, protected-workspace guidance and the existing public report link; clarified Researcher registration and updated stale FAQs. Existing role/park guards remain unchanged. Ops typecheck/lint/build and anonymous desktop/mobile browser checks pass. Evidence: `docs/evidence/m4/landing-access/`. This follow-up is uncommitted.
+
+### 2026-10-09 — Public conservation stories carousel
+
+User requested a matching landing section showing staff/community conservation work with 5–7 sample photos, initially naming React Bits Pro Parallax Carousel. After the local license check found no configured key, the user explicitly selected “Use a custom draggable parallax carousel instead.”
+
+Outcome: added six locally hosted, attributed CC BY-SA photos with illustrative story copy, disclosure and Field stories links. The custom gallery supports mouse/touch, keyboard and reduced motion. Ops typecheck/lint/build and real-browser interaction checks pass; screenshots/evidence are recorded under `docs/evidence/m4/conservation-stories/`. Existing pending landing edits and access controls were preserved. The new follow-up is uncommitted.
+
+### 2026-10-09 — Remove landing access panel and add frontend feedback
+
+User request: remove the pictured Public reporting, protected workspaces section and add a user feedback section at the end; frontend implementation is sufficient.
+
+Outcome: removed the panel and unused styles, added a feedback form before the footer with rating/topic/name/message and a footer link. Valid submissions are saved only to browser localStorage, with honest confirmation and storage-error handling. Three focused tests, Ops typecheck/lint/build and anonymous desktop/phone browser checks pass. Evidence: `docs/evidence/m4/landing-feedback/`. No backend or database change; this follow-up remains uncommitted.
+
+### 2026-10-09 — Simplify campus-project landing presentation
+
+User requested removal of the pictured helper sections and rating selector for a cleaner first impression, plus removal of carousel buttons/scrollbar and automatic movement that visitors can stop or move with the mouse.
+
+Outcome: removed the pictured helpers, sample badges and rating UI; kept the public-access panel absent and retained photo attribution within captions. Added automatic carousel movement with hover/focus/interaction pauses, end reversal and reduced-motion support, preserving mouse/touch/keyboard movement. Three feedback tests, Ops typecheck/lint/build and desktop/phone browser checks pass. Evidence: `docs/evidence/m4/landing-presentation/`. No backend/database change; this follow-up remains uncommitted.
+
+### 2026-10-09 — Remove hero exploration action and reduce landing gaps
+
+User requested removal of the Explore the platform button, then a modest reduction in large gaps between landing sections.
+
+Outcome: removed the button and unused icon/styles, reduced desktop/mobile section padding and compacted the join section. Changed-file lint for the button removal, final production build, measured desktop/phone spacing and visual review pass. Evidence: `docs/evidence/m4/landing-spacing/`. These changes remain uncommitted.
+
+### 2026-10-09 — Feedback helper removal and centered down arrow
+
+User requested removing the feedback preview helper, renaming Save feedback to Send feedback and centering the hero down arrow. Completed with existing frontend-only submission behavior retained; lint, final build and desktop/phone visual checks pass. Evidence: `docs/evidence/m4/landing-final-controls/`. Changes remain uncommitted.
+
+### 2026-10-09 — Commit all landing refinements
+
+User request: “commit all”. Reviewed and committed all pending landing content/style changes, six attributed workflow photos, custom automatic carousel, frontend feedback, tests and evidence with a summary and description. Final targeted tests, Ops typecheck/lint and browser checks pass; production build had passed at the preceding checkpoint. Final evidence: `docs/evidence/m4/landing-commit/`. Earlier uncommitted notes refer to historical checkpoints included in this commit.

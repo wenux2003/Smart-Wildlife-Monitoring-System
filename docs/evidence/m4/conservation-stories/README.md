@@ -1,0 +1,11 @@
+# Public conservation stories — 2026-10-09
+
+Added Conservation in action after How it works and before the existing participation section. Six illustrative stories connect community reporting, ranger teamwork, wildlife care, monitoring and habitat protection. Header/footer Field stories links navigate to the section. Public visitors see only static sample content, with no private incident or park data requests.
+
+The user initially requested React Bits Pro Parallax Carousel. Its official installation documentation requires a license key; no key was configured locally. After clarification, the user explicitly chose a custom draggable parallax carousel instead. This implementation is original application code, not a copied or installed React Bits Pro component. No registries, paid code, license keys or new runtime dependencies were added.
+
+Six locally served photographs are sourced from Wikimedia Commons under CC BY-SA 4.0. Original source, author and license links appear in expandable page credits and in `apps/ops/public/images/stories/CREDITS.md` / `credits.json`. Images are resized, compressed to WebP and cropped responsively; the six files total approximately 1.59 MB and load lazily. Samples are explicitly labelled and are not presented as verified platform rescues or achievements. Photo descriptions were checked against a contact sheet.
+
+Validation: Ops typecheck, lint of all changed TS files and production build pass. Main JS 249.05 kB; largest chunk 383.37 kB; no bundle warning. The isolated production-browser interaction check verifies all six images load when explored, real mouse dragging, real touch swiping, previous/next buttons, Home/End/arrow keyboard navigation, fast consecutive navigation inputs, reduced-motion suppression of parallax, sample disclosure and six author credits. No uncaught browser exceptions or document horizontal overflow at 1440/780/390 px. Desktop and phone screenshots were visually reviewed. Cropped screenshots exclude the offscreen fixed skip link; application accessibility behavior is unchanged.
+
+`browser-checks.json` and `stories-1440.png`, `stories-780.png`, `stories-390.png` record validation evidence. Existing pending landing edits were preserved. No database or access-control changes were made. This follow-up remains uncommitted.
