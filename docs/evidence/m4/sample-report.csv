@@ -1,0 +1,175 @@
+﻿report_code,section,dimension,dimension_2,period_start,period_end,metric,value,unit
+RPT-YALA-2026-000023,kpi,,,2026-04-13,2026-10-09,total_incidents,170,count
+RPT-YALA-2026-000023,kpi,,,2026-04-13,2026-10-09,previous_period_incidents,1,count
+RPT-YALA-2026-000023,kpi,,,2026-04-13,2026-10-09,change_percent,16900,percent
+RPT-YALA-2026-000023,kpi,,,2026-04-13,2026-10-09,hotspot_cells,6,count
+RPT-YALA-2026-000023,kpi,,,2026-04-13,2026-10-09,community_conflict_reports,25,count
+RPT-YALA-2026-000023,kpi,,,2026-04-13,2026-10-09,collar_breaches,40,count
+RPT-YALA-2026-000023,kpi,,,2026-04-13,2026-10-09,patrol_gap_area,144.68,km2
+RPT-YALA-2026-000023,kpi,,,2026-04-13,2026-10-09,patrol_gap_share,98.64,percent
+RPT-YALA-2026-000023,trend,,,2026-04-01,2026-04-30,incidents,17,count
+RPT-YALA-2026-000023,trend,,,2026-05-01,2026-05-31,incidents,30,count
+RPT-YALA-2026-000023,trend,,,2026-06-01,2026-06-30,incidents,28,count
+RPT-YALA-2026-000023,trend,,,2026-07-01,2026-07-31,incidents,29,count
+RPT-YALA-2026-000023,trend,,,2026-08-01,2026-08-31,incidents,30,count
+RPT-YALA-2026-000023,trend,,,2026-09-01,2026-09-30,incidents,29,count
+RPT-YALA-2026-000023,trend,,,2026-10-01,2026-10-09,incidents,7,count
+RPT-YALA-2026-000023,breakdown,CROP_DAMAGE,Menik Ganga,2026-04-13,2026-10-09,incidents,7,count
+RPT-YALA-2026-000023,breakdown,CROP_DAMAGE,Patanangala Coast,2026-04-13,2026-10-09,incidents,7,count
+RPT-YALA-2026-000023,breakdown,FENCE_DAMAGE,Patanangala Coast,2026-04-13,2026-10-09,incidents,7,count
+RPT-YALA-2026-000023,breakdown,HUMAN_WILDLIFE_CONFLICT,Palatupana Corridor,2026-04-13,2026-10-09,incidents,7,count
+RPT-YALA-2026-000023,breakdown,HUMAN_WILDLIFE_CONFLICT,Menik Ganga,2026-04-13,2026-10-09,incidents,7,count
+RPT-YALA-2026-000023,breakdown,INJURED_ANIMAL,Palatupana Corridor,2026-04-13,2026-10-09,incidents,7,count
+RPT-YALA-2026-000023,breakdown,OTHER,Menik Ganga,2026-04-13,2026-10-09,incidents,7,count
+RPT-YALA-2026-000023,breakdown,POACHING,Patanangala Coast,2026-04-13,2026-10-09,incidents,7,count
+RPT-YALA-2026-000023,breakdown,SNARE_FOUND,Palatupana Corridor,2026-04-13,2026-10-09,incidents,7,count
+RPT-YALA-2026-000023,breakdown,CROP_DAMAGE,Palatupana Corridor,2026-04-13,2026-10-09,incidents,6,count
+RPT-YALA-2026-000023,breakdown,FENCE_DAMAGE,Menik Ganga,2026-04-13,2026-10-09,incidents,6,count
+RPT-YALA-2026-000023,breakdown,FENCE_DAMAGE,Palatupana Corridor,2026-04-13,2026-10-09,incidents,6,count
+RPT-YALA-2026-000023,breakdown,HUMAN_WILDLIFE_CONFLICT,Patanangala Coast,2026-04-13,2026-10-09,incidents,6,count
+RPT-YALA-2026-000023,breakdown,INJURED_ANIMAL,Patanangala Coast,2026-04-13,2026-10-09,incidents,6,count
+RPT-YALA-2026-000023,breakdown,INJURED_ANIMAL,Menik Ganga,2026-04-13,2026-10-09,incidents,6,count
+RPT-YALA-2026-000023,breakdown,OTHER,Palatupana Corridor,2026-04-13,2026-10-09,incidents,6,count
+RPT-YALA-2026-000023,breakdown,OTHER,Patanangala Coast,2026-04-13,2026-10-09,incidents,6,count
+RPT-YALA-2026-000023,breakdown,POACHING,Menik Ganga,2026-04-13,2026-10-09,incidents,6,count
+RPT-YALA-2026-000023,breakdown,SNARE_FOUND,Menik Ganga,2026-04-13,2026-10-09,incidents,6,count
+RPT-YALA-2026-000023,breakdown,SNARE_FOUND,Patanangala Coast,2026-04-13,2026-10-09,incidents,6,count
+RPT-YALA-2026-000023,breakdown,FENCE_DAMAGE,Southern Ridge,2026-04-13,2026-10-09,incidents,5,count
+RPT-YALA-2026-000023,breakdown,POACHING,Palatupana Corridor,2026-04-13,2026-10-09,incidents,5,count
+RPT-YALA-2026-000023,breakdown,SNARE_FOUND,Southern Ridge,2026-04-13,2026-10-09,incidents,5,count
+RPT-YALA-2026-000023,breakdown,CROP_DAMAGE,Southern Ridge,2026-04-13,2026-10-09,incidents,3,count
+RPT-YALA-2026-000023,breakdown,HUMAN_WILDLIFE_CONFLICT,Southern Ridge,2026-04-13,2026-10-09,incidents,3,count
+RPT-YALA-2026-000023,breakdown,INJURED_ANIMAL,Southern Ridge,2026-04-13,2026-10-09,incidents,3,count
+RPT-YALA-2026-000023,breakdown,POACHING,Southern Ridge,2026-04-13,2026-10-09,incidents,3,count
+RPT-YALA-2026-000023,breakdown,CROP_DAMAGE,Unknown sector,2026-04-13,2026-10-09,incidents,2,count
+RPT-YALA-2026-000023,breakdown,HUMAN_WILDLIFE_CONFLICT,Unknown sector,2026-04-13,2026-10-09,incidents,2,count
+RPT-YALA-2026-000023,breakdown,INJURED_ANIMAL,Unknown sector,2026-04-13,2026-10-09,incidents,2,count
+RPT-YALA-2026-000023,breakdown,OTHER,Southern Ridge,2026-04-13,2026-10-09,incidents,2,count
+RPT-YALA-2026-000023,breakdown,OTHER,Unknown sector,2026-04-13,2026-10-09,incidents,2,count
+RPT-YALA-2026-000023,breakdown,POACHING,Unknown sector,2026-04-13,2026-10-09,incidents,2,count
+RPT-YALA-2026-000023,breakdown,FENCE_DAMAGE,Unknown sector,2026-04-13,2026-10-09,incidents,1,count
+RPT-YALA-2026-000023,breakdown,SNARE_FOUND,Unknown sector,2026-04-13,2026-10-09,incidents,1,count
+RPT-YALA-2026-000023,hotspot,541:703,Southern Ridge,2026-04-13,2026-10-09,incidents,4,count
+RPT-YALA-2026-000023,hotspot,541:704,Southern Ridge,2026-04-13,2026-10-09,incidents,4,count
+RPT-YALA-2026-000023,hotspot,541:705,Southern Ridge,2026-04-13,2026-10-09,incidents,4,count
+RPT-YALA-2026-000023,hotspot,541:706,Southern Ridge,2026-04-13,2026-10-09,incidents,4,count
+RPT-YALA-2026-000023,hotspot,541:707,Southern Ridge,2026-04-13,2026-10-09,incidents,4,count
+RPT-YALA-2026-000023,hotspot,541:708,Southern Ridge,2026-04-13,2026-10-09,incidents,4,count
+RPT-YALA-2026-000023,hotspot,543:703,Palatupana Corridor,2026-04-13,2026-10-09,incidents,6,count
+RPT-YALA-2026-000023,hotspot,543:704,Palatupana Corridor,2026-04-13,2026-10-09,incidents,3,count
+RPT-YALA-2026-000023,hotspot,543:705,Palatupana Corridor,2026-04-13,2026-10-09,incidents,5,count
+RPT-YALA-2026-000023,hotspot,543:706,Palatupana Corridor,2026-04-13,2026-10-09,incidents,6,count
+RPT-YALA-2026-000023,hotspot,543:707,Palatupana Corridor,2026-04-13,2026-10-09,incidents,3,count
+RPT-YALA-2026-000023,hotspot,543:708,Palatupana Corridor,2026-04-13,2026-10-09,incidents,3,count
+RPT-YALA-2026-000023,hotspot,544:703,Palatupana Corridor,2026-04-13,2026-10-09,incidents,4,count
+RPT-YALA-2026-000023,hotspot,544:704,Palatupana Corridor,2026-04-13,2026-10-09,incidents,2,count
+RPT-YALA-2026-000023,hotspot,544:705,Palatupana Corridor,2026-04-13,2026-10-09,incidents,4,count
+RPT-YALA-2026-000023,hotspot,544:706,Palatupana Corridor,2026-04-13,2026-10-09,incidents,4,count
+RPT-YALA-2026-000023,hotspot,544:707,Palatupana Corridor,2026-04-13,2026-10-09,incidents,2,count
+RPT-YALA-2026-000023,hotspot,544:708,Palatupana Corridor,2026-04-13,2026-10-09,incidents,2,count
+RPT-YALA-2026-000023,hotspot,546:703,Menik Ganga,2026-04-13,2026-10-09,incidents,10,count
+RPT-YALA-2026-000023,hotspot,546:704,Menik Ganga,2026-04-13,2026-10-09,incidents,5,count
+RPT-YALA-2026-000023,hotspot,546:705,Menik Ganga,2026-04-13,2026-10-09,incidents,10,count
+RPT-YALA-2026-000023,hotspot,546:706,Menik Ganga,2026-04-13,2026-10-09,incidents,10,count
+RPT-YALA-2026-000023,hotspot,546:707,Menik Ganga,2026-04-13,2026-10-09,incidents,5,count
+RPT-YALA-2026-000023,hotspot,546:708,Menik Ganga,2026-04-13,2026-10-09,incidents,5,count
+RPT-YALA-2026-000023,hotspot,549:703,Patanangala Coast,2026-04-13,2026-10-09,incidents,10,count
+RPT-YALA-2026-000023,hotspot,549:704,Patanangala Coast,2026-04-13,2026-10-09,incidents,5,count
+RPT-YALA-2026-000023,hotspot,549:705,Patanangala Coast,2026-04-13,2026-10-09,incidents,10,count
+RPT-YALA-2026-000023,hotspot,549:706,Patanangala Coast,2026-04-13,2026-10-09,incidents,5,count
+RPT-YALA-2026-000023,hotspot,549:707,Patanangala Coast,2026-04-13,2026-10-09,incidents,10,count
+RPT-YALA-2026-000023,hotspot,549:708,Patanangala Coast,2026-04-13,2026-10-09,incidents,5,count
+RPT-YALA-2026-000023,patrol_gap,Southern Ridge,,2026-04-13,2026-10-09,gap_area,24.18,km2
+RPT-YALA-2026-000023,patrol_gap,Palatupana Corridor,,2026-04-13,2026-10-09,gap_area,31.16,km2
+RPT-YALA-2026-000023,patrol_gap,Menik Ganga,,2026-04-13,2026-10-09,gap_area,33.16,km2
+RPT-YALA-2026-000023,patrol_gap,Patanangala Coast,,2026-04-13,2026-10-09,gap_area,22.11,km2
+RPT-YALA-2026-000023,patrol_gap,Kumana Edge,,2026-04-13,2026-10-09,gap_area,34.06,km2
+RPT-YALA-2026-000023,priority_cell,546:703,Menik Ganga,2026-04-13,2026-10-09,priority_score,900,score
+RPT-YALA-2026-000023,priority_cell,546:705,Menik Ganga,2026-04-13,2026-10-09,priority_score,900,score
+RPT-YALA-2026-000023,priority_cell,546:706,Menik Ganga,2026-04-13,2026-10-09,priority_score,900,score
+RPT-YALA-2026-000023,priority_cell,549:703,Patanangala Coast,2026-04-13,2026-10-09,priority_score,900,score
+RPT-YALA-2026-000023,priority_cell,549:705,Patanangala Coast,2026-04-13,2026-10-09,priority_score,900,score
+RPT-YALA-2026-000023,conflict,,community_report,2026-04-01,2026-04-30,events,0,count
+RPT-YALA-2026-000023,conflict,,collar_breach,2026-04-01,2026-04-30,events,0,count
+RPT-YALA-2026-000023,conflict,,ranger_reported,2026-04-01,2026-04-30,events,9,count
+RPT-YALA-2026-000023,conflict,,community_report,2026-05-01,2026-05-31,events,9,count
+RPT-YALA-2026-000023,conflict,,collar_breach,2026-05-01,2026-05-31,events,0,count
+RPT-YALA-2026-000023,conflict,,ranger_reported,2026-05-01,2026-05-31,events,0,count
+RPT-YALA-2026-000023,conflict,,community_report,2026-06-01,2026-06-30,events,7,count
+RPT-YALA-2026-000023,conflict,,collar_breach,2026-06-01,2026-06-30,events,0,count
+RPT-YALA-2026-000023,conflict,,ranger_reported,2026-06-01,2026-06-30,events,0,count
+RPT-YALA-2026-000023,conflict,,community_report,2026-07-01,2026-07-31,events,0,count
+RPT-YALA-2026-000023,conflict,,collar_breach,2026-07-01,2026-07-31,events,4,count
+RPT-YALA-2026-000023,conflict,,ranger_reported,2026-07-01,2026-07-31,events,8,count
+RPT-YALA-2026-000023,conflict,,community_report,2026-08-01,2026-08-31,events,9,count
+RPT-YALA-2026-000023,conflict,,collar_breach,2026-08-01,2026-08-31,events,17,count
+RPT-YALA-2026-000023,conflict,,ranger_reported,2026-08-01,2026-08-31,events,8,count
+RPT-YALA-2026-000023,conflict,,community_report,2026-09-01,2026-09-30,events,0,count
+RPT-YALA-2026-000023,conflict,,collar_breach,2026-09-01,2026-09-30,events,19,count
+RPT-YALA-2026-000023,conflict,,ranger_reported,2026-09-01,2026-09-30,events,0,count
+RPT-YALA-2026-000023,conflict,,community_report,2026-10-01,2026-10-09,events,0,count
+RPT-YALA-2026-000023,conflict,,collar_breach,2026-10-01,2026-10-09,events,0,count
+RPT-YALA-2026-000023,conflict,,ranger_reported,2026-10-01,2026-10-09,events,0,count
+RPT-YALA-2026-000023,conflict,Palatupana Gate Stretch,community_report,2026-04-01,2026-04-30,events,0,count
+RPT-YALA-2026-000023,conflict,Palatupana Gate Stretch,collar_breach,2026-04-01,2026-04-30,events,0,count
+RPT-YALA-2026-000023,conflict,Palatupana Gate Stretch,community_report,2026-05-01,2026-05-31,events,1,count
+RPT-YALA-2026-000023,conflict,Palatupana Gate Stretch,collar_breach,2026-05-01,2026-05-31,events,0,count
+RPT-YALA-2026-000023,conflict,Palatupana Gate Stretch,community_report,2026-06-01,2026-06-30,events,1,count
+RPT-YALA-2026-000023,conflict,Palatupana Gate Stretch,collar_breach,2026-06-01,2026-06-30,events,0,count
+RPT-YALA-2026-000023,conflict,Palatupana Gate Stretch,community_report,2026-07-01,2026-07-31,events,0,count
+RPT-YALA-2026-000023,conflict,Palatupana Gate Stretch,collar_breach,2026-07-01,2026-07-31,events,1,count
+RPT-YALA-2026-000023,conflict,Palatupana Gate Stretch,community_report,2026-08-01,2026-08-31,events,1,count
+RPT-YALA-2026-000023,conflict,Palatupana Gate Stretch,collar_breach,2026-08-01,2026-08-31,events,4,count
+RPT-YALA-2026-000023,conflict,Palatupana Gate Stretch,community_report,2026-09-01,2026-09-30,events,0,count
+RPT-YALA-2026-000023,conflict,Palatupana Gate Stretch,collar_breach,2026-09-01,2026-09-30,events,5,count
+RPT-YALA-2026-000023,conflict,Palatupana Gate Stretch,community_report,2026-10-01,2026-10-09,events,0,count
+RPT-YALA-2026-000023,conflict,Palatupana Gate Stretch,collar_breach,2026-10-01,2026-10-09,events,0,count
+RPT-YALA-2026-000023,conflict,Kataragama Fringe,community_report,2026-04-01,2026-04-30,events,0,count
+RPT-YALA-2026-000023,conflict,Kataragama Fringe,collar_breach,2026-04-01,2026-04-30,events,0,count
+RPT-YALA-2026-000023,conflict,Kataragama Fringe,community_report,2026-05-01,2026-05-31,events,1,count
+RPT-YALA-2026-000023,conflict,Kataragama Fringe,collar_breach,2026-05-01,2026-05-31,events,0,count
+RPT-YALA-2026-000023,conflict,Kataragama Fringe,community_report,2026-06-01,2026-06-30,events,1,count
+RPT-YALA-2026-000023,conflict,Kataragama Fringe,collar_breach,2026-06-01,2026-06-30,events,0,count
+RPT-YALA-2026-000023,conflict,Kataragama Fringe,community_report,2026-07-01,2026-07-31,events,0,count
+RPT-YALA-2026-000023,conflict,Kataragama Fringe,collar_breach,2026-07-01,2026-07-31,events,1,count
+RPT-YALA-2026-000023,conflict,Kataragama Fringe,community_report,2026-08-01,2026-08-31,events,1,count
+RPT-YALA-2026-000023,conflict,Kataragama Fringe,collar_breach,2026-08-01,2026-08-31,events,5,count
+RPT-YALA-2026-000023,conflict,Kataragama Fringe,community_report,2026-09-01,2026-09-30,events,0,count
+RPT-YALA-2026-000023,conflict,Kataragama Fringe,collar_breach,2026-09-01,2026-09-30,events,4,count
+RPT-YALA-2026-000023,conflict,Kataragama Fringe,community_report,2026-10-01,2026-10-09,events,0,count
+RPT-YALA-2026-000023,conflict,Kataragama Fringe,collar_breach,2026-10-01,2026-10-09,events,0,count
+RPT-YALA-2026-000023,conflict,Buttala Fringe,community_report,2026-04-01,2026-04-30,events,0,count
+RPT-YALA-2026-000023,conflict,Buttala Fringe,collar_breach,2026-04-01,2026-04-30,events,0,count
+RPT-YALA-2026-000023,conflict,Buttala Fringe,community_report,2026-05-01,2026-05-31,events,0,count
+RPT-YALA-2026-000023,conflict,Buttala Fringe,collar_breach,2026-05-01,2026-05-31,events,0,count
+RPT-YALA-2026-000023,conflict,Buttala Fringe,community_report,2026-06-01,2026-06-30,events,0,count
+RPT-YALA-2026-000023,conflict,Buttala Fringe,collar_breach,2026-06-01,2026-06-30,events,0,count
+RPT-YALA-2026-000023,conflict,Buttala Fringe,community_report,2026-07-01,2026-07-31,events,0,count
+RPT-YALA-2026-000023,conflict,Buttala Fringe,collar_breach,2026-07-01,2026-07-31,events,1,count
+RPT-YALA-2026-000023,conflict,Buttala Fringe,community_report,2026-08-01,2026-08-31,events,0,count
+RPT-YALA-2026-000023,conflict,Buttala Fringe,collar_breach,2026-08-01,2026-08-31,events,5,count
+RPT-YALA-2026-000023,conflict,Buttala Fringe,community_report,2026-09-01,2026-09-30,events,0,count
+RPT-YALA-2026-000023,conflict,Buttala Fringe,collar_breach,2026-09-01,2026-09-30,events,4,count
+RPT-YALA-2026-000023,conflict,Buttala Fringe,community_report,2026-10-01,2026-10-09,events,0,count
+RPT-YALA-2026-000023,conflict,Buttala Fringe,collar_breach,2026-10-01,2026-10-09,events,0,count
+RPT-YALA-2026-000023,conflict,Galge Stretch,community_report,2026-04-01,2026-04-30,events,0,count
+RPT-YALA-2026-000023,conflict,Galge Stretch,collar_breach,2026-04-01,2026-04-30,events,0,count
+RPT-YALA-2026-000023,conflict,Galge Stretch,community_report,2026-05-01,2026-05-31,events,0,count
+RPT-YALA-2026-000023,conflict,Galge Stretch,collar_breach,2026-05-01,2026-05-31,events,0,count
+RPT-YALA-2026-000023,conflict,Galge Stretch,community_report,2026-06-01,2026-06-30,events,0,count
+RPT-YALA-2026-000023,conflict,Galge Stretch,collar_breach,2026-06-01,2026-06-30,events,0,count
+RPT-YALA-2026-000023,conflict,Galge Stretch,community_report,2026-07-01,2026-07-31,events,0,count
+RPT-YALA-2026-000023,conflict,Galge Stretch,collar_breach,2026-07-01,2026-07-31,events,1,count
+RPT-YALA-2026-000023,conflict,Galge Stretch,community_report,2026-08-01,2026-08-31,events,0,count
+RPT-YALA-2026-000023,conflict,Galge Stretch,collar_breach,2026-08-01,2026-08-31,events,3,count
+RPT-YALA-2026-000023,conflict,Galge Stretch,community_report,2026-09-01,2026-09-30,events,0,count
+RPT-YALA-2026-000023,conflict,Galge Stretch,collar_breach,2026-09-01,2026-09-30,events,6,count
+RPT-YALA-2026-000023,conflict,Galge Stretch,community_report,2026-10-01,2026-10-09,events,0,count
+RPT-YALA-2026-000023,conflict,Galge Stretch,collar_breach,2026-10-01,2026-10-09,events,0,count
+RPT-YALA-2026-000023,data_quality,,,2026-04-13,2026-10-09,excludedNoLocation,12,count
+RPT-YALA-2026-000023,data_quality,,,2026-04-13,2026-10-09,excludedRejected,9,count
+RPT-YALA-2026-000023,data_quality,,,2026-04-13,2026-10-09,outsideBoundary,0,count
+RPT-YALA-2026-000023,data_quality,,,2026-04-13,2026-10-09,sessionsAnalyzed,60,count
+RPT-YALA-2026-000023,data_quality,,,2026-04-13,2026-10-09,sessionsWithoutTrack,0,count
+RPT-YALA-2026-000023,data_quality,,,2026-04-13,2026-10-09,droppedGpsPoints,0,count
+RPT-YALA-2026-000023,data_quality,,,2026-04-13,2026-10-09,alertsWithoutLocation,0,count

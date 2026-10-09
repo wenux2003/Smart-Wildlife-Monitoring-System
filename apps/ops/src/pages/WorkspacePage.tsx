@@ -1,11 +1,13 @@
 import { Link, Navigate } from "react-router-dom";
 import {
   ArrowRight,
-  Binoculars,
+  Camera,
   ChartNoAxesCombined,
-  Footprints,
+  FileClock,
+  MessageSquare,
   Radio,
-  ShieldCheck,
+  TriangleAlert,
+  Users,
 } from "lucide-react";
 import { AccountHeader } from "../components/AccountHeader.js";
 import { useAuth } from "../auth/AuthContext.js";
@@ -30,92 +32,105 @@ export function WorkspacePage() {
       </main>
     );
   if (!user) return <Navigate to="/login" replace />;
+  const operational = ["PARK_MANAGER", "LIAISON_OFFICER"].includes(user.role);
+  const analytical = ["PARK_MANAGER", "RESEARCHER"].includes(user.role);
+  const modules = [
+    ...(operational
+      ? [
+          {
+            icon: TriangleAlert,
+            name: "Incident reporting",
+            description: "Review incidents and coordinate follow-up.",
+            link: "/incidents",
+          },
+          {
+            icon: MessageSquare,
+            name: "Community conflict inbox",
+            description: "Review reports from communities near the park.",
+            link: "/conflicts",
+          },
+          {
+            icon: Camera,
+            name: "Camera-trap review",
+            description: "Review wildlife detections and camera evidence.",
+            link: "/camera-traps",
+          },
+          {
+            icon: Radio,
+            name: "Wildlife alerts",
+            description: "Monitor collar alerts and ranger dispatches.",
+            link: "/alerts",
+          },
+        ]
+      : []),
+    ...(analytical
+      ? [
+          {
+            icon: ChartNoAxesCombined,
+            name: "Conservation analytics",
+            description: "Explore incidents, hotspots and patrol coverage.",
+            link: "/analytics",
+          },
+          {
+            icon: FileClock,
+            name: "Report history",
+            description: "Reopen saved reports and download exports.",
+            link: "/reports",
+          },
+        ]
+      : []),
+  ];
   return (
     <div className="workspace-page">
       <AccountHeader />
-      <main id="main-content" className="workspace-main content-width">
-        <p className="section-kicker">YOUR CONSERVATION WORKSPACE</p>
-        <h1>
-          Welcome, {user.name.split(" ")[0]}
-          <span className="brand-dot">.</span>
-        </h1>
-        <p className="workspace-intro">
-          A shared purpose. A new starting point.
-        </p>
-        {user.role === "PARK_MANAGER" && (
-          <Link className="button button-green staff-link" to="/staff">
-            Manage staff accounts
-          </Link>
-        )}
-        <div className="account-card">
-          <ShieldCheck size={30} />
+      <main
+        id="main-content"
+        className="workspace-main content-width workspace-dashboard"
+      >
+        <header className="dashboard-heading">
           <div>
-            <h2>Your account is ready</h2>
-            <p>
-              {user.email} · {user.role.replaceAll("_", " ").toLowerCase()}
-            </p>
-            <p>
-              {user.role === "SUPER_ADMIN"
-                ? "National access: you manage parks and Park Manager accounts across Sri Lanka."
-                : user.parkId
-                  ? `Assigned park: ${user.parkName ?? "saved"}.`
-                  : "Park access is pending. Contact the park manager of the park you work with to arrange access."}
+            <p className="section-kicker">YOUR CONSERVATION WORKSPACE</p>
+            <h1>
+              Welcome, {user.name.split(" ")[0]}
+              <span className="brand-dot">.</span>
+            </h1>
+            <p className="workspace-intro">
+              Your park operations, all in one place.
             </p>
           </div>
-          <span className="account-status">Signed in</span>
-        </div>
-        <h2 className="workspace-section-title">
-          What we’re building together
-        </h2>
-        <div className="workspace-modules">
-          {[
-            ...(user.role === "RESEARCHER"
-              ? []
-              : [
-                  {
-                    icon: Binoculars,
-                    name: "Incident reporting",
-                    link: "/incidents",
-                  },
-                  {
-                    icon: Binoculars,
-                    name: "Community conflict inbox",
-                    link: "/conflicts",
-                  },
-                  {
-                    icon: Binoculars,
-                    name: "Camera-trap review",
-                    link: "/camera-traps",
-                  },
-                ]),
-            { icon: Footprints, name: "Ranger patrols", link: undefined },
-            { icon: Radio, name: "Wildlife alerts", link: "/alerts" },
-            {
-              icon: ChartNoAxesCombined,
-              name: "Conservation analytics",
-              link: "/analytics",
-            },
-          ].map(({ icon: Icon, name, link }) => (
-            <article key={name}>
-              <Icon size={27} />
-              <h3>{name}</h3>
-              {link ? (
-                <Link className="button button-green" to={link}>
-                  Open
+          {user.role === "PARK_MANAGER" && (
+            <Link className="button button-outline dashboard-staff" to="/staff">
+              <Users size={16} /> Manage staff accounts
+            </Link>
+          )}
+        </header>
+        {!user.parkId && (
+          <p className="dashboard-access-note" role="status">
+            Park access is pending. Contact your park manager to arrange access.
+          </p>
+        )}
+        <section aria-labelledby="dashboard-modules-title">
+          <div className="dashboard-section-heading">
+            <h2 id="dashboard-modules-title">Park workspaces</h2>
+            <span>{modules.length} workspaces</span>
+          </div>
+          <div className="workspace-modules dashboard-modules">
+            {modules.map(({ icon: Icon, name, description, link }) => (
+              <article key={name} className="dashboard-module">
+                <div className="dashboard-module-top">
+                  <span className="dashboard-module-icon">
+                    <Icon size={22} strokeWidth={1.7} />
+                  </span>
+                </div>
+                <h3>{name}</h3>
+                <p>{description}</p>
+                <Link className="dashboard-module-link" to={link}>
+                  Open <ArrowRight size={15} aria-hidden="true" />
                 </Link>
-              ) : (
-                <span className="development-tag">In development</span>
-              )}
-            </article>
-          ))}
-        </div>
-        <p className="workspace-footnote">
-          These modules are not available yet. Your account does not grant
-          access to operational park data until permissions are assigned.
-        </p>
-        <Link className="inline-link" to="/">
-          Explore our mission <ArrowRight size={16} />
-        </Link>
+              </article>
+            ))}
+          </div>
+        </section>
       </main>
     </div>
   );

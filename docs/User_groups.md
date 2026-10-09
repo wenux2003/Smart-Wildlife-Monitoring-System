@@ -190,9 +190,9 @@ Community members, ministries and devices are **not** roles. There is deliberate
 | Alerts | `/alerts` | Live alert feed and map | M3 |
 | | `/alerts/:id` | Details, acknowledge, dispatch nearest ranger, cancel, broadcast, history | M3 |
 | | `/collars` | Collar diagnostics: battery, signal and last ping | M3 |
-| Analytics | `/analytics` | Filters, KPIs, trends, table, heatmap, patrol gaps | M4 |
-| | `/analytics/conflicts` | Human-wildlife conflict trends | M4 |
-| | `/reports` | PDF/CSV export and report audit | M4 |
+| Analytics | `/analytics`, `/analytics/map`, `/analytics/patrol-gaps` | Filters, KPIs, trends, table, hotspot/aggregate coverage map and patrol priorities | M4 implemented |
+| | `/analytics/conflicts` | Separate community/collar series and boundary trends | M4 implemented |
+| | `/reports` | Own-park run history and PDF/CSV export audit, including skipped exports | M4 implemented |
 | Settings | park settings screen | Edit park configuration: types, species, thresholds (manager-only) | Shared |
 
 **Can do:** park-wide operational review, patrol assignment, alert dispatch and broadcast, analytics and reports, park settings, and staff accounts for their park. All of this is limited to their own park.
@@ -281,15 +281,15 @@ The case study (p. 2) says that when a collared elephant enters a high-risk zone
 - A new Researcher has **no park access**. The workspace says park access is pending. **The Park Manager of the park they want to study, or the Super Admin, grants access** (§2.3) through `/staff` or `/admin`.
 - For the demo, a Researcher account **with a park already assigned** is seeded so analytics can be shown immediately (§6.3).
 
-**Planned screens:**
+**Implemented M4 screens:**
 
 | Area | Route | Purpose | Owner |
 |---|---|---|---|
-| Dashboard | `/dashboard` | Single home page showing identity and park access status; no operational modules are implemented yet | Shared |
-| Analytics | `/analytics`, `/analytics/conflicts` | Read-only statistics, trends and heatmaps | M4 |
-| Reports | `/reports` | PDF/CSV export, recorded in the report audit | M4 |
+| Dashboard | `/dashboard` | Identity, assigned park/access-pending status and analytics shortcuts | Shared |
+| Analytics | `/analytics`, `/analytics/map`, `/analytics/patrol-gaps`, `/analytics/conflicts` | Read-only aggregate trends, hotspots, coverage gaps and conflict sources | M4 implemented |
+| Reports | `/reports` | Own-run history and PDF/CSV snapshot export, recorded in the audit | M4 implemented |
 
-**Can do:** read-only analytics and report export within allowed parks.
+**Can do:** read-only analytics and report export within their currently assigned park. They see only their own report runs, and each open/export request rechecks current park access. No reporter contacts or individual patrol tracks are exposed. See the [M4 plan](./M4_Analytics_and_Export_Plan.md) and [P9 evidence](./evidence/m4/README.md).
 **Cannot do:** any operational change, such as editing incidents, assigning patrols or dispatching. They also must not see **unnecessary reporter contact details**, such as villagers' phone numbers.
 
 ---
@@ -365,11 +365,11 @@ These are local demo tools, not people, and they aren't part of the account hier
 | Ops: camera-trap review | — | — | — | To be agreed in M1 | — | To be agreed in M1 | — |
 | Ops: conflict inbox | — | — | — | ✅ park | — | Read-only if agreed in M1 | — |
 | Ops: patrol assignment | — | — | — | — | — | ✅ park | — |
-| Ops: patrol coverage/tracks | — | — | — | — | Aggregated gaps only if agreed | ✅ park | — |
+| Ops: patrol coverage/tracks | — | — | — | — | Aggregated M4 gaps only | ✅ park | — |
 | Ops: alerts, dispatch, broadcast | — | — | — | — | — | ✅ park | — |
 | Ops: collar diagnostics | — | — | — | — | — | ✅ park | — |
-| Ops: analytics and conflict trends | — | — | — | — | 👁 allowed parks | ✅ park | — |
-| Ops: PDF/CSV export | — | — | — | — | ✅ allowed parks | ✅ park | — |
+| Ops: analytics and conflict trends | — | — | — | — | 👁 assigned park | ✅ park | — |
+| Ops: PDF/CSV export | — | — | — | — | ✅ assigned park | ✅ park | — |
 | Ops: park settings | — | — | — | — | — | ✅ park | — |
 | **Ops: staff accounts** (`/staff`) | — | — | — | — | — | ✅ park (Rangers, Liaison Officers, Researcher access) | — |
 | **Ops: parks & account administration** (`/admin`) | — | — | — | — | — | — | ✅ |
@@ -462,9 +462,10 @@ How the seed behaves:
 | Shared server-side guard `app.authorize({ roles })` and `assertParkAccess()` | ✅ Implemented (Phase A). M1–M4 must use it on every route |
 | Apply migration `0003_account_audit.sql` to the shared Neon database | ✅ Applied on 6 October 2026 |
 | Offline authentication, offline account changes and synchronization | ❌ Out of scope; Ranger sign-in requires a connection |
-| Role, park and ownership checks inside each module's routes | ⏳ Planned. The module APIs don't exist yet; they must call the guard |
+| Role, park and ownership checks inside each module's routes | ✅ Implemented for M4; remaining modules must enforce their own contracts |
 | Community form `/community/new` and the SMS mock | ⏳ Planned (M1) |
-| All module screens in §4 | ⏳ Planned (M1–M4) |
+| M4 screens in §4.2/§4.5 | ✅ P0–P9 implemented; [evidence](./evidence/m4/README.md) |
+| Remaining module screens in §4 | Individual M1–M3 status is maintained by their owners |
 | Password reset by email, email verification, MFA | ❌ Deferred by design |
 
 ---
@@ -488,7 +489,7 @@ How the seed behaves:
 6. **Camera-trap review:** done by the Park Manager, the Liaison Officer or both? The case study only says "staff" review the images. (M1's contract)
 7. **Liaison Officer dispatch:** should collar alerts also be dispatchable to a Liaison Officer, as the case study suggests, or only to rangers? (M3's contract)
 8. **Researcher park scope:** one park or several? A single `park_id` column supports only one. Access to several parks needs a small join table.
-9. **Researcher view of patrol coverage:** aggregated gaps only, or nothing?
+9. **Researcher view of patrol coverage:** M4 implements aggregated cell coverage/gaps only; individual ranger GPS tracks are excluded (§8.5 of the M4 plan).
 11. **Ranger session expiry while offline:** confirm that queued records wait for re-login and keep their original user and park.
 12. **Device and simulator authentication:** shared key, local-only access, or both?
 

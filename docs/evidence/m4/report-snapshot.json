@@ -1,0 +1,6946 @@
+{
+  "runId": "4f754ca0-de59-4509-a41f-9953601ed6ed",
+  "code": "RPT-YALA-2026-000023",
+  "status": "SUCCEEDED",
+  "snapshotSha256": "c9ee74144a772ca141014bb2445b5432167e87f972f5b1b9f5cf63fd847b61d8",
+  "report": {
+    "schemaVersion": 1,
+    "syntheticDemo": true,
+    "park": {
+      "id": "ef8bb47a-ad55-46d9-9eb2-96072ba20b1d",
+      "code": "YALA",
+      "name": "Yala National Park"
+    },
+    "filters": {
+      "parkId": "ef8bb47a-ad55-46d9-9eb2-96072ba20b1d",
+      "from": "2026-04-13",
+      "to": "2026-10-09",
+      "preset": "LAST_6_MONTHS",
+      "categoryGroup": "ALL",
+      "types": [],
+      "sources": [],
+      "sectorId": null,
+      "includeRejected": false
+    },
+    "window": {
+      "fromUtc": "2026-04-12T18:30:00.000Z",
+      "toUtcExclusive": "2026-10-09T18:30:00.000Z",
+      "bucket": "MONTH",
+      "timezone": "Asia/Colombo",
+      "days": 180
+    },
+    "generatedAt": "2026-10-09T02:14:19.206Z",
+    "kpis": {
+      "totalIncidents": 170,
+      "previousPeriodIncidents": 1,
+      "changePercent": 16900,
+      "changeKind": "UP",
+      "hotspotCells": 6,
+      "hotspotSectorNames": [
+        "Menik Ganga",
+        "Patanangala Coast"
+      ],
+      "patrolGapAreaKm2": 144.67925369069252,
+      "patrolGapSharePercent": 98.63648065443702,
+      "communityConflictReports": 25,
+      "collarBreaches": 40
+    },
+    "dataQuality": {
+      "excludedNoLocation": 12,
+      "excludedRejected": 9,
+      "outsideBoundary": 0,
+      "sessionsAnalyzed": 60,
+      "sessionsWithoutTrack": 0,
+      "droppedGpsPoints": 0,
+      "alertsWithoutLocation": 0
+    },
+    "trend": [
+      {
+        "bucketStart": "2026-04-01",
+        "label": "2026-04",
+        "count": 17
+      },
+      {
+        "bucketStart": "2026-05-01",
+        "label": "2026-05",
+        "count": 30
+      },
+      {
+        "bucketStart": "2026-06-01",
+        "label": "2026-06",
+        "count": 28
+      },
+      {
+        "bucketStart": "2026-07-01",
+        "label": "2026-07",
+        "count": 29
+      },
+      {
+        "bucketStart": "2026-08-01",
+        "label": "2026-08",
+        "count": 30
+      },
+      {
+        "bucketStart": "2026-09-01",
+        "label": "2026-09",
+        "count": 29
+      },
+      {
+        "bucketStart": "2026-10-01",
+        "label": "2026-10",
+        "count": 7
+      }
+    ],
+    "breakdown": [
+      {
+        "type": "CROP_DAMAGE",
+        "sectorId": "b1e1f26f-00b6-5407-98f8-852d007af543",
+        "sectorName": "Menik Ganga",
+        "count": 7,
+        "riskLevel": "MEDIUM",
+        "sharePercent": 4.117647058823529
+      },
+      {
+        "type": "CROP_DAMAGE",
+        "sectorId": "19303352-1f30-5129-b4e2-edc2fde9c381",
+        "sectorName": "Patanangala Coast",
+        "count": 7,
+        "riskLevel": "MEDIUM",
+        "sharePercent": 4.117647058823529
+      },
+      {
+        "type": "FENCE_DAMAGE",
+        "sectorId": "19303352-1f30-5129-b4e2-edc2fde9c381",
+        "sectorName": "Patanangala Coast",
+        "count": 7,
+        "riskLevel": "MEDIUM",
+        "sharePercent": 4.117647058823529
+      },
+      {
+        "type": "HUMAN_WILDLIFE_CONFLICT",
+        "sectorId": "3829dddf-bca3-5d3e-a541-49d544056ed1",
+        "sectorName": "Palatupana Corridor",
+        "count": 7,
+        "riskLevel": "HIGH",
+        "sharePercent": 4.117647058823529
+      },
+      {
+        "type": "HUMAN_WILDLIFE_CONFLICT",
+        "sectorId": "b1e1f26f-00b6-5407-98f8-852d007af543",
+        "sectorName": "Menik Ganga",
+        "count": 7,
+        "riskLevel": "HIGH",
+        "sharePercent": 4.117647058823529
+      },
+      {
+        "type": "INJURED_ANIMAL",
+        "sectorId": "3829dddf-bca3-5d3e-a541-49d544056ed1",
+        "sectorName": "Palatupana Corridor",
+        "count": 7,
+        "riskLevel": "HIGH",
+        "sharePercent": 4.117647058823529
+      },
+      {
+        "type": "OTHER",
+        "sectorId": "b1e1f26f-00b6-5407-98f8-852d007af543",
+        "sectorName": "Menik Ganga",
+        "count": 7,
+        "riskLevel": "LOW",
+        "sharePercent": 4.117647058823529
+      },
+      {
+        "type": "POACHING",
+        "sectorId": "19303352-1f30-5129-b4e2-edc2fde9c381",
+        "sectorName": "Patanangala Coast",
+        "count": 7,
+        "riskLevel": "CRITICAL",
+        "sharePercent": 4.117647058823529
+      },
+      {
+        "type": "SNARE_FOUND",
+        "sectorId": "3829dddf-bca3-5d3e-a541-49d544056ed1",
+        "sectorName": "Palatupana Corridor",
+        "count": 7,
+        "riskLevel": "HIGH",
+        "sharePercent": 4.117647058823529
+      },
+      {
+        "type": "CROP_DAMAGE",
+        "sectorId": "3829dddf-bca3-5d3e-a541-49d544056ed1",
+        "sectorName": "Palatupana Corridor",
+        "count": 6,
+        "riskLevel": "MEDIUM",
+        "sharePercent": 3.5294117647058822
+      },
+      {
+        "type": "FENCE_DAMAGE",
+        "sectorId": "b1e1f26f-00b6-5407-98f8-852d007af543",
+        "sectorName": "Menik Ganga",
+        "count": 6,
+        "riskLevel": "MEDIUM",
+        "sharePercent": 3.5294117647058822
+      },
+      {
+        "type": "FENCE_DAMAGE",
+        "sectorId": "3829dddf-bca3-5d3e-a541-49d544056ed1",
+        "sectorName": "Palatupana Corridor",
+        "count": 6,
+        "riskLevel": "MEDIUM",
+        "sharePercent": 3.5294117647058822
+      },
+      {
+        "type": "HUMAN_WILDLIFE_CONFLICT",
+        "sectorId": "19303352-1f30-5129-b4e2-edc2fde9c381",
+        "sectorName": "Patanangala Coast",
+        "count": 6,
+        "riskLevel": "HIGH",
+        "sharePercent": 3.5294117647058822
+      },
+      {
+        "type": "INJURED_ANIMAL",
+        "sectorId": "19303352-1f30-5129-b4e2-edc2fde9c381",
+        "sectorName": "Patanangala Coast",
+        "count": 6,
+        "riskLevel": "HIGH",
+        "sharePercent": 3.5294117647058822
+      },
+      {
+        "type": "INJURED_ANIMAL",
+        "sectorId": "b1e1f26f-00b6-5407-98f8-852d007af543",
+        "sectorName": "Menik Ganga",
+        "count": 6,
+        "riskLevel": "HIGH",
+        "sharePercent": 3.5294117647058822
+      },
+      {
+        "type": "OTHER",
+        "sectorId": "3829dddf-bca3-5d3e-a541-49d544056ed1",
+        "sectorName": "Palatupana Corridor",
+        "count": 6,
+        "riskLevel": "LOW",
+        "sharePercent": 3.5294117647058822
+      },
+      {
+        "type": "OTHER",
+        "sectorId": "19303352-1f30-5129-b4e2-edc2fde9c381",
+        "sectorName": "Patanangala Coast",
+        "count": 6,
+        "riskLevel": "LOW",
+        "sharePercent": 3.5294117647058822
+      },
+      {
+        "type": "POACHING",
+        "sectorId": "b1e1f26f-00b6-5407-98f8-852d007af543",
+        "sectorName": "Menik Ganga",
+        "count": 6,
+        "riskLevel": "CRITICAL",
+        "sharePercent": 3.5294117647058822
+      },
+      {
+        "type": "SNARE_FOUND",
+        "sectorId": "b1e1f26f-00b6-5407-98f8-852d007af543",
+        "sectorName": "Menik Ganga",
+        "count": 6,
+        "riskLevel": "HIGH",
+        "sharePercent": 3.5294117647058822
+      },
+      {
+        "type": "SNARE_FOUND",
+        "sectorId": "19303352-1f30-5129-b4e2-edc2fde9c381",
+        "sectorName": "Patanangala Coast",
+        "count": 6,
+        "riskLevel": "HIGH",
+        "sharePercent": 3.5294117647058822
+      },
+      {
+        "type": "FENCE_DAMAGE",
+        "sectorId": "ee8a21ab-401f-5e75-851c-25906d7feba0",
+        "sectorName": "Southern Ridge",
+        "count": 5,
+        "riskLevel": "MEDIUM",
+        "sharePercent": 2.941176470588235
+      },
+      {
+        "type": "POACHING",
+        "sectorId": "3829dddf-bca3-5d3e-a541-49d544056ed1",
+        "sectorName": "Palatupana Corridor",
+        "count": 5,
+        "riskLevel": "CRITICAL",
+        "sharePercent": 2.941176470588235
+      },
+      {
+        "type": "SNARE_FOUND",
+        "sectorId": "ee8a21ab-401f-5e75-851c-25906d7feba0",
+        "sectorName": "Southern Ridge",
+        "count": 5,
+        "riskLevel": "HIGH",
+        "sharePercent": 2.941176470588235
+      },
+      {
+        "type": "CROP_DAMAGE",
+        "sectorId": "ee8a21ab-401f-5e75-851c-25906d7feba0",
+        "sectorName": "Southern Ridge",
+        "count": 3,
+        "riskLevel": "MEDIUM",
+        "sharePercent": 1.7647058823529411
+      },
+      {
+        "type": "HUMAN_WILDLIFE_CONFLICT",
+        "sectorId": "ee8a21ab-401f-5e75-851c-25906d7feba0",
+        "sectorName": "Southern Ridge",
+        "count": 3,
+        "riskLevel": "HIGH",
+        "sharePercent": 1.7647058823529411
+      },
+      {
+        "type": "INJURED_ANIMAL",
+        "sectorId": "ee8a21ab-401f-5e75-851c-25906d7feba0",
+        "sectorName": "Southern Ridge",
+        "count": 3,
+        "riskLevel": "HIGH",
+        "sharePercent": 1.7647058823529411
+      },
+      {
+        "type": "POACHING",
+        "sectorId": "ee8a21ab-401f-5e75-851c-25906d7feba0",
+        "sectorName": "Southern Ridge",
+        "count": 3,
+        "riskLevel": "CRITICAL",
+        "sharePercent": 1.7647058823529411
+      },
+      {
+        "type": "CROP_DAMAGE",
+        "sectorId": null,
+        "sectorName": "Unknown sector",
+        "count": 2,
+        "riskLevel": "MEDIUM",
+        "sharePercent": 1.1764705882352942
+      },
+      {
+        "type": "HUMAN_WILDLIFE_CONFLICT",
+        "sectorId": null,
+        "sectorName": "Unknown sector",
+        "count": 2,
+        "riskLevel": "HIGH",
+        "sharePercent": 1.1764705882352942
+      },
+      {
+        "type": "INJURED_ANIMAL",
+        "sectorId": null,
+        "sectorName": "Unknown sector",
+        "count": 2,
+        "riskLevel": "HIGH",
+        "sharePercent": 1.1764705882352942
+      },
+      {
+        "type": "OTHER",
+        "sectorId": "ee8a21ab-401f-5e75-851c-25906d7feba0",
+        "sectorName": "Southern Ridge",
+        "count": 2,
+        "riskLevel": "LOW",
+        "sharePercent": 1.1764705882352942
+      },
+      {
+        "type": "OTHER",
+        "sectorId": null,
+        "sectorName": "Unknown sector",
+        "count": 2,
+        "riskLevel": "LOW",
+        "sharePercent": 1.1764705882352942
+      },
+      {
+        "type": "POACHING",
+        "sectorId": null,
+        "sectorName": "Unknown sector",
+        "count": 2,
+        "riskLevel": "CRITICAL",
+        "sharePercent": 1.1764705882352942
+      },
+      {
+        "type": "FENCE_DAMAGE",
+        "sectorId": null,
+        "sectorName": "Unknown sector",
+        "count": 1,
+        "riskLevel": "MEDIUM",
+        "sharePercent": 0.5882352941176471
+      },
+      {
+        "type": "SNARE_FOUND",
+        "sectorId": null,
+        "sectorName": "Unknown sector",
+        "count": 1,
+        "riskLevel": "HIGH",
+        "sharePercent": 0.5882352941176471
+      }
+    ],
+    "hotspots": {
+      "cellSizeMeters": 1000,
+      "cells": [
+        {
+          "cellId": "541:703",
+          "polygon": [
+            {
+              "latitude": 6.368912942,
+              "longitude": 81.370726981
+            },
+            {
+              "latitude": 6.36890637,
+              "longitude": 81.37976897
+            },
+            {
+              "latitude": 6.359860373,
+              "longitude": 81.379762326
+            },
+            {
+              "latitude": 6.359866936,
+              "longitude": 81.370720496
+            },
+            {
+              "latitude": 6.368912942,
+              "longitude": 81.370726981
+            }
+          ],
+          "sectorName": "Southern Ridge",
+          "count": 4,
+          "riskClass": 2,
+          "isHotspot": false
+        },
+        {
+          "cellId": "541:704",
+          "polygon": [
+            {
+              "latitude": 6.377958946,
+              "longitude": 81.370733476
+            },
+            {
+              "latitude": 6.377952364,
+              "longitude": 81.379775623
+            },
+            {
+              "latitude": 6.36890637,
+              "longitude": 81.37976897
+            },
+            {
+              "latitude": 6.368912942,
+              "longitude": 81.370726981
+            },
+            {
+              "latitude": 6.377958946,
+              "longitude": 81.370733476
+            }
+          ],
+          "sectorName": "Southern Ridge",
+          "count": 4,
+          "riskClass": 2,
+          "isHotspot": false
+        },
+        {
+          "cellId": "541:705",
+          "polygon": [
+            {
+              "latitude": 6.387004946,
+              "longitude": 81.37073998
+            },
+            {
+              "latitude": 6.386998355,
+              "longitude": 81.379782286
+            },
+            {
+              "latitude": 6.377952364,
+              "longitude": 81.379775623
+            },
+            {
+              "latitude": 6.377958946,
+              "longitude": 81.370733476
+            },
+            {
+              "latitude": 6.387004946,
+              "longitude": 81.37073998
+            }
+          ],
+          "sectorName": "Southern Ridge",
+          "count": 4,
+          "riskClass": 2,
+          "isHotspot": false
+        },
+        {
+          "cellId": "541:706",
+          "polygon": [
+            {
+              "latitude": 6.396050944,
+              "longitude": 81.370746494
+            },
+            {
+              "latitude": 6.396044343,
+              "longitude": 81.379788958
+            },
+            {
+              "latitude": 6.386998355,
+              "longitude": 81.379782286
+            },
+            {
+              "latitude": 6.387004946,
+              "longitude": 81.37073998
+            },
+            {
+              "latitude": 6.396050944,
+              "longitude": 81.370746494
+            }
+          ],
+          "sectorName": "Southern Ridge",
+          "count": 4,
+          "riskClass": 2,
+          "isHotspot": false
+        },
+        {
+          "cellId": "541:707",
+          "polygon": [
+            {
+              "latitude": 6.405096938,
+              "longitude": 81.370753017
+            },
+            {
+              "latitude": 6.405090328,
+              "longitude": 81.37979564
+            },
+            {
+              "latitude": 6.396044343,
+              "longitude": 81.379788958
+            },
+            {
+              "latitude": 6.396050944,
+              "longitude": 81.370746494
+            },
+            {
+              "latitude": 6.405096938,
+              "longitude": 81.370753017
+            }
+          ],
+          "sectorName": "Southern Ridge",
+          "count": 4,
+          "riskClass": 2,
+          "isHotspot": false
+        },
+        {
+          "cellId": "541:708",
+          "polygon": [
+            {
+              "latitude": 6.414142928,
+              "longitude": 81.370759549
+            },
+            {
+              "latitude": 6.414136309,
+              "longitude": 81.379802332
+            },
+            {
+              "latitude": 6.405090328,
+              "longitude": 81.37979564
+            },
+            {
+              "latitude": 6.405096938,
+              "longitude": 81.370753017
+            },
+            {
+              "latitude": 6.414142928,
+              "longitude": 81.370759549
+            }
+          ],
+          "sectorName": "Southern Ridge",
+          "count": 4,
+          "riskClass": 2,
+          "isHotspot": false
+        },
+        {
+          "cellId": "543:703",
+          "polygon": [
+            {
+              "latitude": 6.36889964,
+              "longitude": 81.388810948
+            },
+            {
+              "latitude": 6.368892751,
+              "longitude": 81.397852917
+            },
+            {
+              "latitude": 6.359846773,
+              "longitude": 81.397845957
+            },
+            {
+              "latitude": 6.359853652,
+              "longitude": 81.388804146
+            },
+            {
+              "latitude": 6.36889964,
+              "longitude": 81.388810948
+            }
+          ],
+          "sectorName": "Palatupana Corridor",
+          "count": 6,
+          "riskClass": 3,
+          "isHotspot": false
+        },
+        {
+          "cellId": "543:704",
+          "polygon": [
+            {
+              "latitude": 6.377945624,
+              "longitude": 81.38881776
+            },
+            {
+              "latitude": 6.377938725,
+              "longitude": 81.397859887
+            },
+            {
+              "latitude": 6.368892751,
+              "longitude": 81.397852917
+            },
+            {
+              "latitude": 6.36889964,
+              "longitude": 81.388810948
+            },
+            {
+              "latitude": 6.377945624,
+              "longitude": 81.38881776
+            }
+          ],
+          "sectorName": "Palatupana Corridor",
+          "count": 3,
+          "riskClass": 2,
+          "isHotspot": false
+        },
+        {
+          "cellId": "543:705",
+          "polygon": [
+            {
+              "latitude": 6.386991606,
+              "longitude": 81.388824581
+            },
+            {
+              "latitude": 6.386984697,
+              "longitude": 81.397866867
+            },
+            {
+              "latitude": 6.377938725,
+              "longitude": 81.397859887
+            },
+            {
+              "latitude": 6.377945624,
+              "longitude": 81.38881776
+            },
+            {
+              "latitude": 6.386991606,
+              "longitude": 81.388824581
+            }
+          ],
+          "sectorName": "Palatupana Corridor",
+          "count": 5,
+          "riskClass": 3,
+          "isHotspot": false
+        },
+        {
+          "cellId": "543:706",
+          "polygon": [
+            {
+              "latitude": 6.396037584,
+              "longitude": 81.388831412
+            },
+            {
+              "latitude": 6.396030665,
+              "longitude": 81.397873857
+            },
+            {
+              "latitude": 6.386984697,
+              "longitude": 81.397866867
+            },
+            {
+              "latitude": 6.386991606,
+              "longitude": 81.388824581
+            },
+            {
+              "latitude": 6.396037584,
+              "longitude": 81.388831412
+            }
+          ],
+          "sectorName": "Palatupana Corridor",
+          "count": 6,
+          "riskClass": 3,
+          "isHotspot": false
+        },
+        {
+          "cellId": "543:707",
+          "polygon": [
+            {
+              "latitude": 6.405083559,
+              "longitude": 81.388838254
+            },
+            {
+              "latitude": 6.40507663,
+              "longitude": 81.397880857
+            },
+            {
+              "latitude": 6.396030665,
+              "longitude": 81.397873857
+            },
+            {
+              "latitude": 6.396037584,
+              "longitude": 81.388831412
+            },
+            {
+              "latitude": 6.405083559,
+              "longitude": 81.388838254
+            }
+          ],
+          "sectorName": "Palatupana Corridor",
+          "count": 3,
+          "riskClass": 2,
+          "isHotspot": false
+        },
+        {
+          "cellId": "543:708",
+          "polygon": [
+            {
+              "latitude": 6.414129531,
+              "longitude": 81.388845105
+            },
+            {
+              "latitude": 6.414122592,
+              "longitude": 81.397887868
+            },
+            {
+              "latitude": 6.40507663,
+              "longitude": 81.397880857
+            },
+            {
+              "latitude": 6.405083559,
+              "longitude": 81.388838254
+            },
+            {
+              "latitude": 6.414129531,
+              "longitude": 81.388845105
+            }
+          ],
+          "sectorName": "Palatupana Corridor",
+          "count": 3,
+          "riskClass": 2,
+          "isHotspot": false
+        },
+        {
+          "cellId": "544:703",
+          "polygon": [
+            {
+              "latitude": 6.368892751,
+              "longitude": 81.397852917
+            },
+            {
+              "latitude": 6.368885704,
+              "longitude": 81.406894875
+            },
+            {
+              "latitude": 6.359839736,
+              "longitude": 81.406887757
+            },
+            {
+              "latitude": 6.359846773,
+              "longitude": 81.397845957
+            },
+            {
+              "latitude": 6.368892751,
+              "longitude": 81.397852917
+            }
+          ],
+          "sectorName": "Palatupana Corridor",
+          "count": 4,
+          "riskClass": 2,
+          "isHotspot": false
+        },
+        {
+          "cellId": "544:704",
+          "polygon": [
+            {
+              "latitude": 6.377938725,
+              "longitude": 81.397859887
+            },
+            {
+              "latitude": 6.377931668,
+              "longitude": 81.406902004
+            },
+            {
+              "latitude": 6.368885704,
+              "longitude": 81.406894875
+            },
+            {
+              "latitude": 6.368892751,
+              "longitude": 81.397852917
+            },
+            {
+              "latitude": 6.377938725,
+              "longitude": 81.397859887
+            }
+          ],
+          "sectorName": "Palatupana Corridor",
+          "count": 2,
+          "riskClass": 1,
+          "isHotspot": false
+        },
+        {
+          "cellId": "544:705",
+          "polygon": [
+            {
+              "latitude": 6.386984697,
+              "longitude": 81.397866867
+            },
+            {
+              "latitude": 6.38697763,
+              "longitude": 81.406909142
+            },
+            {
+              "latitude": 6.377931668,
+              "longitude": 81.406902004
+            },
+            {
+              "latitude": 6.377938725,
+              "longitude": 81.397859887
+            },
+            {
+              "latitude": 6.386984697,
+              "longitude": 81.397866867
+            }
+          ],
+          "sectorName": "Palatupana Corridor",
+          "count": 4,
+          "riskClass": 2,
+          "isHotspot": false
+        },
+        {
+          "cellId": "544:706",
+          "polygon": [
+            {
+              "latitude": 6.396030665,
+              "longitude": 81.397873857
+            },
+            {
+              "latitude": 6.396023588,
+              "longitude": 81.406916291
+            },
+            {
+              "latitude": 6.38697763,
+              "longitude": 81.406909142
+            },
+            {
+              "latitude": 6.386984697,
+              "longitude": 81.397866867
+            },
+            {
+              "latitude": 6.396030665,
+              "longitude": 81.397873857
+            }
+          ],
+          "sectorName": "Palatupana Corridor",
+          "count": 4,
+          "riskClass": 2,
+          "isHotspot": false
+        },
+        {
+          "cellId": "544:707",
+          "polygon": [
+            {
+              "latitude": 6.40507663,
+              "longitude": 81.397880857
+            },
+            {
+              "latitude": 6.405069543,
+              "longitude": 81.406923451
+            },
+            {
+              "latitude": 6.396023588,
+              "longitude": 81.406916291
+            },
+            {
+              "latitude": 6.396030665,
+              "longitude": 81.397873857
+            },
+            {
+              "latitude": 6.40507663,
+              "longitude": 81.397880857
+            }
+          ],
+          "sectorName": "Palatupana Corridor",
+          "count": 2,
+          "riskClass": 1,
+          "isHotspot": false
+        },
+        {
+          "cellId": "544:708",
+          "polygon": [
+            {
+              "latitude": 6.414122592,
+              "longitude": 81.397887868
+            },
+            {
+              "latitude": 6.414115495,
+              "longitude": 81.40693062
+            },
+            {
+              "latitude": 6.405069543,
+              "longitude": 81.406923451
+            },
+            {
+              "latitude": 6.40507663,
+              "longitude": 81.397880857
+            },
+            {
+              "latitude": 6.414122592,
+              "longitude": 81.397887868
+            }
+          ],
+          "sectorName": "Palatupana Corridor",
+          "count": 2,
+          "riskClass": 1,
+          "isHotspot": false
+        },
+        {
+          "cellId": "546:703",
+          "polygon": [
+            {
+              "latitude": 6.368878498,
+              "longitude": 81.415936824
+            },
+            {
+              "latitude": 6.368871134,
+              "longitude": 81.424978761
+            },
+            {
+              "latitude": 6.359825187,
+              "longitude": 81.424971327
+            },
+            {
+              "latitude": 6.359832541,
+              "longitude": 81.415929547
+            },
+            {
+              "latitude": 6.368878498,
+              "longitude": 81.415936824
+            }
+          ],
+          "sectorName": "Menik Ganga",
+          "count": 10,
+          "riskClass": 5,
+          "isHotspot": true
+        },
+        {
+          "cellId": "546:704",
+          "polygon": [
+            {
+              "latitude": 6.377924452,
+              "longitude": 81.41594411
+            },
+            {
+              "latitude": 6.377917078,
+              "longitude": 81.424986206
+            },
+            {
+              "latitude": 6.368871134,
+              "longitude": 81.424978761
+            },
+            {
+              "latitude": 6.368878498,
+              "longitude": 81.415936824
+            },
+            {
+              "latitude": 6.377924452,
+              "longitude": 81.41594411
+            }
+          ],
+          "sectorName": "Menik Ganga",
+          "count": 5,
+          "riskClass": 3,
+          "isHotspot": false
+        },
+        {
+          "cellId": "546:705",
+          "polygon": [
+            {
+              "latitude": 6.386970403,
+              "longitude": 81.415951408
+            },
+            {
+              "latitude": 6.386963018,
+              "longitude": 81.424993662
+            },
+            {
+              "latitude": 6.377917078,
+              "longitude": 81.424986206
+            },
+            {
+              "latitude": 6.377924452,
+              "longitude": 81.41594411
+            },
+            {
+              "latitude": 6.386970403,
+              "longitude": 81.415951408
+            }
+          ],
+          "sectorName": "Menik Ganga",
+          "count": 10,
+          "riskClass": 5,
+          "isHotspot": true
+        },
+        {
+          "cellId": "546:706",
+          "polygon": [
+            {
+              "latitude": 6.396016351,
+              "longitude": 81.415958716
+            },
+            {
+              "latitude": 6.396008956,
+              "longitude": 81.425001129
+            },
+            {
+              "latitude": 6.386963018,
+              "longitude": 81.424993662
+            },
+            {
+              "latitude": 6.386970403,
+              "longitude": 81.415951408
+            },
+            {
+              "latitude": 6.396016351,
+              "longitude": 81.415958716
+            }
+          ],
+          "sectorName": "Menik Ganga",
+          "count": 10,
+          "riskClass": 5,
+          "isHotspot": true
+        },
+        {
+          "cellId": "546:707",
+          "polygon": [
+            {
+              "latitude": 6.405062296,
+              "longitude": 81.415966034
+            },
+            {
+              "latitude": 6.40505489,
+              "longitude": 81.425008607
+            },
+            {
+              "latitude": 6.396008956,
+              "longitude": 81.425001129
+            },
+            {
+              "latitude": 6.396016351,
+              "longitude": 81.415958716
+            },
+            {
+              "latitude": 6.405062296,
+              "longitude": 81.415966034
+            }
+          ],
+          "sectorName": "Menik Ganga",
+          "count": 5,
+          "riskClass": 3,
+          "isHotspot": false
+        },
+        {
+          "cellId": "546:708",
+          "polygon": [
+            {
+              "latitude": 6.414108238,
+              "longitude": 81.415973363
+            },
+            {
+              "latitude": 6.414100821,
+              "longitude": 81.425016095
+            },
+            {
+              "latitude": 6.40505489,
+              "longitude": 81.425008607
+            },
+            {
+              "latitude": 6.405062296,
+              "longitude": 81.415966034
+            },
+            {
+              "latitude": 6.414108238,
+              "longitude": 81.415973363
+            }
+          ],
+          "sectorName": "Menik Ganga",
+          "count": 5,
+          "riskClass": 3,
+          "isHotspot": false
+        },
+        {
+          "cellId": "549:703",
+          "polygon": [
+            {
+              "latitude": 6.368855931,
+              "longitude": 81.443062604
+            },
+            {
+              "latitude": 6.368848092,
+              "longitude": 81.452104509
+            },
+            {
+              "latitude": 6.359802179,
+              "longitude": 81.4520966
+            },
+            {
+              "latitude": 6.359810006,
+              "longitude": 81.443054853
+            },
+            {
+              "latitude": 6.368855931,
+              "longitude": 81.443062604
+            }
+          ],
+          "sectorName": "Patanangala Coast",
+          "count": 10,
+          "riskClass": 5,
+          "isHotspot": true
+        },
+        {
+          "cellId": "549:704",
+          "polygon": [
+            {
+              "latitude": 6.377901853,
+              "longitude": 81.443070366
+            },
+            {
+              "latitude": 6.377894003,
+              "longitude": 81.452112429
+            },
+            {
+              "latitude": 6.368848092,
+              "longitude": 81.452104509
+            },
+            {
+              "latitude": 6.368855931,
+              "longitude": 81.443062604
+            },
+            {
+              "latitude": 6.377901853,
+              "longitude": 81.443070366
+            }
+          ],
+          "sectorName": "Patanangala Coast",
+          "count": 5,
+          "riskClass": 3,
+          "isHotspot": false
+        },
+        {
+          "cellId": "549:705",
+          "polygon": [
+            {
+              "latitude": 6.386947772,
+              "longitude": 81.443078139
+            },
+            {
+              "latitude": 6.386939911,
+              "longitude": 81.452120361
+            },
+            {
+              "latitude": 6.377894003,
+              "longitude": 81.452112429
+            },
+            {
+              "latitude": 6.377901853,
+              "longitude": 81.443070366
+            },
+            {
+              "latitude": 6.386947772,
+              "longitude": 81.443078139
+            }
+          ],
+          "sectorName": "Patanangala Coast",
+          "count": 10,
+          "riskClass": 5,
+          "isHotspot": true
+        },
+        {
+          "cellId": "549:706",
+          "polygon": [
+            {
+              "latitude": 6.395993688,
+              "longitude": 81.443085924
+            },
+            {
+              "latitude": 6.395985815,
+              "longitude": 81.452128304
+            },
+            {
+              "latitude": 6.386939911,
+              "longitude": 81.452120361
+            },
+            {
+              "latitude": 6.386947772,
+              "longitude": 81.443078139
+            },
+            {
+              "latitude": 6.395993688,
+              "longitude": 81.443085924
+            }
+          ],
+          "sectorName": "Patanangala Coast",
+          "count": 5,
+          "riskClass": 3,
+          "isHotspot": false
+        },
+        {
+          "cellId": "549:707",
+          "polygon": [
+            {
+              "latitude": 6.4050396,
+              "longitude": 81.443093719
+            },
+            {
+              "latitude": 6.405031716,
+              "longitude": 81.452136259
+            },
+            {
+              "latitude": 6.395985815,
+              "longitude": 81.452128304
+            },
+            {
+              "latitude": 6.395993688,
+              "longitude": 81.443085924
+            },
+            {
+              "latitude": 6.4050396,
+              "longitude": 81.443093719
+            }
+          ],
+          "sectorName": "Patanangala Coast",
+          "count": 10,
+          "riskClass": 5,
+          "isHotspot": true
+        },
+        {
+          "cellId": "549:708",
+          "polygon": [
+            {
+              "latitude": 6.414085509,
+              "longitude": 81.443101526
+            },
+            {
+              "latitude": 6.414077614,
+              "longitude": 81.452144225
+            },
+            {
+              "latitude": 6.405031716,
+              "longitude": 81.452136259
+            },
+            {
+              "latitude": 6.4050396,
+              "longitude": 81.443093719
+            },
+            {
+              "latitude": 6.414085509,
+              "longitude": 81.443101526
+            }
+          ],
+          "sectorName": "Patanangala Coast",
+          "count": 5,
+          "riskClass": 3,
+          "isHotspot": false
+        }
+      ],
+      "classBreaks": [
+        2,
+        4,
+        6,
+        8
+      ]
+    },
+    "patrolGaps": {
+      "configured": true,
+      "cells": [
+        {
+          "cellId": "539:702",
+          "polygon": [
+            {
+              "latitude": 6.359874512,
+              "longitude": 81.359999952
+            },
+            {
+              "latitude": 6.35987334,
+              "longitude": 81.361678657
+            },
+            {
+              "latitude": 6.350827321,
+              "longitude": 81.361672339
+            },
+            {
+              "latitude": 6.350828487,
+              "longitude": 81.359999996
+            },
+            {
+              "latitude": 6.359874512,
+              "longitude": 81.359999952
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "539:703",
+          "polygon": [
+            {
+              "latitude": 6.368920534,
+              "longitude": 81.359999916
+            },
+            {
+              "latitude": 6.368919356,
+              "longitude": 81.361684984
+            },
+            {
+              "latitude": 6.35987334,
+              "longitude": 81.361678657
+            },
+            {
+              "latitude": 6.359874512,
+              "longitude": 81.359999952
+            },
+            {
+              "latitude": 6.368920534,
+              "longitude": 81.359999916
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "539:704",
+          "polygon": [
+            {
+              "latitude": 6.377966553,
+              "longitude": 81.35999989
+            },
+            {
+              "latitude": 6.377965369,
+              "longitude": 81.36169132
+            },
+            {
+              "latitude": 6.368919356,
+              "longitude": 81.361684984
+            },
+            {
+              "latitude": 6.368920534,
+              "longitude": 81.359999916
+            },
+            {
+              "latitude": 6.377966553,
+              "longitude": 81.35999989
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "539:705",
+          "polygon": [
+            {
+              "latitude": 6.387012568,
+              "longitude": 81.359999873
+            },
+            {
+              "latitude": 6.387011378,
+              "longitude": 81.361697666
+            },
+            {
+              "latitude": 6.377965369,
+              "longitude": 81.36169132
+            },
+            {
+              "latitude": 6.377966553,
+              "longitude": 81.35999989
+            },
+            {
+              "latitude": 6.387012568,
+              "longitude": 81.359999873
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "539:706",
+          "polygon": [
+            {
+              "latitude": 6.396058581,
+              "longitude": 81.359999865
+            },
+            {
+              "latitude": 6.396057385,
+              "longitude": 81.36170402
+            },
+            {
+              "latitude": 6.387011378,
+              "longitude": 81.361697666
+            },
+            {
+              "latitude": 6.387012568,
+              "longitude": 81.359999873
+            },
+            {
+              "latitude": 6.396058581,
+              "longitude": 81.359999865
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "539:707",
+          "polygon": [
+            {
+              "latitude": 6.40510459,
+              "longitude": 81.359999865
+            },
+            {
+              "latitude": 6.405103388,
+              "longitude": 81.361710384
+            },
+            {
+              "latitude": 6.396057385,
+              "longitude": 81.36170402
+            },
+            {
+              "latitude": 6.396058581,
+              "longitude": 81.359999865
+            },
+            {
+              "latitude": 6.40510459,
+              "longitude": 81.359999865
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "539:708",
+          "polygon": [
+            {
+              "latitude": 6.414150597,
+              "longitude": 81.359999875
+            },
+            {
+              "latitude": 6.414149388,
+              "longitude": 81.361716757
+            },
+            {
+              "latitude": 6.405103388,
+              "longitude": 81.361710384
+            },
+            {
+              "latitude": 6.40510459,
+              "longitude": 81.359999865
+            },
+            {
+              "latitude": 6.414150597,
+              "longitude": 81.359999875
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "539:709",
+          "polygon": [
+            {
+              "latitude": 6.4231966,
+              "longitude": 81.359999893
+            },
+            {
+              "latitude": 6.423195385,
+              "longitude": 81.36172314
+            },
+            {
+              "latitude": 6.414149388,
+              "longitude": 81.361716757
+            },
+            {
+              "latitude": 6.414150597,
+              "longitude": 81.359999875
+            },
+            {
+              "latitude": 6.4231966,
+              "longitude": 81.359999893
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "539:710",
+          "polygon": [
+            {
+              "latitude": 6.432242599,
+              "longitude": 81.35999992
+            },
+            {
+              "latitude": 6.432241379,
+              "longitude": 81.361729531
+            },
+            {
+              "latitude": 6.423195385,
+              "longitude": 81.36172314
+            },
+            {
+              "latitude": 6.4231966,
+              "longitude": 81.359999893
+            },
+            {
+              "latitude": 6.432242599,
+              "longitude": 81.35999992
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "539:711",
+          "polygon": [
+            {
+              "latitude": 6.441288596,
+              "longitude": 81.359999957
+            },
+            {
+              "latitude": 6.441287369,
+              "longitude": 81.361735932
+            },
+            {
+              "latitude": 6.432241379,
+              "longitude": 81.361729531
+            },
+            {
+              "latitude": 6.432242599,
+              "longitude": 81.35999992
+            },
+            {
+              "latitude": 6.441288596,
+              "longitude": 81.359999957
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "539:712",
+          "polygon": [
+            {
+              "latitude": 6.45,
+              "longitude": 81.36
+            },
+            {
+              "latitude": 6.450000202,
+              "longitude": 81.361742105
+            },
+            {
+              "latitude": 6.441287369,
+              "longitude": 81.361735932
+            },
+            {
+              "latitude": 6.441288596,
+              "longitude": 81.359999957
+            },
+            {
+              "latitude": 6.45,
+              "longitude": 81.36
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "540:701",
+          "polygon": [
+            {
+              "latitude": 6.350827321,
+              "longitude": 81.361672339
+            },
+            {
+              "latitude": 6.350820926,
+              "longitude": 81.37071402
+            },
+            {
+              "latitude": 6.350001131,
+              "longitude": 81.370713434
+            },
+            {
+              "latitude": 6.350000191,
+              "longitude": 81.361671761
+            },
+            {
+              "latitude": 6.350827321,
+              "longitude": 81.361672339
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "540:702",
+          "polygon": [
+            {
+              "latitude": 6.35987334,
+              "longitude": 81.361678657
+            },
+            {
+              "latitude": 6.359866936,
+              "longitude": 81.370720496
+            },
+            {
+              "latitude": 6.350820926,
+              "longitude": 81.37071402
+            },
+            {
+              "latitude": 6.350827321,
+              "longitude": 81.361672339
+            },
+            {
+              "latitude": 6.35987334,
+              "longitude": 81.361678657
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "540:703",
+          "polygon": [
+            {
+              "latitude": 6.368919356,
+              "longitude": 81.361684984
+            },
+            {
+              "latitude": 6.368912942,
+              "longitude": 81.370726981
+            },
+            {
+              "latitude": 6.359866936,
+              "longitude": 81.370720496
+            },
+            {
+              "latitude": 6.35987334,
+              "longitude": 81.361678657
+            },
+            {
+              "latitude": 6.368919356,
+              "longitude": 81.361684984
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "540:704",
+          "polygon": [
+            {
+              "latitude": 6.377965369,
+              "longitude": 81.36169132
+            },
+            {
+              "latitude": 6.377958946,
+              "longitude": 81.370733476
+            },
+            {
+              "latitude": 6.368912942,
+              "longitude": 81.370726981
+            },
+            {
+              "latitude": 6.368919356,
+              "longitude": 81.361684984
+            },
+            {
+              "latitude": 6.377965369,
+              "longitude": 81.36169132
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "540:705",
+          "polygon": [
+            {
+              "latitude": 6.387011378,
+              "longitude": 81.361697666
+            },
+            {
+              "latitude": 6.387004946,
+              "longitude": 81.37073998
+            },
+            {
+              "latitude": 6.377958946,
+              "longitude": 81.370733476
+            },
+            {
+              "latitude": 6.377965369,
+              "longitude": 81.36169132
+            },
+            {
+              "latitude": 6.387011378,
+              "longitude": 81.361697666
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "540:706",
+          "polygon": [
+            {
+              "latitude": 6.396057385,
+              "longitude": 81.36170402
+            },
+            {
+              "latitude": 6.396050944,
+              "longitude": 81.370746494
+            },
+            {
+              "latitude": 6.387004946,
+              "longitude": 81.37073998
+            },
+            {
+              "latitude": 6.387011378,
+              "longitude": 81.361697666
+            },
+            {
+              "latitude": 6.396057385,
+              "longitude": 81.36170402
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "540:707",
+          "polygon": [
+            {
+              "latitude": 6.405103388,
+              "longitude": 81.361710384
+            },
+            {
+              "latitude": 6.405096938,
+              "longitude": 81.370753017
+            },
+            {
+              "latitude": 6.396050944,
+              "longitude": 81.370746494
+            },
+            {
+              "latitude": 6.396057385,
+              "longitude": 81.36170402
+            },
+            {
+              "latitude": 6.405103388,
+              "longitude": 81.361710384
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "540:708",
+          "polygon": [
+            {
+              "latitude": 6.414149388,
+              "longitude": 81.361716757
+            },
+            {
+              "latitude": 6.414142928,
+              "longitude": 81.370759549
+            },
+            {
+              "latitude": 6.405096938,
+              "longitude": 81.370753017
+            },
+            {
+              "latitude": 6.405103388,
+              "longitude": 81.361710384
+            },
+            {
+              "latitude": 6.414149388,
+              "longitude": 81.361716757
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "540:709",
+          "polygon": [
+            {
+              "latitude": 6.423195385,
+              "longitude": 81.36172314
+            },
+            {
+              "latitude": 6.423188916,
+              "longitude": 81.370766091
+            },
+            {
+              "latitude": 6.414142928,
+              "longitude": 81.370759549
+            },
+            {
+              "latitude": 6.414149388,
+              "longitude": 81.361716757
+            },
+            {
+              "latitude": 6.423195385,
+              "longitude": 81.36172314
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "540:710",
+          "polygon": [
+            {
+              "latitude": 6.432241379,
+              "longitude": 81.361729531
+            },
+            {
+              "latitude": 6.432234901,
+              "longitude": 81.370772642
+            },
+            {
+              "latitude": 6.423188916,
+              "longitude": 81.370766091
+            },
+            {
+              "latitude": 6.423195385,
+              "longitude": 81.36172314
+            },
+            {
+              "latitude": 6.432241379,
+              "longitude": 81.361729531
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "540:711",
+          "polygon": [
+            {
+              "latitude": 6.441287369,
+              "longitude": 81.361735932
+            },
+            {
+              "latitude": 6.441280882,
+              "longitude": 81.370779203
+            },
+            {
+              "latitude": 6.432234901,
+              "longitude": 81.370772642
+            },
+            {
+              "latitude": 6.432241379,
+              "longitude": 81.361729531
+            },
+            {
+              "latitude": 6.441287369,
+              "longitude": 81.361735932
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "540:712",
+          "polygon": [
+            {
+              "latitude": 6.450000202,
+              "longitude": 81.361742105
+            },
+            {
+              "latitude": 6.450001155,
+              "longitude": 81.370785536
+            },
+            {
+              "latitude": 6.441280882,
+              "longitude": 81.370779203
+            },
+            {
+              "latitude": 6.441287369,
+              "longitude": 81.361735932
+            },
+            {
+              "latitude": 6.450000202,
+              "longitude": 81.361742105
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "541:701",
+          "polygon": [
+            {
+              "latitude": 6.350820926,
+              "longitude": 81.37071402
+            },
+            {
+              "latitude": 6.350814372,
+              "longitude": 81.379755692
+            },
+            {
+              "latitude": 6.350001912,
+              "longitude": 81.379755097
+            },
+            {
+              "latitude": 6.350001131,
+              "longitude": 81.370713434
+            },
+            {
+              "latitude": 6.350820926,
+              "longitude": 81.37071402
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "541:702",
+          "polygon": [
+            {
+              "latitude": 6.359866936,
+              "longitude": 81.370720496
+            },
+            {
+              "latitude": 6.359860373,
+              "longitude": 81.379762326
+            },
+            {
+              "latitude": 6.350814372,
+              "longitude": 81.379755692
+            },
+            {
+              "latitude": 6.350820926,
+              "longitude": 81.37071402
+            },
+            {
+              "latitude": 6.359866936,
+              "longitude": 81.370720496
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "541:703",
+          "polygon": [
+            {
+              "latitude": 6.368912942,
+              "longitude": 81.370726981
+            },
+            {
+              "latitude": 6.36890637,
+              "longitude": 81.37976897
+            },
+            {
+              "latitude": 6.359860373,
+              "longitude": 81.379762326
+            },
+            {
+              "latitude": 6.359866936,
+              "longitude": 81.370720496
+            },
+            {
+              "latitude": 6.368912942,
+              "longitude": 81.370726981
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "541:704",
+          "polygon": [
+            {
+              "latitude": 6.377958946,
+              "longitude": 81.370733476
+            },
+            {
+              "latitude": 6.377952364,
+              "longitude": 81.379775623
+            },
+            {
+              "latitude": 6.36890637,
+              "longitude": 81.37976897
+            },
+            {
+              "latitude": 6.368912942,
+              "longitude": 81.370726981
+            },
+            {
+              "latitude": 6.377958946,
+              "longitude": 81.370733476
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "541:705",
+          "polygon": [
+            {
+              "latitude": 6.387004946,
+              "longitude": 81.37073998
+            },
+            {
+              "latitude": 6.386998355,
+              "longitude": 81.379782286
+            },
+            {
+              "latitude": 6.377952364,
+              "longitude": 81.379775623
+            },
+            {
+              "latitude": 6.377958946,
+              "longitude": 81.370733476
+            },
+            {
+              "latitude": 6.387004946,
+              "longitude": 81.37073998
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "541:706",
+          "polygon": [
+            {
+              "latitude": 6.396050944,
+              "longitude": 81.370746494
+            },
+            {
+              "latitude": 6.396044343,
+              "longitude": 81.379788958
+            },
+            {
+              "latitude": 6.386998355,
+              "longitude": 81.379782286
+            },
+            {
+              "latitude": 6.387004946,
+              "longitude": 81.37073998
+            },
+            {
+              "latitude": 6.396050944,
+              "longitude": 81.370746494
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "541:707",
+          "polygon": [
+            {
+              "latitude": 6.405096938,
+              "longitude": 81.370753017
+            },
+            {
+              "latitude": 6.405090328,
+              "longitude": 81.37979564
+            },
+            {
+              "latitude": 6.396044343,
+              "longitude": 81.379788958
+            },
+            {
+              "latitude": 6.396050944,
+              "longitude": 81.370746494
+            },
+            {
+              "latitude": 6.405096938,
+              "longitude": 81.370753017
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "541:708",
+          "polygon": [
+            {
+              "latitude": 6.414142928,
+              "longitude": 81.370759549
+            },
+            {
+              "latitude": 6.414136309,
+              "longitude": 81.379802332
+            },
+            {
+              "latitude": 6.405090328,
+              "longitude": 81.37979564
+            },
+            {
+              "latitude": 6.405096938,
+              "longitude": 81.370753017
+            },
+            {
+              "latitude": 6.414142928,
+              "longitude": 81.370759549
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "541:709",
+          "polygon": [
+            {
+              "latitude": 6.423188916,
+              "longitude": 81.370766091
+            },
+            {
+              "latitude": 6.423182288,
+              "longitude": 81.379809033
+            },
+            {
+              "latitude": 6.414136309,
+              "longitude": 81.379802332
+            },
+            {
+              "latitude": 6.414142928,
+              "longitude": 81.370759549
+            },
+            {
+              "latitude": 6.423188916,
+              "longitude": 81.370766091
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "541:710",
+          "polygon": [
+            {
+              "latitude": 6.432234901,
+              "longitude": 81.370772642
+            },
+            {
+              "latitude": 6.432228263,
+              "longitude": 81.379815744
+            },
+            {
+              "latitude": 6.423182288,
+              "longitude": 81.379809033
+            },
+            {
+              "latitude": 6.423188916,
+              "longitude": 81.370766091
+            },
+            {
+              "latitude": 6.432234901,
+              "longitude": 81.370772642
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "541:711",
+          "polygon": [
+            {
+              "latitude": 6.441280882,
+              "longitude": 81.370779203
+            },
+            {
+              "latitude": 6.441274234,
+              "longitude": 81.379822465
+            },
+            {
+              "latitude": 6.432228263,
+              "longitude": 81.379815744
+            },
+            {
+              "latitude": 6.432234901,
+              "longitude": 81.370772642
+            },
+            {
+              "latitude": 6.441280882,
+              "longitude": 81.370779203
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "541:712",
+          "polygon": [
+            {
+              "latitude": 6.450001155,
+              "longitude": 81.370785536
+            },
+            {
+              "latitude": 6.450001948,
+              "longitude": 81.379828958
+            },
+            {
+              "latitude": 6.441274234,
+              "longitude": 81.379822465
+            },
+            {
+              "latitude": 6.441280882,
+              "longitude": 81.370779203
+            },
+            {
+              "latitude": 6.450001155,
+              "longitude": 81.370785536
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "542:701",
+          "polygon": [
+            {
+              "latitude": 6.350814372,
+              "longitude": 81.379755692
+            },
+            {
+              "latitude": 6.350807661,
+              "longitude": 81.388797355
+            },
+            {
+              "latitude": 6.350002536,
+              "longitude": 81.388796751
+            },
+            {
+              "latitude": 6.350001912,
+              "longitude": 81.379755097
+            },
+            {
+              "latitude": 6.350814372,
+              "longitude": 81.379755692
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "542:702",
+          "polygon": [
+            {
+              "latitude": 6.359860373,
+              "longitude": 81.379762326
+            },
+            {
+              "latitude": 6.359853652,
+              "longitude": 81.388804146
+            },
+            {
+              "latitude": 6.350807661,
+              "longitude": 81.388797355
+            },
+            {
+              "latitude": 6.350814372,
+              "longitude": 81.379755692
+            },
+            {
+              "latitude": 6.359860373,
+              "longitude": 81.379762326
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "542:703",
+          "polygon": [
+            {
+              "latitude": 6.36890637,
+              "longitude": 81.37976897
+            },
+            {
+              "latitude": 6.36889964,
+              "longitude": 81.388810948
+            },
+            {
+              "latitude": 6.359853652,
+              "longitude": 81.388804146
+            },
+            {
+              "latitude": 6.359860373,
+              "longitude": 81.379762326
+            },
+            {
+              "latitude": 6.36890637,
+              "longitude": 81.37976897
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "542:704",
+          "polygon": [
+            {
+              "latitude": 6.377952364,
+              "longitude": 81.379775623
+            },
+            {
+              "latitude": 6.377945624,
+              "longitude": 81.38881776
+            },
+            {
+              "latitude": 6.36889964,
+              "longitude": 81.388810948
+            },
+            {
+              "latitude": 6.36890637,
+              "longitude": 81.37976897
+            },
+            {
+              "latitude": 6.377952364,
+              "longitude": 81.379775623
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "542:705",
+          "polygon": [
+            {
+              "latitude": 6.386998355,
+              "longitude": 81.379782286
+            },
+            {
+              "latitude": 6.386991606,
+              "longitude": 81.388824581
+            },
+            {
+              "latitude": 6.377945624,
+              "longitude": 81.38881776
+            },
+            {
+              "latitude": 6.377952364,
+              "longitude": 81.379775623
+            },
+            {
+              "latitude": 6.386998355,
+              "longitude": 81.379782286
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "542:706",
+          "polygon": [
+            {
+              "latitude": 6.396044343,
+              "longitude": 81.379788958
+            },
+            {
+              "latitude": 6.396037584,
+              "longitude": 81.388831412
+            },
+            {
+              "latitude": 6.386991606,
+              "longitude": 81.388824581
+            },
+            {
+              "latitude": 6.386998355,
+              "longitude": 81.379782286
+            },
+            {
+              "latitude": 6.396044343,
+              "longitude": 81.379788958
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "542:707",
+          "polygon": [
+            {
+              "latitude": 6.405090328,
+              "longitude": 81.37979564
+            },
+            {
+              "latitude": 6.405083559,
+              "longitude": 81.388838254
+            },
+            {
+              "latitude": 6.396037584,
+              "longitude": 81.388831412
+            },
+            {
+              "latitude": 6.396044343,
+              "longitude": 81.379788958
+            },
+            {
+              "latitude": 6.405090328,
+              "longitude": 81.37979564
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "542:708",
+          "polygon": [
+            {
+              "latitude": 6.414136309,
+              "longitude": 81.379802332
+            },
+            {
+              "latitude": 6.414129531,
+              "longitude": 81.388845105
+            },
+            {
+              "latitude": 6.405083559,
+              "longitude": 81.388838254
+            },
+            {
+              "latitude": 6.405090328,
+              "longitude": 81.37979564
+            },
+            {
+              "latitude": 6.414136309,
+              "longitude": 81.379802332
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "542:709",
+          "polygon": [
+            {
+              "latitude": 6.423182288,
+              "longitude": 81.379809033
+            },
+            {
+              "latitude": 6.423175499,
+              "longitude": 81.388851966
+            },
+            {
+              "latitude": 6.414129531,
+              "longitude": 81.388845105
+            },
+            {
+              "latitude": 6.414136309,
+              "longitude": 81.379802332
+            },
+            {
+              "latitude": 6.423182288,
+              "longitude": 81.379809033
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "542:710",
+          "polygon": [
+            {
+              "latitude": 6.432228263,
+              "longitude": 81.379815744
+            },
+            {
+              "latitude": 6.432221465,
+              "longitude": 81.388858836
+            },
+            {
+              "latitude": 6.423175499,
+              "longitude": 81.388851966
+            },
+            {
+              "latitude": 6.423182288,
+              "longitude": 81.379809033
+            },
+            {
+              "latitude": 6.432228263,
+              "longitude": 81.379815744
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "542:711",
+          "polygon": [
+            {
+              "latitude": 6.441274234,
+              "longitude": 81.379822465
+            },
+            {
+              "latitude": 6.441267427,
+              "longitude": 81.388865717
+            },
+            {
+              "latitude": 6.432221465,
+              "longitude": 81.388858836
+            },
+            {
+              "latitude": 6.432228263,
+              "longitude": 81.379815744
+            },
+            {
+              "latitude": 6.441274234,
+              "longitude": 81.379822465
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "542:712",
+          "polygon": [
+            {
+              "latitude": 6.450001948,
+              "longitude": 81.379828958
+            },
+            {
+              "latitude": 6.45000258,
+              "longitude": 81.388872371
+            },
+            {
+              "latitude": 6.441267427,
+              "longitude": 81.388865717
+            },
+            {
+              "latitude": 6.441274234,
+              "longitude": 81.379822465
+            },
+            {
+              "latitude": 6.450001948,
+              "longitude": 81.379828958
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "543:701",
+          "polygon": [
+            {
+              "latitude": 6.350807661,
+              "longitude": 81.388797355
+            },
+            {
+              "latitude": 6.350800792,
+              "longitude": 81.397839007
+            },
+            {
+              "latitude": 6.350003002,
+              "longitude": 81.397838395
+            },
+            {
+              "latitude": 6.350002536,
+              "longitude": 81.388796751
+            },
+            {
+              "latitude": 6.350807661,
+              "longitude": 81.388797355
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "543:702",
+          "polygon": [
+            {
+              "latitude": 6.359853652,
+              "longitude": 81.388804146
+            },
+            {
+              "latitude": 6.359846773,
+              "longitude": 81.397845957
+            },
+            {
+              "latitude": 6.350800792,
+              "longitude": 81.397839007
+            },
+            {
+              "latitude": 6.350807661,
+              "longitude": 81.388797355
+            },
+            {
+              "latitude": 6.359853652,
+              "longitude": 81.388804146
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "543:703",
+          "polygon": [
+            {
+              "latitude": 6.36889964,
+              "longitude": 81.388810948
+            },
+            {
+              "latitude": 6.368892751,
+              "longitude": 81.397852917
+            },
+            {
+              "latitude": 6.359846773,
+              "longitude": 81.397845957
+            },
+            {
+              "latitude": 6.359853652,
+              "longitude": 81.388804146
+            },
+            {
+              "latitude": 6.36889964,
+              "longitude": 81.388810948
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "543:704",
+          "polygon": [
+            {
+              "latitude": 6.377945624,
+              "longitude": 81.38881776
+            },
+            {
+              "latitude": 6.377938725,
+              "longitude": 81.397859887
+            },
+            {
+              "latitude": 6.368892751,
+              "longitude": 81.397852917
+            },
+            {
+              "latitude": 6.36889964,
+              "longitude": 81.388810948
+            },
+            {
+              "latitude": 6.377945624,
+              "longitude": 81.38881776
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "543:705",
+          "polygon": [
+            {
+              "latitude": 6.386991606,
+              "longitude": 81.388824581
+            },
+            {
+              "latitude": 6.386984697,
+              "longitude": 81.397866867
+            },
+            {
+              "latitude": 6.377938725,
+              "longitude": 81.397859887
+            },
+            {
+              "latitude": 6.377945624,
+              "longitude": 81.38881776
+            },
+            {
+              "latitude": 6.386991606,
+              "longitude": 81.388824581
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "543:706",
+          "polygon": [
+            {
+              "latitude": 6.396037584,
+              "longitude": 81.388831412
+            },
+            {
+              "latitude": 6.396030665,
+              "longitude": 81.397873857
+            },
+            {
+              "latitude": 6.386984697,
+              "longitude": 81.397866867
+            },
+            {
+              "latitude": 6.386991606,
+              "longitude": 81.388824581
+            },
+            {
+              "latitude": 6.396037584,
+              "longitude": 81.388831412
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "543:707",
+          "polygon": [
+            {
+              "latitude": 6.405083559,
+              "longitude": 81.388838254
+            },
+            {
+              "latitude": 6.40507663,
+              "longitude": 81.397880857
+            },
+            {
+              "latitude": 6.396030665,
+              "longitude": 81.397873857
+            },
+            {
+              "latitude": 6.396037584,
+              "longitude": 81.388831412
+            },
+            {
+              "latitude": 6.405083559,
+              "longitude": 81.388838254
+            }
+          ],
+          "covered": true,
+          "lastPatrolledAt": "2026-10-07T06:32:00.000Z",
+          "daysSincePatrol": 2
+        },
+        {
+          "cellId": "543:708",
+          "polygon": [
+            {
+              "latitude": 6.414129531,
+              "longitude": 81.388845105
+            },
+            {
+              "latitude": 6.414122592,
+              "longitude": 81.397887868
+            },
+            {
+              "latitude": 6.40507663,
+              "longitude": 81.397880857
+            },
+            {
+              "latitude": 6.405083559,
+              "longitude": 81.388838254
+            },
+            {
+              "latitude": 6.414129531,
+              "longitude": 81.388845105
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "543:709",
+          "polygon": [
+            {
+              "latitude": 6.423175499,
+              "longitude": 81.388851966
+            },
+            {
+              "latitude": 6.423168551,
+              "longitude": 81.397894888
+            },
+            {
+              "latitude": 6.414122592,
+              "longitude": 81.397887868
+            },
+            {
+              "latitude": 6.414129531,
+              "longitude": 81.388845105
+            },
+            {
+              "latitude": 6.423175499,
+              "longitude": 81.388851966
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "543:710",
+          "polygon": [
+            {
+              "latitude": 6.432221465,
+              "longitude": 81.388858836
+            },
+            {
+              "latitude": 6.432214507,
+              "longitude": 81.397901919
+            },
+            {
+              "latitude": 6.423168551,
+              "longitude": 81.397894888
+            },
+            {
+              "latitude": 6.423175499,
+              "longitude": 81.388851966
+            },
+            {
+              "latitude": 6.432221465,
+              "longitude": 81.388858836
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "543:711",
+          "polygon": [
+            {
+              "latitude": 6.441267427,
+              "longitude": 81.388865717
+            },
+            {
+              "latitude": 6.441260459,
+              "longitude": 81.397908959
+            },
+            {
+              "latitude": 6.432214507,
+              "longitude": 81.397901919
+            },
+            {
+              "latitude": 6.432221465,
+              "longitude": 81.388858836
+            },
+            {
+              "latitude": 6.441267427,
+              "longitude": 81.388865717
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "543:712",
+          "polygon": [
+            {
+              "latitude": 6.45000258,
+              "longitude": 81.388872371
+            },
+            {
+              "latitude": 6.450003052,
+              "longitude": 81.397915773
+            },
+            {
+              "latitude": 6.441260459,
+              "longitude": 81.397908959
+            },
+            {
+              "latitude": 6.441267427,
+              "longitude": 81.388865717
+            },
+            {
+              "latitude": 6.45000258,
+              "longitude": 81.388872371
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "544:701",
+          "polygon": [
+            {
+              "latitude": 6.350800792,
+              "longitude": 81.397839007
+            },
+            {
+              "latitude": 6.350793765,
+              "longitude": 81.40688065
+            },
+            {
+              "latitude": 6.35000331,
+              "longitude": 81.406880029
+            },
+            {
+              "latitude": 6.350003002,
+              "longitude": 81.397838395
+            },
+            {
+              "latitude": 6.350800792,
+              "longitude": 81.397839007
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "544:702",
+          "polygon": [
+            {
+              "latitude": 6.359846773,
+              "longitude": 81.397845957
+            },
+            {
+              "latitude": 6.359839736,
+              "longitude": 81.406887757
+            },
+            {
+              "latitude": 6.350793765,
+              "longitude": 81.40688065
+            },
+            {
+              "latitude": 6.350800792,
+              "longitude": 81.397839007
+            },
+            {
+              "latitude": 6.359846773,
+              "longitude": 81.397845957
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "544:703",
+          "polygon": [
+            {
+              "latitude": 6.368892751,
+              "longitude": 81.397852917
+            },
+            {
+              "latitude": 6.368885704,
+              "longitude": 81.406894875
+            },
+            {
+              "latitude": 6.359839736,
+              "longitude": 81.406887757
+            },
+            {
+              "latitude": 6.359846773,
+              "longitude": 81.397845957
+            },
+            {
+              "latitude": 6.368892751,
+              "longitude": 81.397852917
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "544:704",
+          "polygon": [
+            {
+              "latitude": 6.377938725,
+              "longitude": 81.397859887
+            },
+            {
+              "latitude": 6.377931668,
+              "longitude": 81.406902004
+            },
+            {
+              "latitude": 6.368885704,
+              "longitude": 81.406894875
+            },
+            {
+              "latitude": 6.368892751,
+              "longitude": 81.397852917
+            },
+            {
+              "latitude": 6.377938725,
+              "longitude": 81.397859887
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "544:705",
+          "polygon": [
+            {
+              "latitude": 6.386984697,
+              "longitude": 81.397866867
+            },
+            {
+              "latitude": 6.38697763,
+              "longitude": 81.406909142
+            },
+            {
+              "latitude": 6.377931668,
+              "longitude": 81.406902004
+            },
+            {
+              "latitude": 6.377938725,
+              "longitude": 81.397859887
+            },
+            {
+              "latitude": 6.386984697,
+              "longitude": 81.397866867
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "544:706",
+          "polygon": [
+            {
+              "latitude": 6.396030665,
+              "longitude": 81.397873857
+            },
+            {
+              "latitude": 6.396023588,
+              "longitude": 81.406916291
+            },
+            {
+              "latitude": 6.38697763,
+              "longitude": 81.406909142
+            },
+            {
+              "latitude": 6.386984697,
+              "longitude": 81.397866867
+            },
+            {
+              "latitude": 6.396030665,
+              "longitude": 81.397873857
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "544:707",
+          "polygon": [
+            {
+              "latitude": 6.40507663,
+              "longitude": 81.397880857
+            },
+            {
+              "latitude": 6.405069543,
+              "longitude": 81.406923451
+            },
+            {
+              "latitude": 6.396023588,
+              "longitude": 81.406916291
+            },
+            {
+              "latitude": 6.396030665,
+              "longitude": 81.397873857
+            },
+            {
+              "latitude": 6.40507663,
+              "longitude": 81.397880857
+            }
+          ],
+          "covered": true,
+          "lastPatrolledAt": "2026-10-07T06:35:00.000Z",
+          "daysSincePatrol": 2
+        },
+        {
+          "cellId": "544:708",
+          "polygon": [
+            {
+              "latitude": 6.414122592,
+              "longitude": 81.397887868
+            },
+            {
+              "latitude": 6.414115495,
+              "longitude": 81.40693062
+            },
+            {
+              "latitude": 6.405069543,
+              "longitude": 81.406923451
+            },
+            {
+              "latitude": 6.40507663,
+              "longitude": 81.397880857
+            },
+            {
+              "latitude": 6.414122592,
+              "longitude": 81.397887868
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "544:709",
+          "polygon": [
+            {
+              "latitude": 6.423168551,
+              "longitude": 81.397894888
+            },
+            {
+              "latitude": 6.423161443,
+              "longitude": 81.4069378
+            },
+            {
+              "latitude": 6.414115495,
+              "longitude": 81.40693062
+            },
+            {
+              "latitude": 6.414122592,
+              "longitude": 81.397887868
+            },
+            {
+              "latitude": 6.423168551,
+              "longitude": 81.397894888
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "544:710",
+          "polygon": [
+            {
+              "latitude": 6.432214507,
+              "longitude": 81.397901919
+            },
+            {
+              "latitude": 6.432207389,
+              "longitude": 81.406944991
+            },
+            {
+              "latitude": 6.423161443,
+              "longitude": 81.4069378
+            },
+            {
+              "latitude": 6.423168551,
+              "longitude": 81.397894888
+            },
+            {
+              "latitude": 6.432214507,
+              "longitude": 81.397901919
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "544:711",
+          "polygon": [
+            {
+              "latitude": 6.441260459,
+              "longitude": 81.397908959
+            },
+            {
+              "latitude": 6.441253331,
+              "longitude": 81.406952191
+            },
+            {
+              "latitude": 6.432207389,
+              "longitude": 81.406944991
+            },
+            {
+              "latitude": 6.432214507,
+              "longitude": 81.397901919
+            },
+            {
+              "latitude": 6.441260459,
+              "longitude": 81.397908959
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "544:712",
+          "polygon": [
+            {
+              "latitude": 6.450003052,
+              "longitude": 81.397915773
+            },
+            {
+              "latitude": 6.450003364,
+              "longitude": 81.406959166
+            },
+            {
+              "latitude": 6.441253331,
+              "longitude": 81.406952191
+            },
+            {
+              "latitude": 6.441260459,
+              "longitude": 81.397908959
+            },
+            {
+              "latitude": 6.450003052,
+              "longitude": 81.397915773
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "545:701",
+          "polygon": [
+            {
+              "latitude": 6.350793765,
+              "longitude": 81.40688065
+            },
+            {
+              "latitude": 6.35078658,
+              "longitude": 81.415922282
+            },
+            {
+              "latitude": 6.35000346,
+              "longitude": 81.415921653
+            },
+            {
+              "latitude": 6.35000331,
+              "longitude": 81.406880029
+            },
+            {
+              "latitude": 6.350793765,
+              "longitude": 81.40688065
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "545:702",
+          "polygon": [
+            {
+              "latitude": 6.359839736,
+              "longitude": 81.406887757
+            },
+            {
+              "latitude": 6.359832541,
+              "longitude": 81.415929547
+            },
+            {
+              "latitude": 6.35078658,
+              "longitude": 81.415922282
+            },
+            {
+              "latitude": 6.350793765,
+              "longitude": 81.40688065
+            },
+            {
+              "latitude": 6.359839736,
+              "longitude": 81.406887757
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "545:703",
+          "polygon": [
+            {
+              "latitude": 6.368885704,
+              "longitude": 81.406894875
+            },
+            {
+              "latitude": 6.368878498,
+              "longitude": 81.415936824
+            },
+            {
+              "latitude": 6.359832541,
+              "longitude": 81.415929547
+            },
+            {
+              "latitude": 6.359839736,
+              "longitude": 81.406887757
+            },
+            {
+              "latitude": 6.368885704,
+              "longitude": 81.406894875
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "545:704",
+          "polygon": [
+            {
+              "latitude": 6.377931668,
+              "longitude": 81.406902004
+            },
+            {
+              "latitude": 6.377924452,
+              "longitude": 81.41594411
+            },
+            {
+              "latitude": 6.368878498,
+              "longitude": 81.415936824
+            },
+            {
+              "latitude": 6.368885704,
+              "longitude": 81.406894875
+            },
+            {
+              "latitude": 6.377931668,
+              "longitude": 81.406902004
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "545:705",
+          "polygon": [
+            {
+              "latitude": 6.38697763,
+              "longitude": 81.406909142
+            },
+            {
+              "latitude": 6.386970403,
+              "longitude": 81.415951408
+            },
+            {
+              "latitude": 6.377924452,
+              "longitude": 81.41594411
+            },
+            {
+              "latitude": 6.377931668,
+              "longitude": 81.406902004
+            },
+            {
+              "latitude": 6.38697763,
+              "longitude": 81.406909142
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "545:706",
+          "polygon": [
+            {
+              "latitude": 6.396023588,
+              "longitude": 81.406916291
+            },
+            {
+              "latitude": 6.396016351,
+              "longitude": 81.415958716
+            },
+            {
+              "latitude": 6.386970403,
+              "longitude": 81.415951408
+            },
+            {
+              "latitude": 6.38697763,
+              "longitude": 81.406909142
+            },
+            {
+              "latitude": 6.396023588,
+              "longitude": 81.406916291
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "545:707",
+          "polygon": [
+            {
+              "latitude": 6.405069543,
+              "longitude": 81.406923451
+            },
+            {
+              "latitude": 6.405062296,
+              "longitude": 81.415966034
+            },
+            {
+              "latitude": 6.396016351,
+              "longitude": 81.415958716
+            },
+            {
+              "latitude": 6.396023588,
+              "longitude": 81.406916291
+            },
+            {
+              "latitude": 6.405069543,
+              "longitude": 81.406923451
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "545:708",
+          "polygon": [
+            {
+              "latitude": 6.414115495,
+              "longitude": 81.40693062
+            },
+            {
+              "latitude": 6.414108238,
+              "longitude": 81.415973363
+            },
+            {
+              "latitude": 6.405062296,
+              "longitude": 81.415966034
+            },
+            {
+              "latitude": 6.405069543,
+              "longitude": 81.406923451
+            },
+            {
+              "latitude": 6.414115495,
+              "longitude": 81.40693062
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "545:709",
+          "polygon": [
+            {
+              "latitude": 6.423161443,
+              "longitude": 81.4069378
+            },
+            {
+              "latitude": 6.423154176,
+              "longitude": 81.415980703
+            },
+            {
+              "latitude": 6.414108238,
+              "longitude": 81.415973363
+            },
+            {
+              "latitude": 6.414115495,
+              "longitude": 81.40693062
+            },
+            {
+              "latitude": 6.423161443,
+              "longitude": 81.4069378
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "545:710",
+          "polygon": [
+            {
+              "latitude": 6.432207389,
+              "longitude": 81.406944991
+            },
+            {
+              "latitude": 6.432200111,
+              "longitude": 81.415988053
+            },
+            {
+              "latitude": 6.423154176,
+              "longitude": 81.415980703
+            },
+            {
+              "latitude": 6.423161443,
+              "longitude": 81.4069378
+            },
+            {
+              "latitude": 6.432207389,
+              "longitude": 81.406944991
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "545:711",
+          "polygon": [
+            {
+              "latitude": 6.441253331,
+              "longitude": 81.406952191
+            },
+            {
+              "latitude": 6.441246043,
+              "longitude": 81.415995413
+            },
+            {
+              "latitude": 6.432200111,
+              "longitude": 81.415988053
+            },
+            {
+              "latitude": 6.432207389,
+              "longitude": 81.406944991
+            },
+            {
+              "latitude": 6.441253331,
+              "longitude": 81.406952191
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "545:712",
+          "polygon": [
+            {
+              "latitude": 6.450003364,
+              "longitude": 81.406959166
+            },
+            {
+              "latitude": 6.450003515,
+              "longitude": 81.416002549
+            },
+            {
+              "latitude": 6.441246043,
+              "longitude": 81.415995413
+            },
+            {
+              "latitude": 6.441253331,
+              "longitude": 81.406952191
+            },
+            {
+              "latitude": 6.450003364,
+              "longitude": 81.406959166
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "546:701",
+          "polygon": [
+            {
+              "latitude": 6.35078658,
+              "longitude": 81.415922282
+            },
+            {
+              "latitude": 6.350779237,
+              "longitude": 81.424963903
+            },
+            {
+              "latitude": 6.350003453,
+              "longitude": 81.424963267
+            },
+            {
+              "latitude": 6.35000346,
+              "longitude": 81.415921653
+            },
+            {
+              "latitude": 6.35078658,
+              "longitude": 81.415922282
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "546:702",
+          "polygon": [
+            {
+              "latitude": 6.359832541,
+              "longitude": 81.415929547
+            },
+            {
+              "latitude": 6.359825187,
+              "longitude": 81.424971327
+            },
+            {
+              "latitude": 6.350779237,
+              "longitude": 81.424963903
+            },
+            {
+              "latitude": 6.35078658,
+              "longitude": 81.415922282
+            },
+            {
+              "latitude": 6.359832541,
+              "longitude": 81.415929547
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "546:703",
+          "polygon": [
+            {
+              "latitude": 6.368878498,
+              "longitude": 81.415936824
+            },
+            {
+              "latitude": 6.368871134,
+              "longitude": 81.424978761
+            },
+            {
+              "latitude": 6.359825187,
+              "longitude": 81.424971327
+            },
+            {
+              "latitude": 6.359832541,
+              "longitude": 81.415929547
+            },
+            {
+              "latitude": 6.368878498,
+              "longitude": 81.415936824
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "546:704",
+          "polygon": [
+            {
+              "latitude": 6.377924452,
+              "longitude": 81.41594411
+            },
+            {
+              "latitude": 6.377917078,
+              "longitude": 81.424986206
+            },
+            {
+              "latitude": 6.368871134,
+              "longitude": 81.424978761
+            },
+            {
+              "latitude": 6.368878498,
+              "longitude": 81.415936824
+            },
+            {
+              "latitude": 6.377924452,
+              "longitude": 81.41594411
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "546:705",
+          "polygon": [
+            {
+              "latitude": 6.386970403,
+              "longitude": 81.415951408
+            },
+            {
+              "latitude": 6.386963018,
+              "longitude": 81.424993662
+            },
+            {
+              "latitude": 6.377917078,
+              "longitude": 81.424986206
+            },
+            {
+              "latitude": 6.377924452,
+              "longitude": 81.41594411
+            },
+            {
+              "latitude": 6.386970403,
+              "longitude": 81.415951408
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "546:706",
+          "polygon": [
+            {
+              "latitude": 6.396016351,
+              "longitude": 81.415958716
+            },
+            {
+              "latitude": 6.396008956,
+              "longitude": 81.425001129
+            },
+            {
+              "latitude": 6.386963018,
+              "longitude": 81.424993662
+            },
+            {
+              "latitude": 6.386970403,
+              "longitude": 81.415951408
+            },
+            {
+              "latitude": 6.396016351,
+              "longitude": 81.415958716
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "546:707",
+          "polygon": [
+            {
+              "latitude": 6.405062296,
+              "longitude": 81.415966034
+            },
+            {
+              "latitude": 6.40505489,
+              "longitude": 81.425008607
+            },
+            {
+              "latitude": 6.396008956,
+              "longitude": 81.425001129
+            },
+            {
+              "latitude": 6.396016351,
+              "longitude": 81.415958716
+            },
+            {
+              "latitude": 6.405062296,
+              "longitude": 81.415966034
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "546:708",
+          "polygon": [
+            {
+              "latitude": 6.414108238,
+              "longitude": 81.415973363
+            },
+            {
+              "latitude": 6.414100821,
+              "longitude": 81.425016095
+            },
+            {
+              "latitude": 6.40505489,
+              "longitude": 81.425008607
+            },
+            {
+              "latitude": 6.405062296,
+              "longitude": 81.415966034
+            },
+            {
+              "latitude": 6.414108238,
+              "longitude": 81.415973363
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "546:709",
+          "polygon": [
+            {
+              "latitude": 6.423154176,
+              "longitude": 81.415980703
+            },
+            {
+              "latitude": 6.423146749,
+              "longitude": 81.425023594
+            },
+            {
+              "latitude": 6.414100821,
+              "longitude": 81.425016095
+            },
+            {
+              "latitude": 6.414108238,
+              "longitude": 81.415973363
+            },
+            {
+              "latitude": 6.423154176,
+              "longitude": 81.415980703
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "546:710",
+          "polygon": [
+            {
+              "latitude": 6.432200111,
+              "longitude": 81.415988053
+            },
+            {
+              "latitude": 6.432192673,
+              "longitude": 81.425031104
+            },
+            {
+              "latitude": 6.423146749,
+              "longitude": 81.425023594
+            },
+            {
+              "latitude": 6.423154176,
+              "longitude": 81.415980703
+            },
+            {
+              "latitude": 6.432200111,
+              "longitude": 81.415988053
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "546:711",
+          "polygon": [
+            {
+              "latitude": 6.441246043,
+              "longitude": 81.415995413
+            },
+            {
+              "latitude": 6.441238595,
+              "longitude": 81.425038625
+            },
+            {
+              "latitude": 6.432192673,
+              "longitude": 81.425031104
+            },
+            {
+              "latitude": 6.432200111,
+              "longitude": 81.415988053
+            },
+            {
+              "latitude": 6.441246043,
+              "longitude": 81.415995413
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "546:712",
+          "polygon": [
+            {
+              "latitude": 6.450003515,
+              "longitude": 81.416002549
+            },
+            {
+              "latitude": 6.450003505,
+              "longitude": 81.425045922
+            },
+            {
+              "latitude": 6.441238595,
+              "longitude": 81.425038625
+            },
+            {
+              "latitude": 6.441246043,
+              "longitude": 81.415995413
+            },
+            {
+              "latitude": 6.450003515,
+              "longitude": 81.416002549
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "547:701",
+          "polygon": [
+            {
+              "latitude": 6.350779237,
+              "longitude": 81.424963903
+            },
+            {
+              "latitude": 6.350771737,
+              "longitude": 81.434005514
+            },
+            {
+              "latitude": 6.350003287,
+              "longitude": 81.434004871
+            },
+            {
+              "latitude": 6.350003453,
+              "longitude": 81.424963267
+            },
+            {
+              "latitude": 6.350779237,
+              "longitude": 81.424963903
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "547:702",
+          "polygon": [
+            {
+              "latitude": 6.359825187,
+              "longitude": 81.424971327
+            },
+            {
+              "latitude": 6.359817676,
+              "longitude": 81.434013096
+            },
+            {
+              "latitude": 6.350771737,
+              "longitude": 81.434005514
+            },
+            {
+              "latitude": 6.350779237,
+              "longitude": 81.424963903
+            },
+            {
+              "latitude": 6.359825187,
+              "longitude": 81.424971327
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "547:703",
+          "polygon": [
+            {
+              "latitude": 6.368871134,
+              "longitude": 81.424978761
+            },
+            {
+              "latitude": 6.368863612,
+              "longitude": 81.434020688
+            },
+            {
+              "latitude": 6.359817676,
+              "longitude": 81.434013096
+            },
+            {
+              "latitude": 6.359825187,
+              "longitude": 81.424971327
+            },
+            {
+              "latitude": 6.368871134,
+              "longitude": 81.424978761
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "547:704",
+          "polygon": [
+            {
+              "latitude": 6.377917078,
+              "longitude": 81.424986206
+            },
+            {
+              "latitude": 6.377909545,
+              "longitude": 81.434028292
+            },
+            {
+              "latitude": 6.368863612,
+              "longitude": 81.434020688
+            },
+            {
+              "latitude": 6.368871134,
+              "longitude": 81.424978761
+            },
+            {
+              "latitude": 6.377917078,
+              "longitude": 81.424986206
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "547:705",
+          "polygon": [
+            {
+              "latitude": 6.386963018,
+              "longitude": 81.424993662
+            },
+            {
+              "latitude": 6.386955475,
+              "longitude": 81.434035906
+            },
+            {
+              "latitude": 6.377909545,
+              "longitude": 81.434028292
+            },
+            {
+              "latitude": 6.377917078,
+              "longitude": 81.424986206
+            },
+            {
+              "latitude": 6.386963018,
+              "longitude": 81.424993662
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "547:706",
+          "polygon": [
+            {
+              "latitude": 6.396008956,
+              "longitude": 81.425001129
+            },
+            {
+              "latitude": 6.396001401,
+              "longitude": 81.434043532
+            },
+            {
+              "latitude": 6.386955475,
+              "longitude": 81.434035906
+            },
+            {
+              "latitude": 6.386963018,
+              "longitude": 81.424993662
+            },
+            {
+              "latitude": 6.396008956,
+              "longitude": 81.425001129
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "547:707",
+          "polygon": [
+            {
+              "latitude": 6.40505489,
+              "longitude": 81.425008607
+            },
+            {
+              "latitude": 6.405047325,
+              "longitude": 81.434051169
+            },
+            {
+              "latitude": 6.396001401,
+              "longitude": 81.434043532
+            },
+            {
+              "latitude": 6.396008956,
+              "longitude": 81.425001129
+            },
+            {
+              "latitude": 6.40505489,
+              "longitude": 81.425008607
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "547:708",
+          "polygon": [
+            {
+              "latitude": 6.414100821,
+              "longitude": 81.425016095
+            },
+            {
+              "latitude": 6.414093245,
+              "longitude": 81.434058816
+            },
+            {
+              "latitude": 6.405047325,
+              "longitude": 81.434051169
+            },
+            {
+              "latitude": 6.40505489,
+              "longitude": 81.425008607
+            },
+            {
+              "latitude": 6.414100821,
+              "longitude": 81.425016095
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "547:709",
+          "polygon": [
+            {
+              "latitude": 6.423146749,
+              "longitude": 81.425023594
+            },
+            {
+              "latitude": 6.423139162,
+              "longitude": 81.434066475
+            },
+            {
+              "latitude": 6.414093245,
+              "longitude": 81.434058816
+            },
+            {
+              "latitude": 6.414100821,
+              "longitude": 81.425016095
+            },
+            {
+              "latitude": 6.423146749,
+              "longitude": 81.425023594
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "547:710",
+          "polygon": [
+            {
+              "latitude": 6.432192673,
+              "longitude": 81.425031104
+            },
+            {
+              "latitude": 6.432185076,
+              "longitude": 81.434074144
+            },
+            {
+              "latitude": 6.423139162,
+              "longitude": 81.434066475
+            },
+            {
+              "latitude": 6.423146749,
+              "longitude": 81.425023594
+            },
+            {
+              "latitude": 6.432192673,
+              "longitude": 81.425031104
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "547:711",
+          "polygon": [
+            {
+              "latitude": 6.441238595,
+              "longitude": 81.425038625
+            },
+            {
+              "latitude": 6.441230986,
+              "longitude": 81.434081825
+            },
+            {
+              "latitude": 6.432185076,
+              "longitude": 81.434074144
+            },
+            {
+              "latitude": 6.432192673,
+              "longitude": 81.425031104
+            },
+            {
+              "latitude": 6.441238595,
+              "longitude": 81.425038625
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "547:712",
+          "polygon": [
+            {
+              "latitude": 6.450003505,
+              "longitude": 81.425045922
+            },
+            {
+              "latitude": 6.450003336,
+              "longitude": 81.434089284
+            },
+            {
+              "latitude": 6.441230986,
+              "longitude": 81.434081825
+            },
+            {
+              "latitude": 6.441238595,
+              "longitude": 81.425038625
+            },
+            {
+              "latitude": 6.450003505,
+              "longitude": 81.425045922
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "548:701",
+          "polygon": [
+            {
+              "latitude": 6.350771737,
+              "longitude": 81.434005514
+            },
+            {
+              "latitude": 6.350764078,
+              "longitude": 81.443047114
+            },
+            {
+              "latitude": 6.350002964,
+              "longitude": 81.443046463
+            },
+            {
+              "latitude": 6.350003287,
+              "longitude": 81.434004871
+            },
+            {
+              "latitude": 6.350771737,
+              "longitude": 81.434005514
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "548:702",
+          "polygon": [
+            {
+              "latitude": 6.359817676,
+              "longitude": 81.434013096
+            },
+            {
+              "latitude": 6.359810006,
+              "longitude": 81.443054853
+            },
+            {
+              "latitude": 6.350764078,
+              "longitude": 81.443047114
+            },
+            {
+              "latitude": 6.350771737,
+              "longitude": 81.434005514
+            },
+            {
+              "latitude": 6.359817676,
+              "longitude": 81.434013096
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "548:703",
+          "polygon": [
+            {
+              "latitude": 6.368863612,
+              "longitude": 81.434020688
+            },
+            {
+              "latitude": 6.368855931,
+              "longitude": 81.443062604
+            },
+            {
+              "latitude": 6.359810006,
+              "longitude": 81.443054853
+            },
+            {
+              "latitude": 6.359817676,
+              "longitude": 81.434013096
+            },
+            {
+              "latitude": 6.368863612,
+              "longitude": 81.434020688
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "548:704",
+          "polygon": [
+            {
+              "latitude": 6.377909545,
+              "longitude": 81.434028292
+            },
+            {
+              "latitude": 6.377901853,
+              "longitude": 81.443070366
+            },
+            {
+              "latitude": 6.368855931,
+              "longitude": 81.443062604
+            },
+            {
+              "latitude": 6.368863612,
+              "longitude": 81.434020688
+            },
+            {
+              "latitude": 6.377909545,
+              "longitude": 81.434028292
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "548:705",
+          "polygon": [
+            {
+              "latitude": 6.386955475,
+              "longitude": 81.434035906
+            },
+            {
+              "latitude": 6.386947772,
+              "longitude": 81.443078139
+            },
+            {
+              "latitude": 6.377901853,
+              "longitude": 81.443070366
+            },
+            {
+              "latitude": 6.377909545,
+              "longitude": 81.434028292
+            },
+            {
+              "latitude": 6.386955475,
+              "longitude": 81.434035906
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "548:706",
+          "polygon": [
+            {
+              "latitude": 6.396001401,
+              "longitude": 81.434043532
+            },
+            {
+              "latitude": 6.395993688,
+              "longitude": 81.443085924
+            },
+            {
+              "latitude": 6.386947772,
+              "longitude": 81.443078139
+            },
+            {
+              "latitude": 6.386955475,
+              "longitude": 81.434035906
+            },
+            {
+              "latitude": 6.396001401,
+              "longitude": 81.434043532
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "548:707",
+          "polygon": [
+            {
+              "latitude": 6.405047325,
+              "longitude": 81.434051169
+            },
+            {
+              "latitude": 6.4050396,
+              "longitude": 81.443093719
+            },
+            {
+              "latitude": 6.395993688,
+              "longitude": 81.443085924
+            },
+            {
+              "latitude": 6.396001401,
+              "longitude": 81.434043532
+            },
+            {
+              "latitude": 6.405047325,
+              "longitude": 81.434051169
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "548:708",
+          "polygon": [
+            {
+              "latitude": 6.414093245,
+              "longitude": 81.434058816
+            },
+            {
+              "latitude": 6.414085509,
+              "longitude": 81.443101526
+            },
+            {
+              "latitude": 6.4050396,
+              "longitude": 81.443093719
+            },
+            {
+              "latitude": 6.405047325,
+              "longitude": 81.434051169
+            },
+            {
+              "latitude": 6.414093245,
+              "longitude": 81.434058816
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "548:709",
+          "polygon": [
+            {
+              "latitude": 6.423139162,
+              "longitude": 81.434066475
+            },
+            {
+              "latitude": 6.423131415,
+              "longitude": 81.443109344
+            },
+            {
+              "latitude": 6.414085509,
+              "longitude": 81.443101526
+            },
+            {
+              "latitude": 6.414093245,
+              "longitude": 81.434058816
+            },
+            {
+              "latitude": 6.423139162,
+              "longitude": 81.434066475
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "548:710",
+          "polygon": [
+            {
+              "latitude": 6.432185076,
+              "longitude": 81.434074144
+            },
+            {
+              "latitude": 6.432177318,
+              "longitude": 81.443117174
+            },
+            {
+              "latitude": 6.423131415,
+              "longitude": 81.443109344
+            },
+            {
+              "latitude": 6.423139162,
+              "longitude": 81.434066475
+            },
+            {
+              "latitude": 6.432185076,
+              "longitude": 81.434074144
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "548:711",
+          "polygon": [
+            {
+              "latitude": 6.441230986,
+              "longitude": 81.434081825
+            },
+            {
+              "latitude": 6.441223218,
+              "longitude": 81.443125015
+            },
+            {
+              "latitude": 6.432177318,
+              "longitude": 81.443117174
+            },
+            {
+              "latitude": 6.432185076,
+              "longitude": 81.434074144
+            },
+            {
+              "latitude": 6.441230986,
+              "longitude": 81.434081825
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "548:712",
+          "polygon": [
+            {
+              "latitude": 6.450003336,
+              "longitude": 81.434089284
+            },
+            {
+              "latitude": 6.450003006,
+              "longitude": 81.443132635
+            },
+            {
+              "latitude": 6.441223218,
+              "longitude": 81.443125015
+            },
+            {
+              "latitude": 6.441230986,
+              "longitude": 81.434081825
+            },
+            {
+              "latitude": 6.450003336,
+              "longitude": 81.434089284
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "549:701",
+          "polygon": [
+            {
+              "latitude": 6.350764078,
+              "longitude": 81.443047114
+            },
+            {
+              "latitude": 6.350756261,
+              "longitude": 81.452088703
+            },
+            {
+              "latitude": 6.350002482,
+              "longitude": 81.452088045
+            },
+            {
+              "latitude": 6.350002964,
+              "longitude": 81.443046463
+            },
+            {
+              "latitude": 6.350764078,
+              "longitude": 81.443047114
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "549:702",
+          "polygon": [
+            {
+              "latitude": 6.359810006,
+              "longitude": 81.443054853
+            },
+            {
+              "latitude": 6.359802179,
+              "longitude": 81.4520966
+            },
+            {
+              "latitude": 6.350756261,
+              "longitude": 81.452088703
+            },
+            {
+              "latitude": 6.350764078,
+              "longitude": 81.443047114
+            },
+            {
+              "latitude": 6.359810006,
+              "longitude": 81.443054853
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "549:703",
+          "polygon": [
+            {
+              "latitude": 6.368855931,
+              "longitude": 81.443062604
+            },
+            {
+              "latitude": 6.368848092,
+              "longitude": 81.452104509
+            },
+            {
+              "latitude": 6.359802179,
+              "longitude": 81.4520966
+            },
+            {
+              "latitude": 6.359810006,
+              "longitude": 81.443054853
+            },
+            {
+              "latitude": 6.368855931,
+              "longitude": 81.443062604
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "549:704",
+          "polygon": [
+            {
+              "latitude": 6.377901853,
+              "longitude": 81.443070366
+            },
+            {
+              "latitude": 6.377894003,
+              "longitude": 81.452112429
+            },
+            {
+              "latitude": 6.368848092,
+              "longitude": 81.452104509
+            },
+            {
+              "latitude": 6.368855931,
+              "longitude": 81.443062604
+            },
+            {
+              "latitude": 6.377901853,
+              "longitude": 81.443070366
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "549:705",
+          "polygon": [
+            {
+              "latitude": 6.386947772,
+              "longitude": 81.443078139
+            },
+            {
+              "latitude": 6.386939911,
+              "longitude": 81.452120361
+            },
+            {
+              "latitude": 6.377894003,
+              "longitude": 81.452112429
+            },
+            {
+              "latitude": 6.377901853,
+              "longitude": 81.443070366
+            },
+            {
+              "latitude": 6.386947772,
+              "longitude": 81.443078139
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "549:706",
+          "polygon": [
+            {
+              "latitude": 6.395993688,
+              "longitude": 81.443085924
+            },
+            {
+              "latitude": 6.395985815,
+              "longitude": 81.452128304
+            },
+            {
+              "latitude": 6.386939911,
+              "longitude": 81.452120361
+            },
+            {
+              "latitude": 6.386947772,
+              "longitude": 81.443078139
+            },
+            {
+              "latitude": 6.395993688,
+              "longitude": 81.443085924
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "549:707",
+          "polygon": [
+            {
+              "latitude": 6.4050396,
+              "longitude": 81.443093719
+            },
+            {
+              "latitude": 6.405031716,
+              "longitude": 81.452136259
+            },
+            {
+              "latitude": 6.395985815,
+              "longitude": 81.452128304
+            },
+            {
+              "latitude": 6.395993688,
+              "longitude": 81.443085924
+            },
+            {
+              "latitude": 6.4050396,
+              "longitude": 81.443093719
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "549:708",
+          "polygon": [
+            {
+              "latitude": 6.414085509,
+              "longitude": 81.443101526
+            },
+            {
+              "latitude": 6.414077614,
+              "longitude": 81.452144225
+            },
+            {
+              "latitude": 6.405031716,
+              "longitude": 81.452136259
+            },
+            {
+              "latitude": 6.4050396,
+              "longitude": 81.443093719
+            },
+            {
+              "latitude": 6.414085509,
+              "longitude": 81.443101526
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "549:709",
+          "polygon": [
+            {
+              "latitude": 6.423131415,
+              "longitude": 81.443109344
+            },
+            {
+              "latitude": 6.423123509,
+              "longitude": 81.452152203
+            },
+            {
+              "latitude": 6.414077614,
+              "longitude": 81.452144225
+            },
+            {
+              "latitude": 6.414085509,
+              "longitude": 81.443101526
+            },
+            {
+              "latitude": 6.423131415,
+              "longitude": 81.443109344
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "549:710",
+          "polygon": [
+            {
+              "latitude": 6.432177318,
+              "longitude": 81.443117174
+            },
+            {
+              "latitude": 6.432169401,
+              "longitude": 81.452160192
+            },
+            {
+              "latitude": 6.423123509,
+              "longitude": 81.452152203
+            },
+            {
+              "latitude": 6.423131415,
+              "longitude": 81.443109344
+            },
+            {
+              "latitude": 6.432177318,
+              "longitude": 81.443117174
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "549:711",
+          "polygon": [
+            {
+              "latitude": 6.441223218,
+              "longitude": 81.443125015
+            },
+            {
+              "latitude": 6.441215289,
+              "longitude": 81.452168193
+            },
+            {
+              "latitude": 6.432169401,
+              "longitude": 81.452160192
+            },
+            {
+              "latitude": 6.432177318,
+              "longitude": 81.443117174
+            },
+            {
+              "latitude": 6.441223218,
+              "longitude": 81.443125015
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "549:712",
+          "polygon": [
+            {
+              "latitude": 6.450003006,
+              "longitude": 81.443132635
+            },
+            {
+              "latitude": 6.450002515,
+              "longitude": 81.452175976
+            },
+            {
+              "latitude": 6.441215289,
+              "longitude": 81.452168193
+            },
+            {
+              "latitude": 6.441223218,
+              "longitude": 81.443125015
+            },
+            {
+              "latitude": 6.450003006,
+              "longitude": 81.443132635
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "550:701",
+          "polygon": [
+            {
+              "latitude": 6.350756261,
+              "longitude": 81.452088703
+            },
+            {
+              "latitude": 6.350748287,
+              "longitude": 81.46113028
+            },
+            {
+              "latitude": 6.350001843,
+              "longitude": 81.461129616
+            },
+            {
+              "latitude": 6.350002482,
+              "longitude": 81.452088045
+            },
+            {
+              "latitude": 6.350756261,
+              "longitude": 81.452088703
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "550:702",
+          "polygon": [
+            {
+              "latitude": 6.359802179,
+              "longitude": 81.4520966
+            },
+            {
+              "latitude": 6.359794193,
+              "longitude": 81.461138335
+            },
+            {
+              "latitude": 6.350748287,
+              "longitude": 81.46113028
+            },
+            {
+              "latitude": 6.350756261,
+              "longitude": 81.452088703
+            },
+            {
+              "latitude": 6.359802179,
+              "longitude": 81.4520966
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "550:703",
+          "polygon": [
+            {
+              "latitude": 6.368848092,
+              "longitude": 81.452104509
+            },
+            {
+              "latitude": 6.368840095,
+              "longitude": 81.461146402
+            },
+            {
+              "latitude": 6.359794193,
+              "longitude": 81.461138335
+            },
+            {
+              "latitude": 6.359802179,
+              "longitude": 81.4520966
+            },
+            {
+              "latitude": 6.368848092,
+              "longitude": 81.452104509
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "550:704",
+          "polygon": [
+            {
+              "latitude": 6.377894003,
+              "longitude": 81.452112429
+            },
+            {
+              "latitude": 6.377885994,
+              "longitude": 81.461154481
+            },
+            {
+              "latitude": 6.368840095,
+              "longitude": 81.461146402
+            },
+            {
+              "latitude": 6.368848092,
+              "longitude": 81.452104509
+            },
+            {
+              "latitude": 6.377894003,
+              "longitude": 81.452112429
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "550:705",
+          "polygon": [
+            {
+              "latitude": 6.386939911,
+              "longitude": 81.452120361
+            },
+            {
+              "latitude": 6.386931891,
+              "longitude": 81.461162571
+            },
+            {
+              "latitude": 6.377885994,
+              "longitude": 81.461154481
+            },
+            {
+              "latitude": 6.377894003,
+              "longitude": 81.452112429
+            },
+            {
+              "latitude": 6.386939911,
+              "longitude": 81.452120361
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "550:706",
+          "polygon": [
+            {
+              "latitude": 6.395985815,
+              "longitude": 81.452128304
+            },
+            {
+              "latitude": 6.395977784,
+              "longitude": 81.461170673
+            },
+            {
+              "latitude": 6.386931891,
+              "longitude": 81.461162571
+            },
+            {
+              "latitude": 6.386939911,
+              "longitude": 81.452120361
+            },
+            {
+              "latitude": 6.395985815,
+              "longitude": 81.452128304
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "550:707",
+          "polygon": [
+            {
+              "latitude": 6.405031716,
+              "longitude": 81.452136259
+            },
+            {
+              "latitude": 6.405023673,
+              "longitude": 81.461178787
+            },
+            {
+              "latitude": 6.395977784,
+              "longitude": 81.461170673
+            },
+            {
+              "latitude": 6.395985815,
+              "longitude": 81.452128304
+            },
+            {
+              "latitude": 6.405031716,
+              "longitude": 81.452136259
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "550:708",
+          "polygon": [
+            {
+              "latitude": 6.414077614,
+              "longitude": 81.452144225
+            },
+            {
+              "latitude": 6.41406956,
+              "longitude": 81.461186913
+            },
+            {
+              "latitude": 6.405023673,
+              "longitude": 81.461178787
+            },
+            {
+              "latitude": 6.405031716,
+              "longitude": 81.452136259
+            },
+            {
+              "latitude": 6.414077614,
+              "longitude": 81.452144225
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "550:709",
+          "polygon": [
+            {
+              "latitude": 6.423123509,
+              "longitude": 81.452152203
+            },
+            {
+              "latitude": 6.423115443,
+              "longitude": 81.46119505
+            },
+            {
+              "latitude": 6.41406956,
+              "longitude": 81.461186913
+            },
+            {
+              "latitude": 6.414077614,
+              "longitude": 81.452144225
+            },
+            {
+              "latitude": 6.423123509,
+              "longitude": 81.452152203
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "550:710",
+          "polygon": [
+            {
+              "latitude": 6.432169401,
+              "longitude": 81.452160192
+            },
+            {
+              "latitude": 6.432161323,
+              "longitude": 81.461203199
+            },
+            {
+              "latitude": 6.423115443,
+              "longitude": 81.46119505
+            },
+            {
+              "latitude": 6.423123509,
+              "longitude": 81.452152203
+            },
+            {
+              "latitude": 6.432169401,
+              "longitude": 81.452160192
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "550:711",
+          "polygon": [
+            {
+              "latitude": 6.441215289,
+              "longitude": 81.452168193
+            },
+            {
+              "latitude": 6.4412072,
+              "longitude": 81.46121136
+            },
+            {
+              "latitude": 6.432161323,
+              "longitude": 81.461203199
+            },
+            {
+              "latitude": 6.432169401,
+              "longitude": 81.452160192
+            },
+            {
+              "latitude": 6.441215289,
+              "longitude": 81.452168193
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "550:712",
+          "polygon": [
+            {
+              "latitude": 6.450002515,
+              "longitude": 81.452175976
+            },
+            {
+              "latitude": 6.450001864,
+              "longitude": 81.461219305
+            },
+            {
+              "latitude": 6.4412072,
+              "longitude": 81.46121136
+            },
+            {
+              "latitude": 6.441215289,
+              "longitude": 81.452168193
+            },
+            {
+              "latitude": 6.450002515,
+              "longitude": 81.452175976
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "551:701",
+          "polygon": [
+            {
+              "latitude": 6.350748287,
+              "longitude": 81.46113028
+            },
+            {
+              "latitude": 6.350740155,
+              "longitude": 81.470171845
+            },
+            {
+              "latitude": 6.350001046,
+              "longitude": 81.470171175
+            },
+            {
+              "latitude": 6.350001843,
+              "longitude": 81.461129616
+            },
+            {
+              "latitude": 6.350748287,
+              "longitude": 81.46113028
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "551:702",
+          "polygon": [
+            {
+              "latitude": 6.359794193,
+              "longitude": 81.461138335
+            },
+            {
+              "latitude": 6.359786049,
+              "longitude": 81.470180058
+            },
+            {
+              "latitude": 6.350740155,
+              "longitude": 81.470171845
+            },
+            {
+              "latitude": 6.350748287,
+              "longitude": 81.46113028
+            },
+            {
+              "latitude": 6.359794193,
+              "longitude": 81.461138335
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "551:703",
+          "polygon": [
+            {
+              "latitude": 6.368840095,
+              "longitude": 81.461146402
+            },
+            {
+              "latitude": 6.36883194,
+              "longitude": 81.470188284
+            },
+            {
+              "latitude": 6.359786049,
+              "longitude": 81.470180058
+            },
+            {
+              "latitude": 6.359794193,
+              "longitude": 81.461138335
+            },
+            {
+              "latitude": 6.368840095,
+              "longitude": 81.461146402
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "551:704",
+          "polygon": [
+            {
+              "latitude": 6.377885994,
+              "longitude": 81.461154481
+            },
+            {
+              "latitude": 6.377877827,
+              "longitude": 81.470196521
+            },
+            {
+              "latitude": 6.36883194,
+              "longitude": 81.470188284
+            },
+            {
+              "latitude": 6.368840095,
+              "longitude": 81.461146402
+            },
+            {
+              "latitude": 6.377885994,
+              "longitude": 81.461154481
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "551:705",
+          "polygon": [
+            {
+              "latitude": 6.386931891,
+              "longitude": 81.461162571
+            },
+            {
+              "latitude": 6.386923712,
+              "longitude": 81.47020477
+            },
+            {
+              "latitude": 6.377877827,
+              "longitude": 81.470196521
+            },
+            {
+              "latitude": 6.377885994,
+              "longitude": 81.461154481
+            },
+            {
+              "latitude": 6.386931891,
+              "longitude": 81.461162571
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "551:706",
+          "polygon": [
+            {
+              "latitude": 6.395977784,
+              "longitude": 81.461170673
+            },
+            {
+              "latitude": 6.395969593,
+              "longitude": 81.470213031
+            },
+            {
+              "latitude": 6.386923712,
+              "longitude": 81.47020477
+            },
+            {
+              "latitude": 6.386931891,
+              "longitude": 81.461162571
+            },
+            {
+              "latitude": 6.395977784,
+              "longitude": 81.461170673
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "551:707",
+          "polygon": [
+            {
+              "latitude": 6.405023673,
+              "longitude": 81.461178787
+            },
+            {
+              "latitude": 6.405015471,
+              "longitude": 81.470221304
+            },
+            {
+              "latitude": 6.395969593,
+              "longitude": 81.470213031
+            },
+            {
+              "latitude": 6.395977784,
+              "longitude": 81.461170673
+            },
+            {
+              "latitude": 6.405023673,
+              "longitude": 81.461178787
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "551:708",
+          "polygon": [
+            {
+              "latitude": 6.41406956,
+              "longitude": 81.461186913
+            },
+            {
+              "latitude": 6.414061346,
+              "longitude": 81.470229588
+            },
+            {
+              "latitude": 6.405015471,
+              "longitude": 81.470221304
+            },
+            {
+              "latitude": 6.405023673,
+              "longitude": 81.461178787
+            },
+            {
+              "latitude": 6.41406956,
+              "longitude": 81.461186913
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "551:709",
+          "polygon": [
+            {
+              "latitude": 6.423115443,
+              "longitude": 81.46119505
+            },
+            {
+              "latitude": 6.423107218,
+              "longitude": 81.470237885
+            },
+            {
+              "latitude": 6.414061346,
+              "longitude": 81.470229588
+            },
+            {
+              "latitude": 6.41406956,
+              "longitude": 81.461186913
+            },
+            {
+              "latitude": 6.423115443,
+              "longitude": 81.46119505
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "551:710",
+          "polygon": [
+            {
+              "latitude": 6.432161323,
+              "longitude": 81.461203199
+            },
+            {
+              "latitude": 6.432153086,
+              "longitude": 81.470246194
+            },
+            {
+              "latitude": 6.423107218,
+              "longitude": 81.470237885
+            },
+            {
+              "latitude": 6.423115443,
+              "longitude": 81.46119505
+            },
+            {
+              "latitude": 6.432161323,
+              "longitude": 81.461203199
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "551:711",
+          "polygon": [
+            {
+              "latitude": 6.4412072,
+              "longitude": 81.46121136
+            },
+            {
+              "latitude": 6.441198951,
+              "longitude": 81.470254515
+            },
+            {
+              "latitude": 6.432153086,
+              "longitude": 81.470246194
+            },
+            {
+              "latitude": 6.432161323,
+              "longitude": 81.461203199
+            },
+            {
+              "latitude": 6.4412072,
+              "longitude": 81.46121136
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "551:712",
+          "polygon": [
+            {
+              "latitude": 6.450001864,
+              "longitude": 81.461219305
+            },
+            {
+              "latitude": 6.450001053,
+              "longitude": 81.470262622
+            },
+            {
+              "latitude": 6.441198951,
+              "longitude": 81.470254515
+            },
+            {
+              "latitude": 6.4412072,
+              "longitude": 81.46121136
+            },
+            {
+              "latitude": 6.450001864,
+              "longitude": 81.461219305
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "552:701",
+          "polygon": [
+            {
+              "latitude": 6.350740155,
+              "longitude": 81.470171845
+            },
+            {
+              "latitude": 6.350731865,
+              "longitude": 81.479213399
+            },
+            {
+              "latitude": 6.350000091,
+              "longitude": 81.479212722
+            },
+            {
+              "latitude": 6.350001046,
+              "longitude": 81.470171175
+            },
+            {
+              "latitude": 6.350740155,
+              "longitude": 81.470171845
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "552:702",
+          "polygon": [
+            {
+              "latitude": 6.359786049,
+              "longitude": 81.470180058
+            },
+            {
+              "latitude": 6.359777747,
+              "longitude": 81.47922177
+            },
+            {
+              "latitude": 6.350731865,
+              "longitude": 81.479213399
+            },
+            {
+              "latitude": 6.350740155,
+              "longitude": 81.470171845
+            },
+            {
+              "latitude": 6.359786049,
+              "longitude": 81.470180058
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "552:703",
+          "polygon": [
+            {
+              "latitude": 6.36883194,
+              "longitude": 81.470188284
+            },
+            {
+              "latitude": 6.368823626,
+              "longitude": 81.479230153
+            },
+            {
+              "latitude": 6.359777747,
+              "longitude": 81.47922177
+            },
+            {
+              "latitude": 6.359786049,
+              "longitude": 81.470180058
+            },
+            {
+              "latitude": 6.36883194,
+              "longitude": 81.470188284
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "552:704",
+          "polygon": [
+            {
+              "latitude": 6.377877827,
+              "longitude": 81.470196521
+            },
+            {
+              "latitude": 6.377869501,
+              "longitude": 81.479238549
+            },
+            {
+              "latitude": 6.368823626,
+              "longitude": 81.479230153
+            },
+            {
+              "latitude": 6.36883194,
+              "longitude": 81.470188284
+            },
+            {
+              "latitude": 6.377877827,
+              "longitude": 81.470196521
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "552:705",
+          "polygon": [
+            {
+              "latitude": 6.386923712,
+              "longitude": 81.47020477
+            },
+            {
+              "latitude": 6.386915374,
+              "longitude": 81.479246956
+            },
+            {
+              "latitude": 6.377869501,
+              "longitude": 81.479238549
+            },
+            {
+              "latitude": 6.377877827,
+              "longitude": 81.470196521
+            },
+            {
+              "latitude": 6.386923712,
+              "longitude": 81.47020477
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "552:706",
+          "polygon": [
+            {
+              "latitude": 6.395969593,
+              "longitude": 81.470213031
+            },
+            {
+              "latitude": 6.395961243,
+              "longitude": 81.479255376
+            },
+            {
+              "latitude": 6.386915374,
+              "longitude": 81.479246956
+            },
+            {
+              "latitude": 6.386923712,
+              "longitude": 81.47020477
+            },
+            {
+              "latitude": 6.395969593,
+              "longitude": 81.470213031
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "552:707",
+          "polygon": [
+            {
+              "latitude": 6.405015471,
+              "longitude": 81.470221304
+            },
+            {
+              "latitude": 6.405007109,
+              "longitude": 81.479263808
+            },
+            {
+              "latitude": 6.395961243,
+              "longitude": 81.479255376
+            },
+            {
+              "latitude": 6.395969593,
+              "longitude": 81.470213031
+            },
+            {
+              "latitude": 6.405015471,
+              "longitude": 81.470221304
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "552:708",
+          "polygon": [
+            {
+              "latitude": 6.414061346,
+              "longitude": 81.470229588
+            },
+            {
+              "latitude": 6.414052972,
+              "longitude": 81.479272252
+            },
+            {
+              "latitude": 6.405007109,
+              "longitude": 81.479263808
+            },
+            {
+              "latitude": 6.405015471,
+              "longitude": 81.470221304
+            },
+            {
+              "latitude": 6.414061346,
+              "longitude": 81.470229588
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "552:709",
+          "polygon": [
+            {
+              "latitude": 6.423107218,
+              "longitude": 81.470237885
+            },
+            {
+              "latitude": 6.423098832,
+              "longitude": 81.479280709
+            },
+            {
+              "latitude": 6.414052972,
+              "longitude": 81.479272252
+            },
+            {
+              "latitude": 6.414061346,
+              "longitude": 81.470229588
+            },
+            {
+              "latitude": 6.423107218,
+              "longitude": 81.470237885
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "552:710",
+          "polygon": [
+            {
+              "latitude": 6.432153086,
+              "longitude": 81.470246194
+            },
+            {
+              "latitude": 6.432144689,
+              "longitude": 81.479289177
+            },
+            {
+              "latitude": 6.423098832,
+              "longitude": 81.479280709
+            },
+            {
+              "latitude": 6.423107218,
+              "longitude": 81.470237885
+            },
+            {
+              "latitude": 6.432153086,
+              "longitude": 81.470246194
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "552:711",
+          "polygon": [
+            {
+              "latitude": 6.441198951,
+              "longitude": 81.470254515
+            },
+            {
+              "latitude": 6.441190542,
+              "longitude": 81.479297658
+            },
+            {
+              "latitude": 6.432144689,
+              "longitude": 81.479289177
+            },
+            {
+              "latitude": 6.432153086,
+              "longitude": 81.470246194
+            },
+            {
+              "latitude": 6.441198951,
+              "longitude": 81.470254515
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "552:712",
+          "polygon": [
+            {
+              "latitude": 6.450001053,
+              "longitude": 81.470262622
+            },
+            {
+              "latitude": 6.450000081,
+              "longitude": 81.479305928
+            },
+            {
+              "latitude": 6.441190542,
+              "longitude": 81.479297658
+            },
+            {
+              "latitude": 6.441198951,
+              "longitude": 81.470254515
+            },
+            {
+              "latitude": 6.450001053,
+              "longitude": 81.470262622
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "553:702",
+          "polygon": [
+            {
+              "latitude": 6.359777747,
+              "longitude": 81.47922177
+            },
+            {
+              "latitude": 6.359777025,
+              "longitude": 81.479999936
+            },
+            {
+              "latitude": 6.350731136,
+              "longitude": 81.479999995
+            },
+            {
+              "latitude": 6.350731865,
+              "longitude": 81.479213399
+            },
+            {
+              "latitude": 6.359777747,
+              "longitude": 81.47922177
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "553:703",
+          "polygon": [
+            {
+              "latitude": 6.368823626,
+              "longitude": 81.479230153
+            },
+            {
+              "latitude": 6.36882291,
+              "longitude": 81.479999889
+            },
+            {
+              "latitude": 6.359777025,
+              "longitude": 81.479999936
+            },
+            {
+              "latitude": 6.359777747,
+              "longitude": 81.47922177
+            },
+            {
+              "latitude": 6.368823626,
+              "longitude": 81.479230153
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "553:704",
+          "polygon": [
+            {
+              "latitude": 6.377869501,
+              "longitude": 81.479238549
+            },
+            {
+              "latitude": 6.377868793,
+              "longitude": 81.479999854
+            },
+            {
+              "latitude": 6.36882291,
+              "longitude": 81.479999889
+            },
+            {
+              "latitude": 6.368823626,
+              "longitude": 81.479230153
+            },
+            {
+              "latitude": 6.377869501,
+              "longitude": 81.479238549
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "553:705",
+          "polygon": [
+            {
+              "latitude": 6.386915374,
+              "longitude": 81.479246956
+            },
+            {
+              "latitude": 6.386914672,
+              "longitude": 81.479999831
+            },
+            {
+              "latitude": 6.377868793,
+              "longitude": 81.479999854
+            },
+            {
+              "latitude": 6.377869501,
+              "longitude": 81.479238549
+            },
+            {
+              "latitude": 6.386915374,
+              "longitude": 81.479246956
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "553:706",
+          "polygon": [
+            {
+              "latitude": 6.395961243,
+              "longitude": 81.479255376
+            },
+            {
+              "latitude": 6.395960549,
+              "longitude": 81.47999982
+            },
+            {
+              "latitude": 6.386914672,
+              "longitude": 81.479999831
+            },
+            {
+              "latitude": 6.386915374,
+              "longitude": 81.479246956
+            },
+            {
+              "latitude": 6.395961243,
+              "longitude": 81.479255376
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "553:707",
+          "polygon": [
+            {
+              "latitude": 6.405007109,
+              "longitude": 81.479263808
+            },
+            {
+              "latitude": 6.405006422,
+              "longitude": 81.47999982
+            },
+            {
+              "latitude": 6.395960549,
+              "longitude": 81.47999982
+            },
+            {
+              "latitude": 6.395961243,
+              "longitude": 81.479255376
+            },
+            {
+              "latitude": 6.405007109,
+              "longitude": 81.479263808
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "553:708",
+          "polygon": [
+            {
+              "latitude": 6.414052972,
+              "longitude": 81.479272252
+            },
+            {
+              "latitude": 6.414052292,
+              "longitude": 81.479999833
+            },
+            {
+              "latitude": 6.405006422,
+              "longitude": 81.47999982
+            },
+            {
+              "latitude": 6.405007109,
+              "longitude": 81.479263808
+            },
+            {
+              "latitude": 6.414052972,
+              "longitude": 81.479272252
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "553:709",
+          "polygon": [
+            {
+              "latitude": 6.423098832,
+              "longitude": 81.479280709
+            },
+            {
+              "latitude": 6.423098158,
+              "longitude": 81.479999857
+            },
+            {
+              "latitude": 6.414052292,
+              "longitude": 81.479999833
+            },
+            {
+              "latitude": 6.414052972,
+              "longitude": 81.479272252
+            },
+            {
+              "latitude": 6.423098832,
+              "longitude": 81.479280709
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "553:710",
+          "polygon": [
+            {
+              "latitude": 6.432144689,
+              "longitude": 81.479289177
+            },
+            {
+              "latitude": 6.432144022,
+              "longitude": 81.479999893
+            },
+            {
+              "latitude": 6.423098158,
+              "longitude": 81.479999857
+            },
+            {
+              "latitude": 6.423098832,
+              "longitude": 81.479280709
+            },
+            {
+              "latitude": 6.432144689,
+              "longitude": 81.479289177
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "553:711",
+          "polygon": [
+            {
+              "latitude": 6.441190542,
+              "longitude": 81.479297658
+            },
+            {
+              "latitude": 6.441189882,
+              "longitude": 81.479999942
+            },
+            {
+              "latitude": 6.432144022,
+              "longitude": 81.479999893
+            },
+            {
+              "latitude": 6.432144689,
+              "longitude": 81.479289177
+            },
+            {
+              "latitude": 6.441190542,
+              "longitude": 81.479297658
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        },
+        {
+          "cellId": "553:712",
+          "polygon": [
+            {
+              "latitude": 6.450000081,
+              "longitude": 81.479305928
+            },
+            {
+              "latitude": 6.45,
+              "longitude": 81.48
+            },
+            {
+              "latitude": 6.441189882,
+              "longitude": 81.479999942
+            },
+            {
+              "latitude": 6.441190542,
+              "longitude": 81.479297658
+            },
+            {
+              "latitude": 6.450000081,
+              "longitude": 81.479305928
+            }
+          ],
+          "covered": false,
+          "lastPatrolledAt": null,
+          "daysSincePatrol": null
+        }
+      ],
+      "coveredAreaKm2": 2,
+      "gapAreaKm2": 144.67925369069252,
+      "parkAreaKm2": 146.67925369069252,
+      "bySector": [
+        {
+          "sectorName": "Southern Ridge",
+          "gapAreaKm2": 24.17905319003765,
+          "gapSharePercent": 100
+        },
+        {
+          "sectorName": "Palatupana Corridor",
+          "gapAreaKm2": 31.16395392898767,
+          "gapSharePercent": 93.96935599330976
+        },
+        {
+          "sectorName": "Menik Ganga",
+          "gapAreaKm2": 33.164068358931985,
+          "gapSharePercent": 100
+        },
+        {
+          "sectorName": "Patanangala Coast",
+          "gapAreaKm2": 22.109442478145994,
+          "gapSharePercent": 100
+        },
+        {
+          "sectorName": "Kumana Edge",
+          "gapAreaKm2": 34.062735734589275,
+          "gapSharePercent": 100
+        }
+      ]
+    },
+    "priorityCells": [
+      {
+        "cellId": "546:703",
+        "centre": {
+          "latitude": 6.364,
+          "longitude": 81.42
+        },
+        "sectorName": "Menik Ganga",
+        "incidents": 10,
+        "daysSincePatrol": null,
+        "score": 900
+      },
+      {
+        "cellId": "546:705",
+        "centre": {
+          "latitude": 6.382,
+          "longitude": 81.42
+        },
+        "sectorName": "Menik Ganga",
+        "incidents": 10,
+        "daysSincePatrol": null,
+        "score": 900
+      },
+      {
+        "cellId": "546:706",
+        "centre": {
+          "latitude": 6.391,
+          "longitude": 81.42
+        },
+        "sectorName": "Menik Ganga",
+        "incidents": 10,
+        "daysSincePatrol": null,
+        "score": 900
+      },
+      {
+        "cellId": "549:703",
+        "centre": {
+          "latitude": 6.364,
+          "longitude": 81.448
+        },
+        "sectorName": "Patanangala Coast",
+        "incidents": 10,
+        "daysSincePatrol": null,
+        "score": 900
+      },
+      {
+        "cellId": "549:705",
+        "centre": {
+          "latitude": 6.382,
+          "longitude": 81.448
+        },
+        "sectorName": "Patanangala Coast",
+        "incidents": 10,
+        "daysSincePatrol": null,
+        "score": 900
+      }
+    ],
+    "conflicts": {
+      "series": [
+        {
+          "bucketStart": "2026-04-01",
+          "label": "2026-04",
+          "communityReports": 0,
+          "collarBreaches": 0,
+          "rangerReported": 9
+        },
+        {
+          "bucketStart": "2026-05-01",
+          "label": "2026-05",
+          "communityReports": 9,
+          "collarBreaches": 0,
+          "rangerReported": 0
+        },
+        {
+          "bucketStart": "2026-06-01",
+          "label": "2026-06",
+          "communityReports": 7,
+          "collarBreaches": 0,
+          "rangerReported": 0
+        },
+        {
+          "bucketStart": "2026-07-01",
+          "label": "2026-07",
+          "communityReports": 0,
+          "collarBreaches": 4,
+          "rangerReported": 8
+        },
+        {
+          "bucketStart": "2026-08-01",
+          "label": "2026-08",
+          "communityReports": 9,
+          "collarBreaches": 17,
+          "rangerReported": 8
+        },
+        {
+          "bucketStart": "2026-09-01",
+          "label": "2026-09",
+          "communityReports": 0,
+          "collarBreaches": 19,
+          "rangerReported": 0
+        },
+        {
+          "bucketStart": "2026-10-01",
+          "label": "2026-10",
+          "communityReports": 0,
+          "collarBreaches": 0,
+          "rangerReported": 0
+        }
+      ],
+      "byStretch": [
+        {
+          "stretchId": "8f27e331-c805-5a77-a653-353ac4bd9921",
+          "stretchName": "Palatupana Gate Stretch",
+          "communityReports": 3,
+          "collarBreaches": 10,
+          "byMonth": [
+            {
+              "bucketStart": "2026-04-01",
+              "communityReports": 0,
+              "collarBreaches": 0
+            },
+            {
+              "bucketStart": "2026-05-01",
+              "communityReports": 1,
+              "collarBreaches": 0
+            },
+            {
+              "bucketStart": "2026-06-01",
+              "communityReports": 1,
+              "collarBreaches": 0
+            },
+            {
+              "bucketStart": "2026-07-01",
+              "communityReports": 0,
+              "collarBreaches": 1
+            },
+            {
+              "bucketStart": "2026-08-01",
+              "communityReports": 1,
+              "collarBreaches": 4
+            },
+            {
+              "bucketStart": "2026-09-01",
+              "communityReports": 0,
+              "collarBreaches": 5
+            },
+            {
+              "bucketStart": "2026-10-01",
+              "communityReports": 0,
+              "collarBreaches": 0
+            }
+          ]
+        },
+        {
+          "stretchId": "9fd503c7-d76b-5285-b111-206c10daba25",
+          "stretchName": "Kataragama Fringe",
+          "communityReports": 3,
+          "collarBreaches": 10,
+          "byMonth": [
+            {
+              "bucketStart": "2026-04-01",
+              "communityReports": 0,
+              "collarBreaches": 0
+            },
+            {
+              "bucketStart": "2026-05-01",
+              "communityReports": 1,
+              "collarBreaches": 0
+            },
+            {
+              "bucketStart": "2026-06-01",
+              "communityReports": 1,
+              "collarBreaches": 0
+            },
+            {
+              "bucketStart": "2026-07-01",
+              "communityReports": 0,
+              "collarBreaches": 1
+            },
+            {
+              "bucketStart": "2026-08-01",
+              "communityReports": 1,
+              "collarBreaches": 5
+            },
+            {
+              "bucketStart": "2026-09-01",
+              "communityReports": 0,
+              "collarBreaches": 4
+            },
+            {
+              "bucketStart": "2026-10-01",
+              "communityReports": 0,
+              "collarBreaches": 0
+            }
+          ]
+        },
+        {
+          "stretchId": "6623d6c5-e620-542c-bbb2-1d58a68046ea",
+          "stretchName": "Buttala Fringe",
+          "communityReports": 0,
+          "collarBreaches": 10,
+          "byMonth": [
+            {
+              "bucketStart": "2026-04-01",
+              "communityReports": 0,
+              "collarBreaches": 0
+            },
+            {
+              "bucketStart": "2026-05-01",
+              "communityReports": 0,
+              "collarBreaches": 0
+            },
+            {
+              "bucketStart": "2026-06-01",
+              "communityReports": 0,
+              "collarBreaches": 0
+            },
+            {
+              "bucketStart": "2026-07-01",
+              "communityReports": 0,
+              "collarBreaches": 1
+            },
+            {
+              "bucketStart": "2026-08-01",
+              "communityReports": 0,
+              "collarBreaches": 5
+            },
+            {
+              "bucketStart": "2026-09-01",
+              "communityReports": 0,
+              "collarBreaches": 4
+            },
+            {
+              "bucketStart": "2026-10-01",
+              "communityReports": 0,
+              "collarBreaches": 0
+            }
+          ]
+        },
+        {
+          "stretchId": "4ba3843f-5a2d-5b4f-a45b-22d6ab22a64c",
+          "stretchName": "Galge Stretch",
+          "communityReports": 0,
+          "collarBreaches": 10,
+          "byMonth": [
+            {
+              "bucketStart": "2026-04-01",
+              "communityReports": 0,
+              "collarBreaches": 0
+            },
+            {
+              "bucketStart": "2026-05-01",
+              "communityReports": 0,
+              "collarBreaches": 0
+            },
+            {
+              "bucketStart": "2026-06-01",
+              "communityReports": 0,
+              "collarBreaches": 0
+            },
+            {
+              "bucketStart": "2026-07-01",
+              "communityReports": 0,
+              "collarBreaches": 1
+            },
+            {
+              "bucketStart": "2026-08-01",
+              "communityReports": 0,
+              "collarBreaches": 3
+            },
+            {
+              "bucketStart": "2026-09-01",
+              "communityReports": 0,
+              "collarBreaches": 6
+            },
+            {
+              "bucketStart": "2026-10-01",
+              "communityReports": 0,
+              "collarBreaches": 0
+            }
+          ]
+        }
+      ]
+    },
+    "spatialContext": {
+      "parkBoundary": [
+        [
+          [
+            {
+              "latitude": 6.35,
+              "longitude": 81.36
+            },
+            {
+              "latitude": 6.45,
+              "longitude": 81.36
+            },
+            {
+              "latitude": 6.45,
+              "longitude": 81.48
+            },
+            {
+              "latitude": 6.35,
+              "longitude": 81.48
+            },
+            {
+              "latitude": 6.35,
+              "longitude": 81.36
+            }
+          ]
+        ]
+      ],
+      "sectors": [
+        {
+          "id": "6623d6c5-e620-542c-bbb2-1d58a68046ea",
+          "code": "M4_EDGE_3",
+          "name": "Buttala Fringe",
+          "kind": "BOUNDARY_STRETCH",
+          "polygon": [
+            [
+              [
+                {
+                  "latitude": 6.34,
+                  "longitude": 81.45
+                },
+                {
+                  "latitude": 6.365,
+                  "longitude": 81.45
+                },
+                {
+                  "latitude": 6.365,
+                  "longitude": 81.48
+                },
+                {
+                  "latitude": 6.34,
+                  "longitude": 81.48
+                },
+                {
+                  "latitude": 6.34,
+                  "longitude": 81.45
+                }
+              ]
+            ]
+          ]
+        },
+        {
+          "id": "4ba3843f-5a2d-5b4f-a45b-22d6ab22a64c",
+          "code": "M4_EDGE_0",
+          "name": "Galge Stretch",
+          "kind": "BOUNDARY_STRETCH",
+          "polygon": [
+            [
+              [
+                {
+                  "latitude": 6.34,
+                  "longitude": 81.36
+                },
+                {
+                  "latitude": 6.365,
+                  "longitude": 81.36
+                },
+                {
+                  "latitude": 6.365,
+                  "longitude": 81.39
+                },
+                {
+                  "latitude": 6.34,
+                  "longitude": 81.39
+                },
+                {
+                  "latitude": 6.34,
+                  "longitude": 81.36
+                }
+              ]
+            ]
+          ]
+        },
+        {
+          "id": "9fd503c7-d76b-5285-b111-206c10daba25",
+          "code": "M4_EDGE_2",
+          "name": "Kataragama Fringe",
+          "kind": "BOUNDARY_STRETCH",
+          "polygon": [
+            [
+              [
+                {
+                  "latitude": 6.34,
+                  "longitude": 81.42
+                },
+                {
+                  "latitude": 6.365,
+                  "longitude": 81.42
+                },
+                {
+                  "latitude": 6.365,
+                  "longitude": 81.45
+                },
+                {
+                  "latitude": 6.34,
+                  "longitude": 81.45
+                },
+                {
+                  "latitude": 6.34,
+                  "longitude": 81.42
+                }
+              ]
+            ]
+          ]
+        },
+        {
+          "id": "8f27e331-c805-5a77-a653-353ac4bd9921",
+          "code": "M4_EDGE_1",
+          "name": "Palatupana Gate Stretch",
+          "kind": "BOUNDARY_STRETCH",
+          "polygon": [
+            [
+              [
+                {
+                  "latitude": 6.34,
+                  "longitude": 81.39
+                },
+                {
+                  "latitude": 6.365,
+                  "longitude": 81.39
+                },
+                {
+                  "latitude": 6.365,
+                  "longitude": 81.42
+                },
+                {
+                  "latitude": 6.34,
+                  "longitude": 81.42
+                },
+                {
+                  "latitude": 6.34,
+                  "longitude": 81.39
+                }
+              ]
+            ]
+          ]
+        },
+        {
+          "id": "453581c2-304e-54c9-8da1-14e3c5b713f0",
+          "code": "M4_DEMO_4",
+          "name": "Kumana Edge",
+          "kind": "SECTOR",
+          "polygon": [
+            [
+              [
+                {
+                  "latitude": 6.35,
+                  "longitude": 81.456
+                },
+                {
+                  "latitude": 6.45,
+                  "longitude": 81.456
+                },
+                {
+                  "latitude": 6.45,
+                  "longitude": 81.48
+                },
+                {
+                  "latitude": 6.35,
+                  "longitude": 81.48
+                },
+                {
+                  "latitude": 6.35,
+                  "longitude": 81.456
+                }
+              ]
+            ]
+          ]
+        },
+        {
+          "id": "b1e1f26f-00b6-5407-98f8-852d007af543",
+          "code": "M4_DEMO_2",
+          "name": "Menik Ganga",
+          "kind": "SECTOR",
+          "polygon": [
+            [
+              [
+                {
+                  "latitude": 6.35,
+                  "longitude": 81.408
+                },
+                {
+                  "latitude": 6.45,
+                  "longitude": 81.408
+                },
+                {
+                  "latitude": 6.45,
+                  "longitude": 81.432
+                },
+                {
+                  "latitude": 6.35,
+                  "longitude": 81.432
+                },
+                {
+                  "latitude": 6.35,
+                  "longitude": 81.408
+                }
+              ]
+            ]
+          ]
+        },
+        {
+          "id": "3829dddf-bca3-5d3e-a541-49d544056ed1",
+          "code": "M4_DEMO_1",
+          "name": "Palatupana Corridor",
+          "kind": "SECTOR",
+          "polygon": [
+            [
+              [
+                {
+                  "latitude": 6.35,
+                  "longitude": 81.384
+                },
+                {
+                  "latitude": 6.45,
+                  "longitude": 81.384
+                },
+                {
+                  "latitude": 6.45,
+                  "longitude": 81.408
+                },
+                {
+                  "latitude": 6.35,
+                  "longitude": 81.408
+                },
+                {
+                  "latitude": 6.35,
+                  "longitude": 81.384
+                }
+              ]
+            ]
+          ]
+        },
+        {
+          "id": "19303352-1f30-5129-b4e2-edc2fde9c381",
+          "code": "M4_DEMO_3",
+          "name": "Patanangala Coast",
+          "kind": "SECTOR",
+          "polygon": [
+            [
+              [
+                {
+                  "latitude": 6.35,
+                  "longitude": 81.432
+                },
+                {
+                  "latitude": 6.45,
+                  "longitude": 81.432
+                },
+                {
+                  "latitude": 6.45,
+                  "longitude": 81.456
+                },
+                {
+                  "latitude": 6.35,
+                  "longitude": 81.456
+                },
+                {
+                  "latitude": 6.35,
+                  "longitude": 81.432
+                }
+              ]
+            ]
+          ]
+        },
+        {
+          "id": "ee8a21ab-401f-5e75-851c-25906d7feba0",
+          "code": "M4_DEMO_0",
+          "name": "Southern Ridge",
+          "kind": "SECTOR",
+          "polygon": [
+            [
+              [
+                {
+                  "latitude": 6.35,
+                  "longitude": 81.36
+                },
+                {
+                  "latitude": 6.45,
+                  "longitude": 81.36
+                },
+                {
+                  "latitude": 6.45,
+                  "longitude": 81.384
+                },
+                {
+                  "latitude": 6.35,
+                  "longitude": 81.384
+                },
+                {
+                  "latitude": 6.35,
+                  "longitude": 81.36
+                }
+              ]
+            ]
+          ]
+        }
+      ],
+      "settlements": [
+        {
+          "id": "96d7e2b9-ee6b-5925-8f95-15831af7329c",
+          "name": "[Demo data] Village 4",
+          "location": {
+            "latitude": 6.348000000000001,
+            "longitude": 81.45
+          },
+          "nearestStretchId": "6623d6c5-e620-542c-bbb2-1d58a68046ea",
+          "nearestStretchName": "Buttala Fringe"
+        },
+        {
+          "id": "f8bcb98b-7a61-5dae-aaf0-4bec4f8f804a",
+          "name": "[Demo data] Village 5",
+          "location": {
+            "latitude": 6.348000000000001,
+            "longitude": 81.47
+          },
+          "nearestStretchId": "6623d6c5-e620-542c-bbb2-1d58a68046ea",
+          "nearestStretchName": "Buttala Fringe"
+        },
+        {
+          "id": "1fcc2659-8e02-564f-bf2c-c17075de9c63",
+          "name": "[Demo data] Village 0",
+          "location": {
+            "latitude": 6.348000000000001,
+            "longitude": 81.37
+          },
+          "nearestStretchId": "4ba3843f-5a2d-5b4f-a45b-22d6ab22a64c",
+          "nearestStretchName": "Galge Stretch"
+        },
+        {
+          "id": "59c58a30-e3c7-58d0-9596-894155b985ce",
+          "name": "[Demo data] Village 1",
+          "location": {
+            "latitude": 6.348000000000001,
+            "longitude": 81.39
+          },
+          "nearestStretchId": "4ba3843f-5a2d-5b4f-a45b-22d6ab22a64c",
+          "nearestStretchName": "Galge Stretch"
+        },
+        {
+          "id": "98ab4060-0697-5d4a-8edd-3449f6ba55d1",
+          "name": "[Demo data] Village 3",
+          "location": {
+            "latitude": 6.348000000000001,
+            "longitude": 81.43
+          },
+          "nearestStretchId": "9fd503c7-d76b-5285-b111-206c10daba25",
+          "nearestStretchName": "Kataragama Fringe"
+        },
+        {
+          "id": "5908187e-920e-5358-8cf1-173fef07c926",
+          "name": "[Demo data] Village 2",
+          "location": {
+            "latitude": 6.348000000000001,
+            "longitude": 81.41000000000001
+          },
+          "nearestStretchId": "8f27e331-c805-5a77-a653-353ac4bd9921",
+          "nearestStretchName": "Palatupana Gate Stretch"
+        }
+      ]
+    },
+    "summarySentences": [
+      "The largest group was crop damage in Menik Ganga (7 incidents).",
+      "Community reports and collar breaches are separate sources, not deduplicated real-world conflicts."
+    ]
+  },
+  "suggestions": []
+}

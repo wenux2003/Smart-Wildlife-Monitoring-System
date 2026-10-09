@@ -87,7 +87,13 @@ Notes:
   **Signal lost** alerts for the sample collars. That is expected behaviour.
 - The script is safe to repeat: it inserts nothing that already exists and never changes rows it
   didn't create. Park alert zones are only added to a park that has none.
-- `corepack pnpm db:seed:demo --remove` deletes exactly the sample rows again, together with anything
+- The script also gives each park the **M4 analysis geography** (an approximate rectangular boundary,
+  named sectors, boundary stretches, analytics settings and the grid), drawn around the sample data so
+  the hotspot map, patrol gaps and "Where to patrol next" show results. It only fills a park that has no
+  boundary yet. `corepack pnpm db:seed:demo --geography-only` adds just this geography. Don't also run
+  `db:seed:analytics` on the same database: its sectors would overlap these.
+- `corepack pnpm db:seed:demo --remove` deletes exactly the sample rows again (the geography is kept,
+  because saved reports may refer to it), together with anything
   added to them through the apps (for example, a status change on a sample incident).
 
 ## Rules for the shared database

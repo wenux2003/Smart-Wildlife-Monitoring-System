@@ -185,8 +185,8 @@ Base `/api`; `/health` remains outside it. Validate inputs and return typed erro
 | Patrol ingest | POST /patrol-sessions/sync (session revision plus incremental point/waypoint operations); GET /patrol-sessions and /patrol-sessions/:id; GET /coverage?park&from&to |
 | Collars/alerts | POST /collar-pings; GET /collars and /collars/:id; GET /alerts and /alerts/:id; POST /alerts/:id/acknowledge |
 | Dispatch | POST /alerts/:id/dispatch; POST /dispatches/:id/respond (ACCEPT/REJECT); POST /dispatches/:id/progress (ARRIVED/RESOLVE); POST /alerts/:id/cancel; POST /alerts/:id/broadcast |
-| Analytics | GET /analytics/summary, /trend, /breakdown, /hotspots, /patrol-gaps, /conflict-trends with consistent park/date/category filters |
-| Export/audit | POST /reports/export (filters, PDF or CSV); GET /reports/audit |
+| Analytics (M4 implemented) | GET /analytics/options; POST /reports/runs with park/date/category/source/sector filters; GET /reports/runs/:runId for the saved aggregate snapshot |
+| Export/audit (M4 implemented) | POST /reports/runs/:runId/exports (PDF or CSV); GET /reports/runs with date/status pagination and current role/park/ownership checks |
 
 Status and response endpoints call the same transition service; neither bypasses assignment/outcome rules. Camera review creates an incident only after explicit suspicious-activity classification or another selected reportable wildlife condition, once per image. A person flag alone only requests review.
 
@@ -253,6 +253,8 @@ Tests cover boundary in/out/edge, adequate/insufficient movement history, every 
 
 ### M4: Analytics and export
 
+**P0–P9 complete (2026-10-09)** for the academic prototype. [M4 plan](./M4_Analytics_and_Export_Plan.md), [26-flow traceability](./traceability.md) and [P9 evidence](./evidence/m4/README.md) document coverage and real export checks. Managers are limited to their park; Researchers read aggregate analytics in their assigned park and see only their own runs. PDF/CSV render the audited snapshot, with snapshot SHA-256 in the PDF and completed-file SHA-256 in headers/audit. Optional Tier 2 items below remain deferred.
+
 Use park/time/category filters consistently; validate dates and preserve filters on failure. Support incident counts/trends/type-sector breakdown, hotspot heatmap, patrol gaps and monthly/boundary human-wildlife conflict counts from community reports and relevant collar breaches.
 
 Show community reports and collar alerts as distinct series or explicitly labeled event totals; do not imply they are deduplicated real-world conflicts. Unknown locations contribute to nonspatial counts with an excluded-location count for spatial views. Define timezone as Asia/Colombo and bucket boundaries explicitly.
@@ -265,7 +267,7 @@ Tests: small-fixture aggregation, date/timezone boundaries, source separation, u
 
 ## 8. Screens and design consistency
 
-Both current routers implement only `/` and a wildcard redirect. The routes below are planned additions to their existing App.tsx files. Start with small feature components within each app's src directory, retaining HomePage.tsx and DashboardPage.tsx as entry screens. Add subfolders when helpful; do not replace the app layout or introduce a combined apps/web project. Keep community intake as a route in the Ranger app rather than creating a fourth app.
+Shared authentication/account routes and M4 analytics routes are implemented. M4 exposes `/analytics`, `/analytics/map`, `/analytics/patrol-gaps`, `/analytics/conflicts` and `/reports`. Other module rows below remain their individual scope commitments; this M4 completion does not certify M1–M3. Start with small feature components within each app's src directory, retaining HomePage.tsx and DashboardPage.tsx as entry screens. Add subfolders when helpful; do not replace the app layout or introduce a combined apps/web project. Keep community intake as a route in the Ranger app rather than creating a fourth app.
 
 | App | Screens/routes |
 |---|---|
@@ -276,7 +278,7 @@ Both current routers implement only `/` and a wildcard redirect. The routes belo
 | Ops incidents | /incidents; /incidents/:id detail/history; /camera-traps review; /conflicts liaison inbox/location/assignment/outcome |
 | Ops patrol | /patrols assignments; /patrols/coverage; /patrols/:id static track/observations/stats |
 | Ops alerts | /alerts feed/map; /alerts/:id details/acknowledgment/dispatch/cancel/broadcast/history; /collars diagnostics |
-| Ops analytics | /analytics filters/KPIs/trends/table/heatmap/gaps; /analytics/conflicts; /reports export/audit |
+| Ops analytics (implemented) | /analytics filters/KPIs/trends/table; /analytics/map hotspots/coverage; /analytics/patrol-gaps priorities; /analytics/conflicts; /reports history/export audit |
 
 Ranger: readable high-contrast theme, approximately 48px minimum touch targets, icon plus text, persistent sync/connection feedback, GPS accuracy/source/age, confirmation before ending. A saved-state message appears only after successful persistence. Sound/vibration are optional enhancements; visual notifications and durable pending lists are required.
 

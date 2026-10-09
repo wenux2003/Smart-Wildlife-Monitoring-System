@@ -1,0 +1,21 @@
+{
+  "checkedOn": "2026-10-09",
+  "source": "production Ops + real API + isolated Docker PostGIS synthetic fixtures",
+  "todayAutomaticallyLoaded": true,
+  "todayEmptyExplained": true,
+  "todayPeriod": {
+    "from": "2026-10-09",
+    "to": "2026-10-09"
+  },
+  "rapidEditsCoalesced": true,
+  "downloadsPausedDuringUpdate": true,
+  "overviewUpdatedWithoutClick": true,
+  "thirtyDayIncidents": 28,
+  "mapAndGapsReuseSnapshot": true,
+  "conflictCategoryAutomaticallyUpdated": true,
+  "historySnapshotPreservedWithoutRegeneration": true,
+  "focusPreserved": true,
+  "mobileNoHorizontalOverflow": true,
+  "reportGenerationRequests": 4,
+  "uncaughtExceptions": 0
+}

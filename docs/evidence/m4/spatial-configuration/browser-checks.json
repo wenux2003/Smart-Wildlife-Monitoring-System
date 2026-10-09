@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-10-09T04:11:31.824Z",
+  "source": "Production Ops build with synthetic unconfigured legacy snapshot",
+  "desktopWidth": 1440,
+  "mobileWidth": 390,
+  "configurationNoticeVisible": true,
+  "unavailableLayersDisabled": true,
+  "falseOutsideBoundaryMessageHidden": true,
+  "misleadingZeroCountsHidden": true,
+  "directMapRouteStylesLoaded": true,
+  "mapHeightAtLeast300px": true,
+  "noHorizontalOverflow": true,
+  "uncaughtExceptions": [],
+  "generationRequests": 0,
+  "sharedDatabaseWrites": 0
+}

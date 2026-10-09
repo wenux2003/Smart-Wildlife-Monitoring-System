@@ -1,8 +1,9 @@
 /**
  * Sample (synthetic) demo data for every business table.
  *
- *   corepack pnpm db:seed:demo            add the sample data (safe to repeat)
- *   corepack pnpm db:seed:demo --remove   delete exactly the rows this script added
+ *   corepack pnpm db:seed:demo                    add the sample data and M4 geography (safe to repeat)
+ *   corepack pnpm db:seed:demo --geography-only   only the M4 park boundary, sectors, settings and grid
+ *   corepack pnpm db:seed:demo --remove           delete exactly the rows this script added (geography is kept)
  *
  * Every row gets a deterministic UUID derived from a fixed key, and all random
  * choices come from a seeded generator. Re-running therefore inserts nothing new
@@ -15,6 +16,8 @@
 import { createHash } from "node:crypto";
 import { deflateSync } from "node:zlib";
 import postgres from "postgres";
+import { ParkAnalyticsConfigSchema } from "@wr/shared";
+import { buildGrid } from "./modules/analytics/grid/build-grid.js";
 
 const ANCHOR = Date.parse("2026-10-08T06:30:00Z"); // 8 Oct 2026, 12:00 Asia/Colombo
 const HISTORY_DAYS = 180;
@@ -210,6 +213,23 @@ type ParkProfile = {
   geofences: { name: string; centre: LonLat; halfW: number; halfH: number; severity: "HIGH" | "CRITICAL" }[];
   alerts: number;
   cameraImages: number;
+  geography: ParkGeography;
+};
+
+/** [west, south, east, north] in degrees. */
+type Box = [number, number, number, number];
+type NamedArea = { code: string; name: string; box: Box };
+/**
+ * M4 analysis geography drawn around this script's own sample data, so hotspots, patrol gaps
+ * and boundary conflicts line up with it. Approximate synthetic rectangles, not official boundaries.
+ * Sectors tile the boundary without overlap; boundary stretches are bands reaching outside the
+ * park, where the villages are.
+ */
+type ParkGeography = {
+  boundary: Box;
+  sectors: NamedArea[];
+  stretches: NamedArea[];
+  analytics: { gridCellMeters: number; trackBufferMeters: number; gapNeglectDays: number; cropDamageRisk: "HIGH" | "MEDIUM" };
 };
 
 const ELEPHANT = "Sri Lankan elephant (Elephas maximus maximus)";
@@ -273,6 +293,24 @@ const PROFILES: ParkProfile[] = [
     ],
     alerts: 45,
     cameraImages: 24,
+    geography: {
+      boundary: [81.33, 6.33, 81.57, 6.54],
+      sectors: [
+        { code: "YALA_PALATUPANA", name: "Palatupana Corridor", box: [81.33, 6.33, 81.51, 6.39] },
+        { code: "YALA_PATANANGALA", name: "Patanangala Coast", box: [81.51, 6.33, 81.57, 6.36] },
+        { code: "YALA_SOUTHERN_RIDGE", name: "Southern Ridge", box: [81.51, 6.36, 81.57, 6.39] },
+        { code: "YALA_KATAGAMUWA", name: "Katagamuwa Fringe", box: [81.33, 6.39, 81.43, 6.47] },
+        { code: "YALA_MENIK_GANGA", name: "Menik Ganga", box: [81.43, 6.39, 81.57, 6.47] },
+        { code: "YALA_GALGE_NORTH", name: "Galge North", box: [81.33, 6.47, 81.57, 6.54] },
+      ],
+      stretches: [
+        { code: "YALA_EDGE_KATARAGAMA", name: "Kataragama Fringe", box: [81.31, 6.39, 81.35, 6.47] },
+        { code: "YALA_EDGE_GALGE", name: "Galge Stretch", box: [81.38, 6.52, 81.46, 6.56] },
+        { code: "YALA_EDGE_PALATUPANA", name: "Palatupana Gate Stretch", box: [81.37, 6.31, 81.44, 6.35] },
+        { code: "YALA_EDGE_BUTTALA", name: "Buttala Fringe", box: [81.33, 6.48, 81.38, 6.54] },
+      ],
+      analytics: { gridCellMeters: 1000, trackBufferMeters: 75, gapNeglectDays: 14, cropDamageRisk: "HIGH" },
+    },
   },
   {
     code: "WILPATTU",
@@ -310,6 +348,20 @@ const PROFILES: ParkProfile[] = [
     geofences: [{ name: "Eluwankulama farmland", centre: [79.865, 8.285], halfW: 1200, halfH: 900, severity: "HIGH" }],
     alerts: 10,
     cameraImages: 6,
+    geography: {
+      boundary: [79.86, 8.27, 80.1, 8.52],
+      sectors: [
+        { code: "WIL_ELUWANKULAMA", name: "Eluwankulama Border", box: [79.86, 8.27, 79.9, 8.34] },
+        { code: "WIL_KALA_OYA", name: "Kala Oya Basin", box: [79.9, 8.27, 80.1, 8.34] },
+        { code: "WIL_MARADANMADUWA", name: "Maradanmaduwa", box: [79.86, 8.34, 80.1, 8.44] },
+        { code: "WIL_KOKMOTE", name: "Kokmote Villu", box: [79.86, 8.44, 80.1, 8.52] },
+      ],
+      stretches: [
+        { code: "WIL_EDGE_ELUWANKULAMA", name: "Eluwankulama Stretch", box: [79.84, 8.26, 79.89, 8.31] },
+        { code: "WIL_EDGE_HUNUWILAGAMA", name: "Hunuwilagama Stretch", box: [80.06, 8.33, 80.12, 8.39] },
+      ],
+      analytics: { gridCellMeters: 1000, trackBufferMeters: 50, gapNeglectDays: 14, cropDamageRisk: "MEDIUM" },
+    },
   },
   {
     code: "SINHARAJA",
@@ -344,6 +396,19 @@ const PROFILES: ParkProfile[] = [
     geofences: [],
     alerts: 0,
     cameraImages: 6,
+    geography: {
+      boundary: [80.38, 6.37, 80.55, 6.45],
+      sectors: [
+        { code: "SIN_KUDAWA", name: "Kudawa Edge", box: [80.38, 6.37, 80.44, 6.45] },
+        { code: "SIN_SINHAGALA", name: "Sinhagala", box: [80.44, 6.37, 80.49, 6.45] },
+        { code: "SIN_PITADENIYA", name: "Pitadeniya Stream", box: [80.49, 6.37, 80.55, 6.45] },
+      ],
+      stretches: [
+        { code: "SIN_EDGE_KUDAWA", name: "Kudawa Stretch", box: [80.4, 6.44, 80.44, 6.46] },
+        { code: "SIN_EDGE_PITADENIYA", name: "Pitadeniya Stretch", box: [80.5, 6.36, 80.56, 6.38] },
+      ],
+      analytics: { gridCellMeters: 500, trackBufferMeters: 25, gapNeglectDays: 21, cropDamageRisk: "MEDIUM" },
+    },
   },
 ];
 
@@ -988,6 +1053,58 @@ async function insertAll(tx: postgres.TransactionSql, d: Dataset) {
     ON CONFLICT DO NOTHING`);
 }
 
+const envelope = ([w, s, e, n]: Box) => `MULTIPOLYGON(((${w} ${s},${e} ${s},${e} ${n},${w} ${n},${w} ${s})))`;
+
+/**
+ * M4 analysis geography: park boundary, sectors, boundary stretches, analytics settings and the grid.
+ * Applied only to a park whose boundary is empty or was set by this script; an existing boundary,
+ * existing analytics settings and other people's sectors are never overwritten.
+ */
+async function applyGeography(tx: postgres.TransactionSql, parkId: string, profile: ParkProfile): Promise<string> {
+  const g = profile.geography;
+  const ownSectorIds = [...g.sectors, ...g.stretches].map((a) => demoId(`${profile.code}:area:${a.code}`));
+  const [state] = await tx<{ hasBoundary: boolean; ours: boolean }[]>`
+    SELECT boundary IS NOT NULL AS "hasBoundary",
+      EXISTS (SELECT 1 FROM analysis_sectors WHERE id = ANY(${ownSectorIds}::uuid[])) AS ours
+    FROM parks WHERE id = ${parkId}`;
+  if (state?.hasBoundary && !state.ours) return "skipped (park already has its own boundary)";
+
+  const analytics = ParkAnalyticsConfigSchema.parse({
+    gridCellMeters: g.analytics.gridCellMeters,
+    trackBufferMeters: g.analytics.trackBufferMeters,
+    gapNeglectDays: g.analytics.gapNeglectDays,
+    typeRiskLevels: {
+      POACHING: "CRITICAL", SNARE_FOUND: "HIGH", INJURED_ANIMAL: "HIGH", HUMAN_WILDLIFE_CONFLICT: "HIGH",
+      CROP_DAMAGE: g.analytics.cropDamageRisk, FENCE_DAMAGE: "MEDIUM", OTHER: "LOW",
+    },
+  });
+  await tx`
+    UPDATE parks SET
+      boundary = COALESCE(boundary, ST_GeomFromText(${envelope(g.boundary)}, 4326)),
+      config = COALESCE(config, '{}'::jsonb)
+        || jsonb_build_object('analytics', COALESCE(config -> 'analytics', ${JSON.stringify(analytics)}::text::jsonb))
+        || jsonb_build_object('analyticsDemo', COALESCE(config -> 'analyticsDemo',
+             jsonb_build_object('since', '2026-04-11', 'boundaryLabel', 'Approximate synthetic demo boundary')))
+    WHERE id = ${parkId}`;
+  const areas = [
+    ...g.sectors.map((a) => ({ ...a, kind: "SECTOR" })),
+    ...g.stretches.map((a) => ({ ...a, kind: "BOUNDARY_STRETCH" })),
+  ];
+  for (const a of areas)
+    await tx`
+      INSERT INTO analysis_sectors (id, park_id, code, name, kind, area)
+      VALUES (${demoId(`${profile.code}:area:${a.code}`)}, ${parkId}, ${a.code}, ${a.name}, ${a.kind},
+              ST_GeomFromText(${envelope(a.box)}, 4326))
+      ON CONFLICT DO NOTHING`;
+
+  const [current] = await tx<{ config: { analytics?: unknown } }[]>`SELECT config FROM parks WHERE id = ${parkId}`;
+  const size = ParkAnalyticsConfigSchema.parse(current?.config.analytics ?? {}).gridCellMeters;
+  const [grid] = await tx<{ n: number }[]>`
+    SELECT count(*)::int AS n FROM analysis_grid_cells WHERE park_id = ${parkId} AND cell_size_m = ${size}`;
+  if (grid && grid.n > 0) return `ready (${grid.n} grid cells already built)`;
+  return `ready (${await buildGrid(tx, parkId, size)} grid cells built at ${size} m)`;
+}
+
 async function removeAll(tx: postgres.TransactionSql, d: Dataset) {
   const ids = (rows: Row[], field = "id") => rows.map((r) => r[field] as string);
   const collarIds = ids(d.collars);
@@ -1036,6 +1153,7 @@ async function main() {
   if (!url) throw new Error("DATABASE_URL is not set. Add it to the root .env file.");
   if (process.env.NODE_ENV === "production") throw new Error("Refusing to add demo data in production.");
   const remove = process.argv.includes("--remove");
+  const geographyOnly = process.argv.includes("--geography-only");
   const sql = postgres(url, { max: 1, onnotice: () => {} });
   try {
     const contexts = await loadContexts(sql);
@@ -1055,23 +1173,34 @@ async function main() {
       data.geofenceConfig = before;
     }
 
+    const geography: Record<string, string> = {};
     await sql.begin(async (tx) => {
       await tx`SELECT pg_advisory_xact_lock(37010)`;
       if (remove) {
         await removeAll(tx, data);
         return;
       }
-      await insertAll(tx, data);
-      // Alert zones only for parks that have none yet; a manager's own settings are never overwritten.
-      for (const c of configs)
-        await tx`UPDATE parks SET config = COALESCE(config, '{}'::jsonb) || jsonb_build_object('alerts', ${JSON.stringify(c.config)}::jsonb)
-          WHERE id = ${c.parkId} AND NOT (COALESCE(config, '{}'::jsonb) ? 'alerts')`;
+      if (!geographyOnly) {
+        await insertAll(tx, data);
+        // Alert zones only for parks that have none yet; a manager's own settings are never overwritten.
+        for (const c of configs)
+          await tx`UPDATE parks SET config = COALESCE(config, '{}'::jsonb) || jsonb_build_object('alerts', ${JSON.stringify(c.config)}::jsonb)
+            WHERE id = ${c.parkId} AND NOT (COALESCE(config, '{}'::jsonb) ? 'alerts')`;
+      }
+      for (const profile of PROFILES) {
+        const ctx = contexts.get(profile.code);
+        if (ctx) geography[profile.code] = await applyGeography(tx, ctx.parkId, profile);
+      }
     });
 
     if (remove) {
-      console.log("Removed the sample demo data.");
+      // Geography is kept: saved M4 report snapshots may refer to its sectors and grid cells.
+      console.log("Removed the sample demo data (park boundaries, sectors and grids were kept).");
       return;
     }
+    console.log("M4 analysis geography:");
+    for (const [park, result] of Object.entries(geography)) console.log(`  ${park.padEnd(10)} ${result}`);
+    if (geographyOnly) return;
     const counts: Record<string, number> = {
       incidents: data.incidents.length, incident_events: data.events.length, incident_media: data.media.length,
       incident_reviews: data.reviews.length, community_messages: data.messages.length, community_follow_ups: data.followUps.length,

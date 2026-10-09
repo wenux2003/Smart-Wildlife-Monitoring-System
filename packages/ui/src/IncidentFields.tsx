@@ -1,11 +1,7 @@
 import { useState } from "react";
 import type { ChangeEvent } from "react";
 import { CoordinatesSchema, ImageDataSchema } from "@wr/shared";
-import "./IncidentFields.css";
-import "@fontsource/plus-jakarta-sans/400.css";
-import "@fontsource/plus-jakarta-sans/600.css";
-import "@fontsource/plus-jakarta-sans/700.css";
-import "@fontsource/plus-jakarta-sans/800.css";
+import "./incident-styles.js";
 export function CoordinateFields({
   latitude,
   longitude,

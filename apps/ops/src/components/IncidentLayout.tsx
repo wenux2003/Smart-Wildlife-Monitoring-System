@@ -1,3 +1,4 @@
+import "@wr/ui/incident-styles";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { AccountHeader } from "./AccountHeader.js";

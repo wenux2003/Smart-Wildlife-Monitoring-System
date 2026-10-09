@@ -24,13 +24,25 @@ import { createAlertRepository } from "./modules/alerts/repository.js";
 import { incidentRoutes } from "./modules/incidents/routes.js";
 import type { IncidentRepository } from "./modules/incidents/repository.js";
 import { createIncidentRepository } from "./modules/incidents/repository.js";
-
+import { analyticsRoutes } from "./modules/analytics/routes.js";
+import type {
+  AnalyticsRepository,
+  ReportAuditRepository,
+  ReportExporter,
+} from "./modules/analytics/types.js";
+import { createAnalyticsRepository } from "./modules/analytics/repository.js";
+import { createReportAuditRepository } from "./modules/analytics/audit-repository.js";
+import { csvExporter } from "./modules/analytics/exporters/csv-exporter.js";
+import { pdfExporter } from "./modules/analytics/exporters/pdf-exporter.js";
 
 export type ServerOptions = AuthOptions & {
   accountsRepository?: AccountRepository;
   patrolRepository?: PatrolRepository;
   alertRepository?: AlertRepository;
   incidentRepository?: IncidentRepository;
+  analyticsRepository?: AnalyticsRepository;
+  reportAuditRepository?: ReportAuditRepository;
+  analyticsExporters?: readonly ReportExporter[];
 };
 
 export function createServer(authOptions: ServerOptions = {}) {
@@ -87,6 +99,16 @@ export function createServer(authOptions: ServerOptions = {}) {
     (process.env.DATABASE_URL
       ? createIncidentRepository(process.env.DATABASE_URL)
       : undefined);
+  const analyticsRepository =
+    authOptions.analyticsRepository ??
+    (process.env.DATABASE_URL
+      ? createAnalyticsRepository(process.env.DATABASE_URL)
+      : undefined);
+  const reportAuditRepository =
+    authOptions.reportAuditRepository ??
+    (process.env.DATABASE_URL
+      ? createReportAuditRepository(process.env.DATABASE_URL)
+      : undefined);
   if (repository?.close) server.addHook("onClose", () => repository.close!());
   if (accountsRepository?.close)
     server.addHook("onClose", () => accountsRepository.close!());
@@ -96,6 +118,10 @@ export function createServer(authOptions: ServerOptions = {}) {
     server.addHook("onClose", () => alertRepository.close!());
   if (incidentRepository?.close)
     server.addHook("onClose", () => incidentRepository.close!());
+  if (analyticsRepository?.close)
+    server.addHook("onClose", () => analyticsRepository.close!());
+  if (reportAuditRepository?.close)
+    server.addHook("onClose", () => reportAuditRepository.close!());
   // Available to every module: { preHandler: app.authorize({ roles: [...] }) }.
   server.decorateRequest("user", null);
   server.decorate(
@@ -123,6 +149,13 @@ export function createServer(authOptions: ServerOptions = {}) {
   server.register(incidentRoutes, {
     prefix: "/api",
     repository: incidentRepository,
+    clock: authOptions.clock,
+  });
+  server.register(analyticsRoutes, {
+    prefix: "/api",
+    repository: analyticsRepository,
+    auditRepository: reportAuditRepository,
+    exporters: authOptions.analyticsExporters ?? [pdfExporter, csvExporter],
     clock: authOptions.clock,
   });
 

@@ -24,7 +24,11 @@
     "preview:ops": "corepack pnpm --filter @wr/ops exec vite preview --host 0.0.0.0 --port 5174",
     "typecheck": "tsc -b packages/shared packages/ui packages/offline && corepack pnpm -r typecheck",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "db:seed:analytics": "corepack pnpm --filter @wr/api db:seed:analytics",
+    "test:m4": "vitest run --config vitest.m4.config.ts",
+    "test:m4:coverage": "vitest run --config vitest.m4.config.ts --coverage",
+    "test:m4:db": "vitest run --config vitest.m4-db.config.ts --coverage"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
@@ -34,6 +38,7 @@
     "eslint-config-prettier": "^10.1.5",
     "fake-indexeddb": "6.2.4",
     "globals": "^16.3.0",
+    "pdfjs-dist": "4.10.38",
     "prettier": "^3.6.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.35.1",
