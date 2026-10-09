@@ -8,6 +8,7 @@ import { AdminPage } from "../pages/AdminPage.js";
 import { StaffPage } from "../pages/StaffPage.js";
 import { ChangePasswordPage } from "../pages/ChangePasswordPage.js";
 import { AccessDeniedPage } from "../pages/AccessDeniedPage.js";
+import { OpsShell } from "../components/OpsShell.js";
 import { AccountHeader } from "../components/AccountHeader.js";
 
 // Feature pages load on demand so maps and marketing motion stay off the startup path.
@@ -144,7 +145,7 @@ function RoleRoute({
       return <Navigate to="/admin" replace />;
     return <Navigate to="/access-denied" replace />;
   }
-  return <>{children}</>;
+  return <OpsShell>{children}</OpsShell>;
 }
 
 function AnySignedInRoute({ children }: { children: ReactNode }) {
@@ -158,7 +159,11 @@ function AnySignedInRoute({ children }: { children: ReactNode }) {
     );
   if (user?.mustChangePassword && location.pathname !== "/change-password")
     return <Navigate to="/change-password" replace />;
-  return user ? <>{children}</> : <Navigate to="/login" replace />;
+  return user ? (
+    <OpsShell>{children}</OpsShell>
+  ) : (
+    <Navigate to="/login" replace />
+  );
 }
 
 function RangerNoticePage() {

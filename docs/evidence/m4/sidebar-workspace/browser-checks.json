@@ -1,0 +1,36 @@
+{
+  "checkedAt": "2026-10-09T06:58:18.069Z",
+  "source": "Production Ops build with synthetic API fixtures; no shared database access",
+  "widths": [
+    390,
+    780,
+    1440,
+    1920
+  ],
+  "noHorizontalOverflow": true,
+  "collapsibleSidebar": true,
+  "activeRouteHighlight": true,
+  "savedSnapshotAndFiltersPreserved": true,
+  "automaticRefreshOnDateChange": true,
+  "generationRequests": 1,
+  "mobileDialogFocus": true,
+  "escapeReturnsFocus": true,
+  "mobileLinkClosesMenu": true,
+  "backgroundInertWhileOpen": true,
+  "researcherRestrictedLinksHidden": true,
+  "dashboardShellChecked": true,
+  "alertsMobileMapVisible": true,
+  "mapLayersDoNotCoverMobileMenu": true,
+  "uncaughtExceptions": [],
+  "screenshots": [
+    "analytics-sidebar-desktop.png",
+    "analytics-sidebar-collapsed.png",
+    "map-sidebar-desktop.png",
+    "history-sidebar-desktop.png",
+    "sidebar-mobile-menu.png",
+    "analytics-sidebar-mobile.png",
+    "analytics-sidebar-wide.png",
+    "researcher-sidebar.png",
+    "dashboard-sidebar-desktop.png"
+  ]
+}

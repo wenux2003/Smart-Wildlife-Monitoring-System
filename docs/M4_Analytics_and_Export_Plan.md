@@ -1642,3 +1642,12 @@ Unchecked items above are supplemental exact-scenario checks, not claimed as com
 - ✅ Added an explicit map setup notice, disabled unavailable layers and suppressed misleading zero-cell/outside-boundary messages in unconfigured saved reports. Fixed missing analytics CSS when opening map, patrol gaps or conflict routes directly.
 - ✅ M4 129 tests pass, including seven local DB cases. Primary coverage 96.93% lines/statements, 92.17% branches, 93.06% functions; SQL coverage 98.68% lines/statements, 89.42% branches, 100% functions. Lint/typecheck and production Ops build pass; no bundle warning. Direct-route desktop/mobile browser checks and visual review pass.
 - [Diagnosis, tests, coverage and screenshots](./evidence/m4/spatial-configuration/README.md) are recorded separately from earlier checkpoints. Neon still needs spatial configuration before it can render overlays; the shared demo seed was not run because its guard requires explicit shared-database confirmation and team agreement.
+
+
+### Sidebar and central workspace design follow-up — 2026-10-09
+
+- ✅ Applied the user's hospitality-dashboard reference to our wildlife workspace: rounded sage sidebar, forest-green active links, compact top bar and a cleaner central panel. Shared across signed-in Ops pages; navigation is filtered by existing roles. Desktop sidebar collapses with a remembered preference; phones use an accessible slide-out menu.
+- ✅ Analytics retains filters, automatic updates and saved snapshots between sidebar destinations. KPI cards have soft icon circles and rounded styling; export controls are below the content. Map stacking and mobile Alerts layout fit the workspace shell. Public/authentication page design and route access rules are unchanged.
+- ✅ Six new sidebar tests and six existing role-route tests pass. Full workspace: 39 files / 308 tests passed, 14 opt-in DB cases skipped. Lint/typecheck and Ops build pass; main bundle 249.32 kB, largest chunk 383.37 kB, no bundle warning.
+- ✅ Production-browser checks at 390/780/1440/1920 px pass with synthetic fixtures: collapse, active links, snapshot/filter navigation, automatic refresh, mobile keyboard/focus, Researcher visibility, dashboard and Alerts map. Screenshots reviewed; [test evidence](./evidence/m4/sidebar-workspace/README.md) records the checks and artifacts separately.
+- No database changes or new dependencies were required. The existing app servers remain running; this follow-up has not been committed automatically.

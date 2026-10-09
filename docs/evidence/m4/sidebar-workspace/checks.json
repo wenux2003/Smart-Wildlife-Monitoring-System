@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-09",
+  "workspaceTests": {
+    "passed": 308,
+    "skippedOptInDatabaseTests": 14,
+    "filesPassed": 39
+  },
+  "sidebarAndRoleRouteTests": {
+    "passed": 12,
+    "includesWorkspaceTotal": true
+  },
+  "lint": "passed",
+  "workspaceTypecheck": "passed",
+  "opsProductionBuild": "passed",
+  "bundleWarning": false,
+  "mainJavaScriptKB": 249.32,
+  "largestJavaScriptKB": 383.37,
+  "databaseChanges": false,
+  "newDependencies": false
+}

@@ -1,3 +1,4 @@
+import { Flame, Footprints, MessageSquare, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 import { usePrefersReducedMotion } from "../../../hooks/usePrefersReducedMotion.js";
 import { KpiValue } from "./KpiValue.js";
@@ -51,11 +52,17 @@ export function ReportOverview({ report }: { report: ConservationReport }) {
     <div className="an-report-content an-view-body">
       <section className="an-kpi-grid" aria-label="Key indicators">
         <article className="an-kpi-card">
+          <div className="an-kpi-icon" aria-hidden="true">
+            <TriangleAlert size={23} strokeWidth={1.8} />
+          </div>
           <p className="an-overline">TOTAL INCIDENTS</p>
           <KpiValue value={kpis.totalIncidents} />
           <span>{changeLabel(kpis.changeKind, kpis.changePercent)}</span>
         </article>
         <article className="an-kpi-card">
+          <div className="an-kpi-icon is-amber" aria-hidden="true">
+            <Flame size={23} strokeWidth={1.8} />
+          </div>
           <p className="an-overline">HIGH-RISK HOTSPOTS</p>
           <KpiValue value={hotspots.length} suffix=" cells" />
           <span>
@@ -63,6 +70,9 @@ export function ReportOverview({ report }: { report: ConservationReport }) {
           </span>
         </article>
         <article className="an-kpi-card">
+          <div className="an-kpi-icon is-sage" aria-hidden="true">
+            <Footprints size={23} strokeWidth={1.8} />
+          </div>
           <p className="an-overline">PATROL GAP AREA</p>
           <KpiValue value={kpis.patrolGapAreaKm2} decimals={1} suffix=" km²" />
           <span>
@@ -72,6 +82,9 @@ export function ReportOverview({ report }: { report: ConservationReport }) {
           </span>
         </article>
         <article className="an-kpi-card">
+          <div className="an-kpi-icon" aria-hidden="true">
+            <MessageSquare size={23} strokeWidth={1.8} />
+          </div>
           <p className="an-overline">CONFLICT SOURCES</p>
           <strong>
             {communityCount} community · {collarCount} collar

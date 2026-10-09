@@ -86,3 +86,10 @@ Outcome: default Today in Colombo, automatic debounced filter updates on all ana
 User prompt (with screenshot): “how this works , is this isnt working properly”
 
 Outcome: read-only Neon aggregate diagnosis identified missing boundaries/grid/sectors. Fixed local outside-boundary classification, map setup messaging and direct-route styles; added local SQL/UI regression checks and desktop/mobile evidence. No shared seed was run; spatial setup remains required.
+
+
+### 2026-10-09 — Sidebar and analytics workspace reference
+
+User prompt (with current analytics and hospitality reference screenshots): “can u add side bar for navigation buddy , i like this kinda design side bar and middle components ss is hotel mangemt system only reffer it and give our one to that kinda look”
+
+Outcome: added a shared role-aware Ops sidebar, desktop collapse, accessible mobile navigation and a refreshed central analytics layout using existing wildlife branding. Filters and snapshots remain intact. Workspace tests, lint/typecheck/build and isolated production-browser checks pass; screenshots and test evidence are recorded under `docs/evidence/m4/sidebar-workspace/`.
