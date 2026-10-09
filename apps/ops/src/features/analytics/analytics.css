@@ -1157,3 +1157,232 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* P8: use the shared palette and keep every motion path optional. */
+.an-page {
+  --an-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+.an-page figure {
+  margin: 0;
+}
+.an-results-heading {
+  margin: 16px 0 12px;
+  color: var(--forest);
+  font-size: 16px;
+}
+.an-results-heading:focus-visible {
+  outline: 3px solid #b7791f;
+  outline-offset: 5px;
+}
+.an-kpi-value {
+  font-variant-numeric: tabular-nums;
+}
+.an-kpi-card,
+.an-report-content > .an-panel,
+.an-visual-grid,
+.an-insights-grid {
+  animation: an-rise-in 420ms var(--an-ease-out) both;
+}
+.an-kpi-card:nth-child(2) {
+  animation-delay: 60ms;
+}
+.an-kpi-card:nth-child(3) {
+  animation-delay: 120ms;
+}
+.an-kpi-card:nth-child(4) {
+  animation-delay: 180ms;
+}
+.an-visual-grid {
+  animation-delay: 180ms;
+}
+.an-insights-grid {
+  animation-delay: 240ms;
+}
+.an-report-stamp.is-compiled {
+  animation: an-stamp-in 280ms var(--an-ease-out) both;
+}
+.an-report-stamp.is-compiled .an-stamp-dot {
+  animation: an-stamp-pulse 600ms ease-out 280ms 1;
+}
+.an-report-insights {
+  margin-top: 16px;
+}
+.an-timeout-banner,
+.an-export-error {
+  animation: an-banner-in 200ms var(--an-ease-out) both;
+}
+.an-skeleton-row span {
+  animation-duration: 1.4s;
+  animation-timing-function: linear;
+}
+.an-map-cell {
+  animation: an-cell-in 300ms ease-out both;
+}
+.an-map-risk-2 {
+  animation-delay: 60ms;
+}
+.an-map-risk-3 {
+  animation-delay: 120ms;
+}
+.an-map-risk-4 {
+  animation-delay: 180ms;
+}
+.an-map-risk-5 {
+  animation-delay: 240ms;
+}
+.an-export-label {
+  display: grid;
+}
+.an-export-label > span {
+  grid-area: 1 / 1;
+  white-space: nowrap;
+}
+.an-export-label-measure {
+  visibility: hidden;
+}
+.an-export-check {
+  animation: an-check-in 160ms ease-out;
+}
+.an-view-toggle {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  isolation: isolate;
+}
+.an-view-toggle::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 3px auto 3px 3px;
+  width: calc(50% - 3px);
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px #14352b12;
+}
+.an-view-toggle.is-tabular::before {
+  animation: an-pill-to-tabular 320ms var(--an-ease-out);
+}
+.an-view-toggle.is-spatial::before {
+  transform: translateX(100%);
+  animation: an-pill-to-spatial 320ms var(--an-ease-out);
+}
+.an-view-toggle .an-view-link {
+  justify-content: center;
+}
+.an-view-toggle .an-view-link[aria-current="page"] {
+  color: var(--forest);
+}
+.an-view-toggle .an-view-link:hover {
+  background: transparent;
+}
+.an-view-body {
+  animation: an-view-in 160ms ease-out;
+}
+@keyframes an-pill-to-spatial {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes an-pill-to-tabular {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes an-view-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.an-page :is(button, select, input, summary, a):focus-visible {
+  outline: 3px solid #b7791f;
+  outline-offset: 3px;
+}
+.an-page [aria-invalid="true"] {
+  border-color: #a13e2b;
+}
+.an-table-scroll,
+.an-cell-table-wrap,
+.an-matrix-wrap {
+  max-width: 100%;
+}
+@keyframes an-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes an-stamp-in {
+  from {
+    opacity: 0;
+    transform: scale(1.12);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes an-stamp-pulse {
+  50% {
+    box-shadow: 0 0 0 6px #2784541b;
+  }
+}
+@keyframes an-banner-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes an-cell-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes an-check-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .an-page *,
+  .an-page *::before,
+  .an-page *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.an-page
+  :is(
+    button,
+    select,
+    input[type="date"],
+    summary,
+    .an-view-link,
+    .an-map-toggle
+  ) {
+  min-height: 44px;
+}

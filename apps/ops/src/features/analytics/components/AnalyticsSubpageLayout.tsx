@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import type { ReactNode } from "react";
 import { AnalyticsFilterSchema } from "@wr/shared";
@@ -16,6 +16,9 @@ import {
   getAnalyticsRun,
 } from "../api.js";
 import { AccessPending } from "./AccessPending.js";
+import { ReportViewToggle } from "./ReportViewToggle.js";
+import { ReportStamp } from "./ReportStamp.js";
+import { ReportInsights } from "./ReportInsights.js";
 import { ExportBar } from "./ExportBar.js";
 import { FilterBar } from "./FilterBar.js";
 import {
@@ -57,7 +60,11 @@ export function AnalyticsSubpageLayout({
   ) => ReactNode;
 }) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
+  const resultRef = useRef<HTMLHeadingElement>(null);
+  const [focusRunId, setFocusRunId] = useState<string | null>(null);
+  const [announcement, setAnnouncement] = useState("");
   const [requestError, setRequestError] = useState("");
   const parkId = user?.parkId ?? "";
   const filter = useMemo(() => {
@@ -113,11 +120,24 @@ export function AnalyticsSubpageLayout({
     );
   }, [filter, searchParams, section, setSearchParams]);
 
+  useEffect(() => {
+    const completed = savedRunQuery.data;
+    if (!focusRunId || completed?.runId !== focusRunId || !resultRef.current)
+      return;
+    resultRef.current.focus();
+    setAnnouncement(
+      completed.status === "EMPTY"
+        ? "No records match these filters. Try a wider date range."
+        : `Report ${completed.code} compiled: ${completed.report?.kpis.totalIncidents ?? 0} incidents`,
+    );
+    setFocusRunId(null);
+  }, [focusRunId, savedRunQuery.data]);
+
   if (!user?.parkId) {
     return (
       <div className="an-page">
         <AccountHeader />
-        <main className="an-main content-width">
+        <main id="main-content" className="an-main content-width">
           <AccessPending />
         </main>
       </div>
@@ -127,7 +147,7 @@ export function AnalyticsSubpageLayout({
     return (
       <div className="an-page">
         <AccountHeader />
-        <main className="an-main content-width">
+        <main id="main-content" className="an-main content-width">
           {optionsQuery.isError ? (
             <section className="an-load-error" role="alert">
               <h1>Analytics are temporarily unavailable.</h1>
@@ -163,10 +183,17 @@ export function AnalyticsSubpageLayout({
     const parsed = AnalyticsFilterSchema.safeParse(filter);
     if (!parsed.success) return;
     setRequestError("");
+    setAnnouncement("Compiling report…");
     try {
       const result = await generation.mutateAsync(parsed.data);
+      queryClient.setQueryData(
+        ["analytics", "saved-run", result.runId],
+        result,
+      );
       const next = patchFilterSearch(searchParams, parsed.data);
       next.set("run", result.runId);
+      if (result.status === "SUCCEEDED" || result.status === "EMPTY")
+        setFocusRunId(result.runId);
       setSearchParams(next, { replace: true });
     } catch (error) {
       setRequestError(
@@ -271,26 +298,57 @@ export function AnalyticsSubpageLayout({
             onRetry={() => void savedRunQuery.refetch()}
           />
         )}
-        {savedRunQuery.isLoading && <SkeletonReport />}
-        {(run?.status === "TIMED_OUT" || run?.status === "FAILED") && (
-          <TimeoutBanner
-            message={
-              run.status === "TIMED_OUT"
-                ? "The report took too long. Your filters are kept."
-                : "The report could not be completed. Your filters are kept."
-            }
-            onRetry={() => void generate()}
-          />
+        <p className="an-sr-only" role="status" aria-atomic="true">
+          {announcement}
+        </p>
+        {(section === "map" || (run?.status === "SUCCEEDED" && report)) && (
+          <div className="an-report-toolbar">
+            {section === "map" && (
+              <ReportViewToggle spatial search={historySearch} />
+            )}
+            {run?.status === "SUCCEEDED" && report && <ReportStamp run={run} />}
+          </div>
         )}
-        {run?.status === "EMPTY" ? (
-          <EmptyResult run={run} onSuggestion={applySuggestion} />
-        ) : report ? (
-          children(report, optionsQuery.data)
-        ) : savedRunQuery.isLoading ||
-          run?.status === "TIMED_OUT" ||
-          run?.status === "FAILED" ? null : (
-          <EmptyReport onSuggestion={applySuggestion} />
-        )}
+        <div
+          aria-busy={generation.isPending || savedRunQuery.isLoading}
+          className={
+            generation.isPending && report ? "an-report-busy" : undefined
+          }
+        >
+          {(savedRunQuery.isLoading || generation.isPending) && !report && (
+            <SkeletonReport />
+          )}
+          {(report || run?.status === "EMPTY") && (
+            <h2 ref={resultRef} tabIndex={-1} className="an-results-heading">
+              Report results
+            </h2>
+          )}
+          {(run?.status === "TIMED_OUT" || run?.status === "FAILED") && (
+            <TimeoutBanner
+              message={
+                run.status === "TIMED_OUT"
+                  ? "The report took too long. Your filters are kept."
+                  : "The report could not be completed. Your filters are kept."
+              }
+              onRetry={() => void generate()}
+            />
+          )}
+          {run?.status === "EMPTY" ? (
+            <EmptyResult run={run} onSuggestion={applySuggestion} />
+          ) : report ? (
+            children(report, optionsQuery.data)
+          ) : savedRunQuery.isLoading ||
+            generation.isPending ||
+            run?.status === "TIMED_OUT" ||
+            run?.status === "FAILED" ? null : (
+            <EmptyReport onSuggestion={applySuggestion} />
+          )}
+          {report && (
+            <div className="an-report-insights">
+              <ReportInsights report={report} />
+            </div>
+          )}
+        </div>
         <ExportBar run={run ?? null} />
       </main>
     </div>

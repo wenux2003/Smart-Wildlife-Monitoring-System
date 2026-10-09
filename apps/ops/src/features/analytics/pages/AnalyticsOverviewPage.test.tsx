@@ -15,6 +15,7 @@ import type {
   ConservationReport,
   ReportRunResponse,
 } from "@wr/shared";
+import { AnalyticsSubpageLayout } from "../components/AnalyticsSubpageLayout.js";
 import { AnalyticsOverviewPage } from "./AnalyticsOverviewPage.js";
 
 const { mockAuth } = vi.hoisted(() => ({
@@ -191,7 +192,7 @@ function LocationText() {
   return <output aria-label="Current filters">{location.search}</output>;
 }
 
-function show(initialEntry = "/analytics") {
+function show(initialEntry = "/analytics", page = <AnalyticsOverviewPage />) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -199,7 +200,7 @@ function show(initialEntry = "/analytics") {
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={[initialEntry]}>
         <LocationText />
-        <AnalyticsOverviewPage />
+        {page}
       </MemoryRouter>
     </QueryClientProvider>,
   );
@@ -359,7 +360,7 @@ describe("analytics overview", () => {
       ),
     );
     finishPdf(new Response(new Blob(["pdf content"]), { status: 200 }));
-    await screen.findByRole("button", { name: "Export official PDF" });
+    await screen.findByRole("button", { name: "PDF downloaded" });
     await waitFor(() =>
       expect(
         vi.mocked(HTMLAnchorElement.prototype.click),
@@ -533,5 +534,74 @@ describe("analytics overview", () => {
     expect(
       screen.getByRole("button", { name: "Retry PDF" }),
     ).toBeInTheDocument();
+  });
+  it("focuses the report result after generating and announces its final count", async () => {
+    show();
+    await screen.findByRole("heading", {
+      name: "Choose filters and generate a report",
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    const heading = await screen.findByRole("heading", {
+      name: "Report results",
+    });
+    await waitFor(() => expect(heading).toHaveFocus());
+    expect(
+      screen
+        .getAllByRole("status")
+        .some((region) => region.textContent?.includes("42 incidents")),
+    ).toBe(true);
+  });
+
+  it("preserves invalid dates, describes the error and focuses the field to correct", async () => {
+    show("/analytics?preset=CUSTOM&from=2026-10-08&to=2026-10-01");
+    await screen.findByRole("button", { name: "Generate report" });
+    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    const end = screen.getByLabelText("To date");
+    expect(end).toHaveValue("2026-10-01");
+    expect(end).toHaveFocus();
+    expect(end).toHaveAttribute("aria-invalid", "true");
+    expect(end).toHaveAccessibleDescription(
+      "End date must be on or after start date.",
+    );
+    expect(
+      fetchMock.mock.calls.some(
+        ([url, init]) =>
+          String(url) === "/api/reports/runs" && init?.method === "POST",
+      ),
+    ).toBe(false);
+    fireEvent.change(end, { target: { value: "2026-10-09" } });
+    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    await screen.findByRole("heading", { name: "Report results" });
+    expect(
+      screen.queryByText("End date must be on or after start date."),
+    ).not.toBeInTheDocument();
+  });
+  it("announces and focuses generated spatial reports and retains the compiled snapshot", async () => {
+    show(
+      `/analytics/map?run=${runId}`,
+      <AnalyticsSubpageLayout section="map">
+        {(saved) => <p>Spatial incidents: {saved.kpis.totalIncidents}</p>}
+      </AnalyticsSubpageLayout>,
+    );
+    await screen.findByText("Spatial incidents: 42");
+    expect(screen.getByRole("link", { name: "Spatial view" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { name: "Report results" }),
+      ).toHaveFocus(),
+    );
+    expect(screen.getByText("Spatial incidents: 42")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Key insights" }),
+    ).toBeInTheDocument();
+    expect(
+      screen
+        .getAllByRole("status")
+        .some((region) => region.textContent?.includes("42 incidents")),
+    ).toBe(true);
   });
 });

@@ -13,3 +13,5 @@ Boundaries are simple synthetic rectangles, not official park boundaries. Five i
 Grid calculations use EPSG:32644, retain the largest clipped polygon, and discard <5% slivers. Stored area matches retained geometry; the denominator is the retained analysis grid, not official park area. Builds reject more than 20,000 estimated cells and run within the caller transaction.
 
 Domain checks: `corepack pnpm vitest run --config vitest.m4-domain.config.ts --coverage`. Database tests require `M4_TEST_DATABASE_URL` pointing to an isolated local database ending in `_test`, with migrations and account seed applied. Never use the shared database.
+
+P8 UI polish is implemented: reduced-motion-aware KPI/chart/map presentation, report/export feedback, snapshot insight reuse, accessible date validation/result focus, and table alternatives. The plan's P8 continuation log records the passing workspace and synthetic-browser checks. P9's 85% M4 coverage/evidence gate and P7's isolated database/migration checks remain outstanding.

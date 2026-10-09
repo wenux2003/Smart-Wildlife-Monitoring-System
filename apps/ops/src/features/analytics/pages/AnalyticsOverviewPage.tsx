@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowRight, Map, TableProperties } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { AnalyticsFilterSchema } from "@wr/shared";
 import type { AnalyticsFilter, ReportRunResponse } from "@wr/shared";
 import { useAuth } from "../../../auth/AuthContext.js";
@@ -12,6 +12,8 @@ import {
   getAnalyticsRun,
 } from "../api.js";
 import { AccessPending } from "../components/AccessPending.js";
+import { ReportViewToggle } from "../components/ReportViewToggle.js";
+import { ReportStamp } from "../components/ReportStamp.js";
 import { ExportBar } from "../components/ExportBar.js";
 import { FilterBar } from "../components/FilterBar.js";
 import {
@@ -69,6 +71,7 @@ export function AnalyticsOverviewPage() {
   const [lastGoodRun, setLastGoodRun] = useState<ReportRunResponse | null>(
     null,
   );
+  const [focusRunId, setFocusRunId] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const parkId = user?.parkId ?? "";
   const filter = useMemo(
@@ -123,6 +126,12 @@ export function AnalyticsOverviewPage() {
       : run?.status === "SUCCEEDED"
         ? run
         : lastGoodRun;
+  useEffect(() => {
+    if (focusRunId && run?.runId === focusRunId && headingRef.current) {
+      headingRef.current.focus();
+      setFocusRunId(null);
+    }
+  }, [focusRunId, run]);
   const generating = generationQuery.isFetching;
   const generateError = generationQuery.error
     ? errorMessage(generationQuery.error)
@@ -142,6 +151,7 @@ export function AnalyticsOverviewPage() {
     if (!filter) return;
     const parsed = AnalyticsFilterSchema.safeParse(filter);
     if (!parsed.success) return;
+    setAnnouncement("Compiling report…");
     const result = await generationQuery.refetch();
     if (result.data) {
       const nextRun = result.data;
@@ -158,7 +168,13 @@ export function AnalyticsOverviewPage() {
         setAnnouncement(
           `Report ${nextRun.code} compiled: ${report.kpis.totalIncidents} incidents`,
         );
-        window.requestAnimationFrame(() => headingRef.current?.focus());
+      } else if (nextRun.status === "EMPTY") {
+        setAnnouncement(
+          "No records match these filters. Try a wider date range.",
+        );
+      }
+      if (nextRun.status === "SUCCEEDED" || nextRun.status === "EMPTY") {
+        setFocusRunId(nextRun.runId);
       }
     }
   }
@@ -194,7 +210,7 @@ export function AnalyticsOverviewPage() {
     return (
       <div className="an-page">
         <AccountHeader />
-        <main className="an-main content-width">
+        <main id="main-content" className="an-main content-width">
           <AccessPending />
         </main>
       </div>
@@ -205,7 +221,7 @@ export function AnalyticsOverviewPage() {
     return (
       <div className="an-page">
         <AccountHeader />
-        <main className="an-main content-width">
+        <main id="main-content" className="an-main content-width">
           <div className="an-page-loading" role="status">
             Loading analytics filters…
           </div>
@@ -218,7 +234,7 @@ export function AnalyticsOverviewPage() {
     return (
       <div className="an-page">
         <AccountHeader />
-        <main className="an-main content-width">
+        <main id="main-content" className="an-main content-width">
           <section className="an-load-error" role="alert">
             <h1>Analytics are temporarily unavailable.</h1>
             <p>{errorMessage(optionsQuery.error)}</p>
@@ -258,9 +274,7 @@ export function AnalyticsOverviewPage() {
         <header className="an-page-header">
           <div>
             <p className="an-overline">ANALYTICS &amp; REPORTS</p>
-            <h1 ref={headingRef} tabIndex={-1}>
-              Conservation analytics
-            </h1>
+            <h1>Conservation analytics</h1>
             <p className="an-subtitle">
               {optionsQuery.data.allowedParks.find(
                 (park) => park.id === filter.parkId,
@@ -318,41 +332,16 @@ export function AnalyticsOverviewPage() {
         />
 
         <div className="an-report-toolbar">
-          <div className="an-view-toggle" role="group" aria-label="Report view">
-            <button type="button" className="is-selected" aria-pressed="true">
-              <TableProperties size={16} /> Tabular view
-            </button>
-            <Link
-              to={{
-                pathname: "/analytics/map",
-                search: searchParams.toString(),
-              }}
-              className="an-view-link"
-            >
-              <Map size={16} /> Spatial view
-            </Link>
-          </div>
-          <div className="an-report-stamp" aria-live="polite">
-            {displayedRun?.status === "SUCCEEDED" && displayedRun.report ? (
-              <>
-                <span className="an-stamp-dot" />
-                <strong>{displayedRun.code}</strong>
-                <span>
-                  // COMPILED{" "}
-                  {new Intl.DateTimeFormat("en-LK", {
-                    timeZone: "Asia/Colombo",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false,
-                  }).format(new Date(displayedRun.report.generatedAt))}
-                </span>
-              </>
-            ) : (
+          <ReportViewToggle search={searchParams.toString()} />
+          {displayedRun?.status === "SUCCEEDED" && displayedRun.report ? (
+            <ReportStamp run={displayedRun} />
+          ) : (
+            <div className="an-report-stamp">
               <span>
                 {fromText} – {toText} · Report preview
               </span>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {run?.status === "TIMED_OUT" && (
@@ -376,7 +365,7 @@ export function AnalyticsOverviewPage() {
           </p>
         )}
 
-        <div aria-live="polite" className="an-sr-only">
+        <div role="status" aria-atomic="true" className="an-sr-only">
           {announcement}
         </div>
         <div
@@ -397,6 +386,11 @@ export function AnalyticsOverviewPage() {
                 onSuggestion={(suggestion) => applySuggestion(suggestion)}
               />
             )}
+          {(report || run?.status === "EMPTY") && (
+            <h2 ref={headingRef} tabIndex={-1} className="an-results-heading">
+              Report results
+            </h2>
+          )}
           {run?.status === "EMPTY" && (
             <EmptyResult run={run} onSuggestion={applySuggestion} />
           )}

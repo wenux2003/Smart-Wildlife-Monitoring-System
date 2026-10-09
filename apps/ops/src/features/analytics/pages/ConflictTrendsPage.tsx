@@ -8,12 +8,15 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { usePrefersReducedMotion } from "../../../hooks/usePrefersReducedMotion.js";
+import { KpiValue } from "../components/KpiValue.js";
 import type { AnalyticsOptions, ConservationReport } from "@wr/shared";
 import { AnalyticsSubpageLayout } from "../components/AnalyticsSubpageLayout.js";
 
 const numberFormat = new Intl.NumberFormat("en-LK");
 
 export function ConflictTrendsPage() {
+  const reducedMotion = usePrefersReducedMotion();
   return (
     <AnalyticsSubpageLayout section="conflicts">
       {(report: ConservationReport, options: AnalyticsOptions) => {
@@ -70,17 +73,17 @@ export function ConflictTrendsPage() {
             <section className="an-kpi-grid" aria-label="Conflict indicators">
               <article className="an-kpi-card">
                 <p className="an-overline">COMMUNITY REPORTS</p>
-                <strong>{numberFormat.format(community)}</strong>
+                <KpiValue value={community} />
                 <span>Reports in the selected period</span>
               </article>
               <article className="an-kpi-card">
                 <p className="an-overline">COLLAR BREACHES</p>
-                <strong>{numberFormat.format(breaches)}</strong>
+                <KpiValue value={breaches} />
                 <span>Geofence breach alerts</span>
               </article>
               <article className="an-kpi-card">
                 <p className="an-overline">RANGER-REPORTED</p>
-                <strong>{numberFormat.format(rangerReports)}</strong>
+                <KpiValue value={rangerReports} />
                 <span>Shown separately from community reports</span>
               </article>
               <article className="an-kpi-card">
@@ -93,7 +96,7 @@ export function ConflictTrendsPage() {
                 </span>
               </article>
             </section>
-            <section className="an-panel">
+            <figure className="an-panel">
               <div className="an-panel-heading">
                 <div>
                   <p className="an-overline">CONFLICT TREND</p>
@@ -129,19 +132,35 @@ export function ConflictTrendsPage() {
                       <Tooltip />
                       <Legend />
                       <Bar
+                        isAnimationActive={!reducedMotion}
+                        animationDuration={700}
+                        animationEasing="ease-out"
                         dataKey="communityReports"
-                        name="Community"
+                        name="Community (solid)"
                         fill="#347550"
                       />
                       <Bar
+                        isAnimationActive={!reducedMotion}
+                        animationDuration={700}
+                        animationEasing="ease-out"
                         dataKey="collarBreaches"
-                        name="Collar breaches"
+                        name="Collar breaches (outline)"
                         fill="#2563eb"
+                        fillOpacity={0.15}
+                        stroke="#2563eb"
+                        strokeWidth={2}
                       />
                       <Bar
+                        isAnimationActive={!reducedMotion}
+                        animationDuration={700}
+                        animationEasing="ease-out"
                         dataKey="rangerReported"
-                        name="Ranger reported"
+                        name="Ranger reported (dashed)"
                         fill="#9333a5"
+                        fillOpacity={0.15}
+                        stroke="#9333a5"
+                        strokeWidth={2}
+                        strokeDasharray="4 3"
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -172,8 +191,13 @@ export function ConflictTrendsPage() {
                   ))}
                 </tbody>
               </table>
-            </section>
-            <section className="an-panel">
+              <figcaption className="an-chart-caption">
+                Community reports: solid; collar breaches: outline; ranger
+                reports: dashed. Source counts may describe the same real-world
+                event.
+              </figcaption>
+            </figure>
+            <figure className="an-panel">
               <div className="an-panel-heading">
                 <div>
                   <p className="an-overline">BOUNDARY STRETCHES</p>
@@ -209,16 +233,25 @@ export function ConflictTrendsPage() {
                       <Tooltip />
                       <Legend />
                       <Bar
+                        isAnimationActive={!reducedMotion}
+                        animationDuration={700}
+                        animationEasing="ease-out"
                         dataKey="communityReports"
-                        name="Community"
+                        name="Community (solid)"
                         stackId="events"
                         fill="#347550"
                       />
                       <Bar
+                        isAnimationActive={!reducedMotion}
+                        animationDuration={700}
+                        animationEasing="ease-out"
                         dataKey="collarBreaches"
-                        name="Collar breaches"
+                        name="Collar breaches (outline)"
                         stackId="events"
                         fill="#2563eb"
+                        fillOpacity={0.15}
+                        stroke="#2563eb"
+                        strokeWidth={2}
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -298,7 +331,12 @@ export function ConflictTrendsPage() {
                   ? "unmatched park settlements are omitted from this matrix."
                   : "no settlement fell within that buffer."}
               </p>
-            </section>
+              <figcaption className="an-chart-caption">
+                Community reports: solid; collar breaches: outline; ranger
+                reports: dashed. Source counts may describe the same real-world
+                event.
+              </figcaption>
+            </figure>
           </div>
         );
       }}

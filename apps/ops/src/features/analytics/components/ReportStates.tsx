@@ -38,14 +38,19 @@ export function EmptyReport({
 
 export function SkeletonReport() {
   return (
-    <section className="an-skeleton" aria-label="Compiling report">
-      <div className="an-skeleton-row">
+    <section
+      className="an-skeleton"
+      aria-label="Compiling report"
+      role="status"
+    >
+      <span className="an-sr-only">Compiling report…</span>
+      <div className="an-skeleton-row" aria-hidden="true">
         <span />
         <span />
         <span />
         <span />
       </div>
-      <div className="an-skeleton-row an-skeleton-body">
+      <div className="an-skeleton-row an-skeleton-body" aria-hidden="true">
         <span />
         <span />
       </div>

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { SlidersHorizontal, Sparkles } from "lucide-react";
 import {
+  AnalyticsFilterSchema,
   AnalyticsCategoryGroupSchema,
   IncidentCategorySchema,
   IncidentSourceSchema,
@@ -38,6 +39,10 @@ export function FilterBar({
   error: string;
   categoryLocked?: boolean;
 }) {
+  const panelRef = useRef<HTMLElement>(null);
+  const errorId = useId();
+  const moreId = useId();
+  const [invalidField, setInvalidField] = useState("");
   const [moreOpen, setMoreOpen] = useState(false);
   const [validationError, setValidationError] = useState("");
   const types = filter.types.join(",");
@@ -45,23 +50,27 @@ export function FilterBar({
 
   function generate() {
     setValidationError("");
-    if (filter.from > filter.to) {
-      setValidationError("End date must be on or after start date.");
-      return;
-    }
-    const span =
-      (Date.parse(`${filter.to}T00:00:00Z`) -
-        Date.parse(`${filter.from}T00:00:00Z`)) /
-      86_400_000;
-    if (!Number.isFinite(span) || span > 731) {
-      setValidationError("Choose a valid date range of 2 years or less.");
+    setInvalidField("");
+    const parsed = AnalyticsFilterSchema.safeParse(filter);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      const field = String(issue.path[0] ?? "from");
+      setInvalidField(field);
+      setValidationError(issue.message);
+      panelRef.current
+        ?.querySelector<HTMLElement>(`[name="${field}"]`)
+        ?.focus();
       return;
     }
     onGenerate();
   }
 
   return (
-    <section className="an-filter-panel" aria-label="Report filters">
+    <section
+      ref={panelRef}
+      className="an-filter-panel"
+      aria-label="Report filters"
+    >
       <div className="an-filter-heading">
         <div>
           <p className="an-overline">REPORT PARAMETERS</p>
@@ -71,6 +80,7 @@ export function FilterBar({
           type="button"
           className="an-button an-button-quiet"
           aria-expanded={moreOpen}
+          aria-controls={moreId}
           onClick={() => setMoreOpen((value) => !value)}
         >
           <SlidersHorizontal size={16} />
@@ -82,6 +92,9 @@ export function FilterBar({
           Park
           <select
             aria-label="Park"
+            name="parkId"
+            aria-invalid={invalidField === "parkId" || undefined}
+            aria-describedby={invalidField === "parkId" ? errorId : undefined}
             value={filter.parkId}
             onChange={(event) => onChange({ parkId: event.target.value })}
           >
@@ -96,6 +109,9 @@ export function FilterBar({
           Date range
           <select
             aria-label="Date range"
+            name="preset"
+            aria-invalid={invalidField === "preset" || undefined}
+            aria-describedby={invalidField === "preset" ? errorId : undefined}
             value={filter.preset}
             onChange={(event) => {
               if (!isDatePreset(event.target.value)) return;
@@ -118,6 +134,11 @@ export function FilterBar({
           Category
           <select
             aria-label="Category"
+            name="categoryGroup"
+            aria-invalid={invalidField === "categoryGroup" || undefined}
+            aria-describedby={
+              invalidField === "categoryGroup" ? errorId : undefined
+            }
             value={filter.categoryGroup}
             disabled={categoryLocked}
             onChange={(event) => {
@@ -152,6 +173,9 @@ export function FilterBar({
             From
             <input
               aria-label="From date"
+              name="from"
+              aria-invalid={invalidField === "from" || undefined}
+              aria-describedby={invalidField === "from" ? errorId : undefined}
               type="date"
               value={filter.from}
               max={filter.to}
@@ -165,6 +189,9 @@ export function FilterBar({
             To
             <input
               aria-label="To date"
+              name="to"
+              aria-invalid={invalidField === "to" || undefined}
+              aria-describedby={invalidField === "to" ? errorId : undefined}
               type="date"
               value={filter.to}
               min={filter.from}
@@ -177,11 +204,14 @@ export function FilterBar({
         </div>
       )}
       {moreOpen && (
-        <div className="an-filter-grid an-filter-more">
+        <div id={moreId} className="an-filter-grid an-filter-more">
           <label>
             Incident types
             <select
               aria-label="Incident types"
+              name="types"
+              aria-invalid={invalidField === "types" || undefined}
+              aria-describedby={invalidField === "types" ? errorId : undefined}
               multiple
               value={types ? types.split(",") : []}
               onChange={(event) =>
@@ -205,6 +235,11 @@ export function FilterBar({
             Sources
             <select
               aria-label="Incident sources"
+              name="sources"
+              aria-invalid={invalidField === "sources" || undefined}
+              aria-describedby={
+                invalidField === "sources" ? errorId : undefined
+              }
               multiple
               value={sources ? sources.split(",") : []}
               onChange={(event) =>
@@ -227,6 +262,11 @@ export function FilterBar({
             Sector
             <select
               aria-label="Sector"
+              name="sectorId"
+              aria-invalid={invalidField === "sectorId" || undefined}
+              aria-describedby={
+                invalidField === "sectorId" ? errorId : undefined
+              }
               value={filter.sectorId ?? ""}
               onChange={(event) =>
                 onChange({ sectorId: event.target.value || null })
@@ -253,7 +293,7 @@ export function FilterBar({
         </div>
       )}
       {(validationError || error) && (
-        <p className="an-filter-error" role="alert">
+        <p id={errorId} className="an-filter-error" role="alert">
           {validationError || error}
         </p>
       )}

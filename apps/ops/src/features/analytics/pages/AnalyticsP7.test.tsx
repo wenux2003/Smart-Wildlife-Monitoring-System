@@ -63,7 +63,17 @@ vi.mock("react-leaflet", () => ({
   ),
 }));
 vi.mock("recharts", () => ({
-  Bar: () => null,
+  Bar: ({
+    isAnimationActive,
+    name,
+  }: {
+    isAnimationActive: boolean;
+    name: string;
+  }) => (
+    <span data-testid="chart-motion" data-animated={String(isAnimationActive)}>
+      {name}
+    </span>
+  ),
   BarChart: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),
@@ -404,5 +414,31 @@ describe("M4 P7 analytics views", () => {
     expect(
       screen.queryByRole("columnheader", { name: "By" }),
     ).not.toBeInTheDocument();
+  });
+  it("turns off conflict and patrol chart motion for reduced-motion users", () => {
+    vi.stubGlobal("matchMedia", () => ({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
+    const conflicts = render(<ConflictTrendsPage />);
+    expect(
+      screen
+        .getAllByTestId("chart-motion")
+        .every((bar) => bar.dataset.animated === "false"),
+    ).toBe(true);
+    expect(
+      screen.getByRole("table", { name: /Monthly conflicts by source/ }),
+    ).toBeInTheDocument();
+    conflicts.unmount();
+    render(<PatrolGapsPage />);
+    expect(
+      screen
+        .getAllByTestId("chart-motion")
+        .every((bar) => bar.dataset.animated === "false"),
+    ).toBe(true);
+    expect(
+      screen.getByRole("table", { name: "Sector patrol gap data" }),
+    ).toBeInTheDocument();
   });
 });

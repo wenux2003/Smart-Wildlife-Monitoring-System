@@ -1,42 +1,18 @@
-import { useState } from "react";
 import { Check, Download, FileDown, LoaderCircle } from "lucide-react";
 import type { ReportRunResponse } from "@wr/shared";
-import { exportAnalyticsRun } from "../api.js";
+import { useExport } from "../hooks/useExport.js";
 
 export function ExportBar({ run }: { run: ReportRunResponse | null }) {
-  const [pendingFormats, setPendingFormats] = useState<Set<"PDF" | "CSV">>(
-    new Set(),
-  );
-  const [failedFormats, setFailedFormats] = useState<Set<"PDF" | "CSV">>(
-    new Set(),
-  );
   const ready = run?.status === "SUCCEEDED" && run.report !== null;
-
-  async function exportFile(format: "PDF" | "CSV") {
-    if (!run || !ready) return;
-    setPendingFormats((formats) => new Set(formats).add(format));
-    setFailedFormats((formats) => {
-      const next = new Set(formats);
-      next.delete(format);
-      return next;
-    });
-    try {
-      await exportAnalyticsRun(run.runId, format);
-    } catch {
-      setFailedFormats((formats) => new Set(formats).add(format));
-    } finally {
-      setPendingFormats((formats) => {
-        const next = new Set(formats);
-        next.delete(format);
-        return next;
-      });
-    }
-  }
-
+  const { state, download } = useExport(ready && run ? run.runId : null);
+  const formats = ["CSV", "PDF"] as const;
   return (
     <aside className="an-export-bar" aria-label="Report exports">
       <div className="an-export-status">
-        <span className={ready ? "an-status-dot is-ready" : "an-status-dot"} />
+        <span
+          className={ready ? "an-status-dot is-ready" : "an-status-dot"}
+          aria-hidden="true"
+        />
         <div>
           <strong>{ready ? "Ready to export" : "Report export"}</strong>
           <small>
@@ -48,51 +24,77 @@ export function ExportBar({ run }: { run: ReportRunResponse | null }) {
           </small>
         </div>
       </div>
-      {failedFormats.size > 0 && (
-        <p className="an-export-error" role="alert">
-          {Array.from(failedFormats).map((format) => (
-            <span key={format}>
-              The {format} could not be generated. Your report is still here.
-              <button type="button" onClick={() => void exportFile(format)}>
-                Retry {format}
-              </button>
-            </span>
-          ))}
-        </p>
+      {formats.some((format) => state[format] === "failed") && (
+        <div className="an-export-error" role="alert">
+          {formats
+            .filter((format) => state[format] === "failed")
+            .map((format) => (
+              <p key={format}>
+                The {format} could not be generated. Your report is still here.
+                <button type="button" onClick={() => void download(format)}>
+                  Retry {format}
+                </button>
+              </p>
+            ))}
+        </div>
       )}
       <div className="an-export-actions">
-        <button
-          type="button"
-          className="an-button an-button-outline"
-          disabled={!ready || pendingFormats.has("CSV")}
-          aria-busy={pendingFormats.has("CSV")}
-          onClick={() => void exportFile("CSV")}
-        >
-          {pendingFormats.has("CSV") ? (
-            <LoaderCircle className="an-spin" size={16} />
-          ) : (
-            <Download size={16} />
-          )}
-          {pendingFormats.has("CSV") ? "Preparing CSV…" : "Export data (CSV)"}
-        </button>
-        <button
-          type="button"
-          className="an-button an-button-primary"
-          disabled={!ready || pendingFormats.has("PDF")}
-          aria-busy={pendingFormats.has("PDF")}
-          onClick={() => void exportFile("PDF")}
-        >
-          {pendingFormats.has("PDF") ? (
-            <LoaderCircle className="an-spin" size={16} />
-          ) : (
-            <FileDown size={16} />
-          )}
-          {pendingFormats.has("PDF") ? "Preparing PDF…" : "Export official PDF"}
-        </button>
+        {formats.map((format) => {
+          const status = state[format];
+          const idleLabel =
+            format === "CSV" ? "Export data (CSV)" : "Export official PDF";
+          return (
+            <button
+              key={format}
+              type="button"
+              className={`an-button an-export-button ${format === "CSV" ? "an-button-outline" : "an-button-primary"}`}
+              disabled={!ready || status === "exporting"}
+              aria-busy={status === "exporting"}
+              onClick={() => void download(format)}
+            >
+              {status === "exporting" ? (
+                <LoaderCircle
+                  className="an-spin"
+                  size={16}
+                  aria-hidden="true"
+                />
+              ) : status === "done" ? (
+                <Check
+                  className="an-export-check"
+                  size={16}
+                  aria-hidden="true"
+                />
+              ) : format === "CSV" ? (
+                <Download size={16} aria-hidden="true" />
+              ) : (
+                <FileDown size={16} aria-hidden="true" />
+              )}
+              <span className="an-export-label">
+                <span className="an-export-label-measure" aria-hidden="true">
+                  {idleLabel}
+                </span>
+                <span>
+                  {status === "exporting"
+                    ? `Preparing ${format}…`
+                    : status === "done"
+                      ? `${format} downloaded`
+                      : idleLabel}
+                </span>
+              </span>
+            </button>
+          );
+        })}
       </div>
+      <p className="an-sr-only" role="status" aria-atomic="true">
+        {formats
+          .filter((format) => state[format] === "done")
+          .map((format) => `${format} download started.`)
+          .join(" ")}
+      </p>
       {ready && (
         <p className="an-export-ready">
-          <Check size={14} /> Snapshot preserved for reproducible downloads
+          <Check size={14} aria-hidden="true" /> Snapshot preserved for
+          reproducible downloads
         </p>
       )}
     </aside>

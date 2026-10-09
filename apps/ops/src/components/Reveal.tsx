@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion.js";
 import type { ReactNode } from "react";
 import FadeContent from "./react-bits/FadeContent.js";
 
@@ -10,15 +10,7 @@ export function Reveal({
   children: ReactNode;
   delay?: number;
 }) {
-  const [reduced, setReduced] = useState(
-    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-  );
-  useEffect(() => {
-    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const change = () => setReduced(query.matches);
-    query.addEventListener("change", change);
-    return () => query.removeEventListener("change", change);
-  }, []);
+  const reduced = usePrefersReducedMotion();
   return reduced ? (
     <div>{children}</div>
   ) : (

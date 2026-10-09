@@ -62,7 +62,25 @@ export function filterFromSearch(
     includeRejected: params.get("rejected") === "true",
   };
   const parsed = AnalyticsFilterSchema.safeParse(candidate);
-  return parsed.success ? parsed.data : defaults;
+  if (parsed.success) return parsed.data;
+  const calendarDate = (value: string) => {
+    const date = new Date(`${value}T00:00:00.000Z`);
+    return (
+      /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+      Number.isFinite(date.getTime()) &&
+      date.toISOString().slice(0, 10) === value
+    );
+  };
+  const otherFields = AnalyticsFilterSchema.safeParse({
+    ...candidate,
+    from: defaults.from,
+    to: defaults.to,
+  });
+  return otherFields.success &&
+    calendarDate(candidate.from) &&
+    calendarDate(candidate.to)
+    ? { ...otherFields.data, from: candidate.from, to: candidate.to }
+    : defaults;
 }
 
 export function patchFilterSearch(

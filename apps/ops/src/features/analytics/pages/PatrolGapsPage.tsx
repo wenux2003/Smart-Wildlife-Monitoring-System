@@ -9,6 +9,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { usePrefersReducedMotion } from "../../../hooks/usePrefersReducedMotion.js";
+import { KpiValue } from "../components/KpiValue.js";
 import type { AnalyticsOptions, ConservationReport } from "@wr/shared";
 import { AnalyticsMap } from "../components/AnalyticsMap.js";
 import { AnalyticsSubpageLayout } from "../components/AnalyticsSubpageLayout.js";
@@ -18,6 +20,7 @@ const numberFormat = new Intl.NumberFormat("en-LK", {
 });
 
 export function PatrolGapsPage() {
+  const reducedMotion = usePrefersReducedMotion();
   return (
     <AnalyticsSubpageLayout section="patrol-gaps">
       {(report: ConservationReport, options: AnalyticsOptions) => {
@@ -39,9 +42,15 @@ export function PatrolGapsPage() {
             >
               <article className="an-kpi-card">
                 <p className="an-overline">GAP AREA</p>
-                <strong>
-                  {numberFormat.format(report.patrolGaps.gapAreaKm2)} km²
-                </strong>
+                <KpiValue
+                  value={
+                    report.patrolGaps.configured
+                      ? report.patrolGaps.gapAreaKm2
+                      : null
+                  }
+                  suffix=" km²"
+                  decimals={1}
+                />
                 <span>
                   {report.patrolGaps.parkAreaKm2 > 0
                     ? `${numberFormat.format(
@@ -54,23 +63,28 @@ export function PatrolGapsPage() {
               </article>
               <article className="an-kpi-card">
                 <p className="an-overline">COVERED AREA</p>
-                <strong>
-                  {numberFormat.format(report.patrolGaps.coveredAreaKm2)} km²
-                </strong>
+                <KpiValue
+                  value={
+                    report.patrolGaps.configured
+                      ? report.patrolGaps.coveredAreaKm2
+                      : null
+                  }
+                  suffix=" km²"
+                  decimals={1}
+                />
                 <span>Valid patrol tracks within the report period</span>
               </article>
               <article className="an-kpi-card">
                 <p className="an-overline">NEGLECTED CELLS</p>
-                <strong>{numberFormat.format(neglected)}</strong>
+                <KpiValue value={neglected} />
                 <span>Not patrolled for at least {neglectDays} days</span>
               </article>
               <article className="an-kpi-card">
                 <p className="an-overline">SESSIONS ANALYZED</p>
-                <strong>
-                  {report.dataQuality.sessionsAnalyzed === undefined
-                    ? "—"
-                    : numberFormat.format(report.dataQuality.sessionsAnalyzed)}
-                </strong>
+                <KpiValue
+                  value={report.dataQuality.sessionsAnalyzed ?? null}
+                  unavailable="—"
+                />
                 <span>
                   {report.dataQuality.sessionsAnalyzed === undefined
                     ? "Not captured in this saved report"
@@ -79,7 +93,7 @@ export function PatrolGapsPage() {
               </article>
             </section>
 
-            <section className="an-panel an-gap-chart-panel">
+            <figure className="an-panel an-gap-chart-panel">
               <div className="an-panel-heading">
                 <div>
                   <p className="an-overline">SECTOR PATROL GAPS</p>
@@ -117,6 +131,9 @@ export function PatrolGapsPage() {
                         formatter={(value) => [`${value}%`, "Gap share"]}
                       />
                       <Bar
+                        isAnimationActive={!reducedMotion}
+                        animationDuration={700}
+                        animationEasing="ease-out"
                         dataKey="gapSharePercent"
                         name="Gap share"
                         fill="#d97706"
@@ -147,7 +164,32 @@ export function PatrolGapsPage() {
                   No sector gap data is available.
                 </p>
               )}
-            </section>
+              <div className="an-table-scroll">
+                <table className="an-table">
+                  <caption>Sector patrol gap data</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Sector</th>
+                      <th scope="col">Gap area (km²)</th>
+                      <th scope="col">Gap share</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {gapPercentBySector.map((sector) => (
+                      <tr key={sector.sectorName}>
+                        <th scope="row">{sector.sectorName}</th>
+                        <td>{numberFormat.format(sector.gapAreaKm2)}</td>
+                        <td>{numberFormat.format(sector.gapSharePercent)}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <figcaption className="an-chart-caption">
+                Gap share is the percentage of analyzed sector area without a
+                valid patrol track in the report period.
+              </figcaption>
+            </figure>
 
             <AnalyticsMap report={report} initialMode="coverage" />
 

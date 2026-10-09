@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
+import { usePrefersReducedMotion } from "../../../hooks/usePrefersReducedMotion.js";
 import {
   CircleMarker,
   MapContainer,
@@ -41,6 +42,8 @@ export function AnalyticsMap({
   report: ConservationReport;
   initialMode?: "hotspots" | "coverage";
 }) {
+  const reducedMotion = usePrefersReducedMotion();
+  const tableId = useId();
   const [showBoundary, setShowBoundary] = useState(true);
   const [showSectors, setShowSectors] = useState(true);
   const [showHotspots, setShowHotspots] = useState(initialMode === "hotspots");
@@ -148,7 +151,7 @@ export function AnalyticsMap({
   ];
 
   return (
-    <section className="an-panel an-map-panel">
+    <section className="an-panel an-map-panel an-view-body">
       <div className="an-panel-heading">
         <div>
           <p className="an-overline">SPATIAL ANALYSIS</p>
@@ -160,6 +163,7 @@ export function AnalyticsMap({
           type="button"
           className="an-button an-button-outline"
           aria-expanded={showTable}
+          aria-controls={tableId}
           onClick={() => setShowTable((value) => !value)}
         >
           {showTable ? "Hide data table" : "View as table"}
@@ -171,7 +175,14 @@ export function AnalyticsMap({
           role="region"
           aria-label={`Conservation map with ${report.hotspots.cells.length} hotspot cells and ${report.patrolGaps.cells.length} patrol coverage cells`}
         >
-          <MapContainer center={center} zoom={9} scrollWheelZoom={false}>
+          <MapContainer
+            center={center}
+            zoom={9}
+            scrollWheelZoom={false}
+            zoomAnimation={!reducedMotion}
+            fadeAnimation={!reducedMotion}
+            markerZoomAnimation={!reducedMotion}
+          >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -253,6 +264,7 @@ export function AnalyticsMap({
               report.hotspots.cells.map((cell) => (
                 <Polygon
                   key={`hotspot-${cell.cellId}`}
+                  className={`an-map-cell an-map-risk-${cell.riskClass}`}
                   positions={positions(cell.polygon)}
                   pathOptions={{
                     color: priorityRanks.has(cell.cellId)
@@ -362,7 +374,9 @@ export function AnalyticsMap({
                     {cell.sectorName ?? cell.cellId} · {cell.incidents}{" "}
                     incidents
                     {" · "}
-                    {cell.daysSincePatrol ?? "never"} days since patrol
+                    {cell.daysSincePatrol === null
+                      ? "Never patrolled"
+                      : `${cell.daysSincePatrol} days since patrol`}
                     <span className="an-sr-only">
                       (rank {priorityRanks.get(cell.cellId)})
                     </span>
@@ -374,12 +388,21 @@ export function AnalyticsMap({
         </aside>
       </div>
       {showTable && (
-        <div className="an-cell-table-wrap">
+        <div id={tableId} className="an-cell-table-wrap">
           <table className="an-table">
             <caption>Hotspot and coverage cell details</caption>
             <thead>
               <tr>
-                <th scope="col">
+                <th
+                  scope="col"
+                  aria-sort={
+                    sortBy === "id"
+                      ? sortDescending
+                        ? "descending"
+                        : "ascending"
+                      : undefined
+                  }
+                >
                   <button
                     type="button"
                     className="an-text-button"
@@ -389,7 +412,16 @@ export function AnalyticsMap({
                   </button>
                 </th>
                 <th scope="col">Sector</th>
-                <th scope="col">
+                <th
+                  scope="col"
+                  aria-sort={
+                    sortBy === "incidents"
+                      ? sortDescending
+                        ? "descending"
+                        : "ascending"
+                      : undefined
+                  }
+                >
                   <button
                     type="button"
                     className="an-text-button"
@@ -398,7 +430,16 @@ export function AnalyticsMap({
                     Incidents
                   </button>
                 </th>
-                <th scope="col">
+                <th
+                  scope="col"
+                  aria-sort={
+                    sortBy === "risk"
+                      ? sortDescending
+                        ? "descending"
+                        : "ascending"
+                      : undefined
+                  }
+                >
                   <button
                     type="button"
                     className="an-text-button"
@@ -407,7 +448,16 @@ export function AnalyticsMap({
                     Risk class
                   </button>
                 </th>
-                <th scope="col">
+                <th
+                  scope="col"
+                  aria-sort={
+                    sortBy === "coverage"
+                      ? sortDescending
+                        ? "descending"
+                        : "ascending"
+                      : undefined
+                  }
+                >
                   <button
                     type="button"
                     className="an-text-button"

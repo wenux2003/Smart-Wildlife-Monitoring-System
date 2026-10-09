@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { usePrefersReducedMotion } from "../../../hooks/usePrefersReducedMotion.js";
+import { KpiValue } from "./KpiValue.js";
+import { ReportInsights } from "./ReportInsights.js";
 import {
   Bar,
   BarChart,
@@ -23,6 +26,7 @@ function changeLabel(
 }
 
 export function ReportOverview({ report }: { report: ConservationReport }) {
+  const reducedMotion = usePrefersReducedMotion();
   const [showTrendTable, setShowTrendTable] = useState(false);
   const [showBreakdownTable, setShowBreakdownTable] = useState(false);
   const { kpis, dataQuality } = report;
@@ -44,27 +48,23 @@ export function ReportOverview({ report }: { report: ConservationReport }) {
     dataQuality.alertsWithoutLocation;
 
   return (
-    <div className="an-report-content">
+    <div className="an-report-content an-view-body">
       <section className="an-kpi-grid" aria-label="Key indicators">
         <article className="an-kpi-card">
           <p className="an-overline">TOTAL INCIDENTS</p>
-          <strong>{numberFormat.format(kpis.totalIncidents)}</strong>
+          <KpiValue value={kpis.totalIncidents} />
           <span>{changeLabel(kpis.changeKind, kpis.changePercent)}</span>
         </article>
         <article className="an-kpi-card">
           <p className="an-overline">HIGH-RISK HOTSPOTS</p>
-          <strong>{numberFormat.format(hotspots.length)} cells</strong>
+          <KpiValue value={hotspots.length} suffix=" cells" />
           <span>
             {kpis.hotspotSectorNames.join(" · ") || "No hotspot sectors"}
           </span>
         </article>
         <article className="an-kpi-card">
           <p className="an-overline">PATROL GAP AREA</p>
-          <strong>
-            {kpis.patrolGapAreaKm2 === null
-              ? "Not configured"
-              : `${kpis.patrolGapAreaKm2.toFixed(1)} km²`}
-          </strong>
+          <KpiValue value={kpis.patrolGapAreaKm2} decimals={1} suffix=" km²" />
           <span>
             {kpis.patrolGapSharePercent === null
               ? "Park coverage analysis unavailable"
@@ -72,16 +72,16 @@ export function ReportOverview({ report }: { report: ConservationReport }) {
           </span>
         </article>
         <article className="an-kpi-card">
-          <p className="an-overline">CONFLICT EVENTS</p>
-          <strong>{numberFormat.format(communityCount + collarCount)}</strong>
-          <span>
+          <p className="an-overline">CONFLICT SOURCES</p>
+          <strong>
             {communityCount} community · {collarCount} collar
-          </span>
+          </strong>
+          <span>Separate counts; events may appear in both sources</span>
         </article>
       </section>
 
       <div className="an-visual-grid">
-        <section className="an-panel an-trend-panel">
+        <figure className="an-panel an-trend-panel">
           <div className="an-panel-heading">
             <div>
               <p className="an-overline">INCIDENT FREQUENCY</p>
@@ -100,7 +100,7 @@ export function ReportOverview({ report }: { report: ConservationReport }) {
             <div
               className="an-chart"
               role="img"
-              aria-label="Incidents by time period"
+              aria-label={`Incidents by time period: ${report.trend.map((point) => `${point.label}: ${point.count}`).join("; ")}`}
             >
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -116,6 +116,9 @@ export function ReportOverview({ report }: { report: ConservationReport }) {
                   />
                   <Tooltip />
                   <Bar
+                    isAnimationActive={!reducedMotion}
+                    animationDuration={700}
+                    animationEasing="ease-out"
                     dataKey="count"
                     name="Incidents"
                     fill="#26734d"
@@ -148,11 +151,11 @@ export function ReportOverview({ report }: { report: ConservationReport }) {
               </tbody>
             </table>
           )}
-          <p className="an-chart-caption">
+          <figcaption className="an-chart-caption">
             n = {numberFormat.format(kpis.totalIncidents)} incidents ·{" "}
             {dataQuality.excludedNoLocation} without location
-          </p>
-        </section>
+          </figcaption>
+        </figure>
         <section className="an-panel an-breakdown-panel">
           <div className="an-panel-heading">
             <div>
@@ -245,21 +248,7 @@ export function ReportOverview({ report }: { report: ConservationReport }) {
             <p className="an-muted-copy">No priority areas were identified.</p>
           )}
         </section>
-        <section className="an-panel">
-          <p className="an-overline">ANALYSIS</p>
-          <h2>Key insights</h2>
-          {report.summarySentences.length ? (
-            <ul className="an-insight-list">
-              {report.summarySentences.map((sentence) => (
-                <li key={sentence}>{sentence}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="an-muted-copy">
-              No additional insights for this report.
-            </p>
-          )}
-        </section>
+        <ReportInsights report={report} />
       </div>
 
       <section className="an-quality-strip" aria-label="Data quality summary">
