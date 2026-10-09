@@ -1,0 +1,9 @@
+{
+  "pdfPages": 5,
+  "csvDataRows": 174,
+  "pdfSnapshotHashMatches": true,
+  "fileHashesMatchHeadersAndAudit": true,
+  "csvKpisAndTrendMatchSnapshot": true,
+  "noReporterContacts": true,
+  "pdfRendering": "PyMuPDF 1.25 scale (Poppler unavailable)"
+}

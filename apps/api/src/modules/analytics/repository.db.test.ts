@@ -19,6 +19,7 @@ it.skipIf(!url)(
     const repo = createAnalyticsRepository(url),
       audit = createReportAuditRepository(url);
     let runId: string | undefined;
+    const parallelRunIds: string[] = [];
     try {
       const [park] = await db<
         { id: string }[]
@@ -120,7 +121,24 @@ it.skipIf(!url)(
       expect(
         datedHistory.items.some((record) => record.run.runId === runId),
       ).toBe(true);
+      const parallel = await Promise.all(
+        [0, 1].map(async () => {
+          const concurrent = await audit.insertRun({
+            ...stored,
+            parkCode: "YALA",
+            errorCode: null,
+          });
+          parallelRunIds.push(concurrent.runId);
+          return concurrent;
+        }),
+      );
+      expect(new Set(parallel.map((run) => run.runId)).size).toBe(2);
+      expect(new Set([stored, ...parallel].map((run) => run.code)).size).toBe(
+        3,
+      );
     } finally {
+      for (const id of parallelRunIds)
+        await db`DELETE FROM report_runs WHERE id=${id}`;
       if (runId) {
         await db`DELETE FROM report_exports WHERE run_id=${runId}`;
         await db`DELETE FROM report_runs WHERE id=${runId}`;

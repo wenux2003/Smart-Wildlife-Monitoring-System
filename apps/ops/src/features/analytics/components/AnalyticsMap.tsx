@@ -8,13 +8,13 @@ import {
   TileLayer,
   Tooltip,
 } from "react-leaflet";
-import type { LatLngExpression } from "leaflet";
+import type { LatLngExpression, LatLngTuple } from "leaflet";
 import type { ConservationReport } from "@wr/shared";
 import "leaflet/dist/leaflet.css";
 
 type Coordinates = { longitude: number; latitude: number };
 
-function positions(ring: Coordinates[]): LatLngExpression[] {
+function positions(ring: Coordinates[]): LatLngTuple[] {
   return ring.map(({ latitude, longitude }) => [latitude, longitude]);
 }
 
@@ -44,6 +44,8 @@ export function AnalyticsMap({
 }) {
   const reducedMotion = usePrefersReducedMotion();
   const tableId = useId();
+  const configurationNoticeId = useId();
+  const spatialConfigured = report.patrolGaps.configured;
   const [showBoundary, setShowBoundary] = useState(true);
   const [showSectors, setShowSectors] = useState(true);
   const [showHotspots, setShowHotspots] = useState(initialMode === "hotspots");
@@ -115,6 +117,14 @@ export function AnalyticsMap({
     : fallback
       ? [fallback.latitude, fallback.longitude]
       : [6.5, 81.4];
+  const boundaryPoints = report.spatialContext.parkBoundary?.flat(2) ?? [];
+  const framePoints = boundaryPoints.length
+    ? boundaryPoints
+    : [...report.hotspots.cells, ...report.patrolGaps.cells].flatMap(
+        (cell) => cell.polygon,
+      );
+  // Fit the report footprint so a small park is readable when the map first opens.
+  const bounds = framePoints.length ? positions(framePoints) : undefined;
   const priorityRanks = new Map(
     report.priorityCells.map((cell, index) => [cell.cellId, index + 1]),
   );
@@ -122,29 +132,35 @@ export function AnalyticsMap({
     label: string;
     checked: boolean;
     setChecked: (checked: boolean) => void;
+    available: boolean;
   }[] = [
     {
       label: "Park boundary",
+      available: Boolean(report.spatialContext.parkBoundary?.length),
       checked: showBoundary,
       setChecked: setShowBoundary,
     },
     {
       label: "Sector outlines",
+      available: report.spatialContext.sectors.length > 0,
       checked: showSectors,
       setChecked: setShowSectors,
     },
     {
       label: "Hotspot cells",
+      available: spatialConfigured,
       checked: showHotspots,
       setChecked: setShowHotspots,
     },
     {
       label: "Coverage gaps",
+      available: spatialConfigured,
       checked: showCoverage,
       setChecked: setShowCoverage,
     },
     {
       label: "Priority cells",
+      available: spatialConfigured,
       checked: showPriority,
       setChecked: setShowPriority,
     },
@@ -169,6 +185,26 @@ export function AnalyticsMap({
           {showTable ? "Hide data table" : "View as table"}
         </button>
       </div>
+      {!spatialConfigured && (
+        <div
+          className="an-spatial-notice"
+          role="status"
+          id={configurationNoticeId}
+        >
+          <strong>Spatial analysis is not configured for this report.</strong>
+          <p>
+            A park boundary and analysis grid are needed to show hotspots,
+            patrol gaps and priority cells. The background map is for
+            orientation only; an empty map does not mean there were no
+            incidents.
+          </p>
+          <p>
+            Ask an administrator to configure the park, then refresh analytics.
+            Saved reports keep the spatial data available when they were
+            created.
+          </p>
+        </div>
+      )}
       <div className="an-map-layout">
         <div
           className="an-map"
@@ -176,8 +212,10 @@ export function AnalyticsMap({
           aria-label={`Conservation map with ${report.hotspots.cells.length} hotspot cells and ${report.patrolGaps.cells.length} patrol coverage cells`}
         >
           <MapContainer
-            center={center}
+            center={bounds ? undefined : center}
             zoom={9}
+            bounds={bounds}
+            boundsOptions={{ padding: [24, 24], maxZoom: 13 }}
             scrollWheelZoom={false}
             zoomAnimation={!reducedMotion}
             fadeAnimation={!reducedMotion}
@@ -318,11 +356,15 @@ export function AnalyticsMap({
         </div>
         <aside className="an-map-side" aria-label="Map layers and legend">
           <p className="an-overline">MAP LAYERS</p>
-          {layerToggles.map(({ label, checked, setChecked }) => (
+          {layerToggles.map(({ label, checked, setChecked, available }) => (
             <label key={label} className="an-map-toggle">
               <input
                 type="checkbox"
-                checked={checked}
+                checked={available && checked}
+                disabled={!available}
+                aria-describedby={
+                  !spatialConfigured ? configurationNoticeId : undefined
+                }
                 onChange={(event) => setChecked(event.target.checked)}
               />
               {label}
@@ -333,7 +375,7 @@ export function AnalyticsMap({
               type="checkbox"
               checked={showCovered}
               onChange={(event) => setShowCovered(event.target.checked)}
-              disabled={!showCoverage}
+              disabled={!showCoverage || !spatialConfigured}
             />
             Show covered cells
           </label>
@@ -352,16 +394,29 @@ export function AnalyticsMap({
               <i className="an-legend-boundary" /> Park boundary
             </span>
           </div>
-          <p className="an-map-note">
-            {report.hotspots.cells.length} hotspot cells ·{" "}
-            {report.patrolGaps.cells.filter((cell) => !cell.covered).length}{" "}
-            coverage gaps · {report.priorityCells.length} priority cells.
-          </p>
+          {spatialConfigured && (
+            <p className="an-map-note">
+              {report.hotspots.cells.length} hotspot cells ·{" "}
+              {report.patrolGaps.cells.filter((cell) => !cell.covered).length}{" "}
+              coverage gaps · {report.priorityCells.length} priority cells.
+            </p>
+          )}
           <p className="an-map-note">
             {report.dataQuality.excludedNoLocation} incidents are not mapped
-            because they have no resolved location;{" "}
-            {report.dataQuality.outsideBoundary} located incidents are outside
-            the park boundary.
+            because they have no resolved location.
+            {report.spatialContext.parkBoundary ? (
+              <>
+                {" "}
+                {report.dataQuality.outsideBoundary} located incidents are
+                outside the park boundary.
+              </>
+            ) : (
+              <>
+                {" "}
+                Incident locations cannot be checked against a missing park
+                boundary.
+              </>
+            )}
           </p>
           {report.priorityCells.length > 0 && (
             <ol className="an-priority-list">
@@ -501,7 +556,11 @@ export function AnalyticsMap({
               ))}
               {cells.length === 0 && (
                 <tr>
-                  <td colSpan={7}>No spatial cells match this report.</td>
+                  <td colSpan={7}>
+                    {spatialConfigured
+                      ? "No spatial cells match this report."
+                      : "Spatial cells are unavailable because this report has no configured analysis area."}
+                  </td>
                 </tr>
               )}
             </tbody>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterFromSearch } from "./filters.js";
+import { colomboToday, filterFromSearch, presetDateRange } from "./filters.js";
 
 const parkId = "11111111-1111-4111-8111-111111111111";
 describe("editable analytics dates", () => {
@@ -33,4 +33,20 @@ describe("editable analytics dates", () => {
         .categoryGroup,
     ).toBe("ALL");
   });
+});
+
+it("defaults to one Colombo calendar day while preserving explicit date ranges", () => {
+  const today = colomboToday();
+  expect(filterFromSearch(new URLSearchParams(), parkId)).toMatchObject({
+    from: today,
+    to: today,
+    preset: "TODAY",
+  });
+  expect(presetDateRange("TODAY")).toEqual({ from: today, to: today });
+  expect(
+    filterFromSearch(
+      new URLSearchParams("preset=CUSTOM&from=2026-01-01&to=2026-01-31"),
+      parkId,
+    ),
+  ).toMatchObject({ from: "2026-01-01", to: "2026-01-31", preset: "CUSTOM" });
 });

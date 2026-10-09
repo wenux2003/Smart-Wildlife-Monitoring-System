@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { expect, it } from "vitest";
 import postgres from "postgres";
 import { buildGrid } from "./build-grid.js";
@@ -32,6 +33,11 @@ it.skipIf(!url)(
           await expect(
             buildGrid(tx, "11111111-1111-4111-8111-111111111111", 1000),
           ).rejects.toThrow("boundary");
+          const largePark = randomUUID();
+          await tx`INSERT INTO parks(id,code,name,boundary) VALUES(${largePark},${"T" + largePark.slice(0, 8).toUpperCase()},'Oversized grid fixture',ST_Multi(ST_Transform(ST_MakeEnvelope(500000,600000,600000,700000,32644),4326)))`;
+          await expect(buildGrid(tx, largePark, 500)).rejects.toThrow(
+            "20,000-cell limit",
+          );
           throw rollback;
         }),
       ).rejects.toBe(rollback);

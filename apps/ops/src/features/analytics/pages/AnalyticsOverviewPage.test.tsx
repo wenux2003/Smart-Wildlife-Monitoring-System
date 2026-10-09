@@ -16,10 +16,17 @@ import type {
   ReportRunResponse,
 } from "@wr/shared";
 import { AnalyticsSubpageLayout } from "../components/AnalyticsSubpageLayout.js";
+import { ReportOverview } from "../components/ReportOverview.js";
 import { AnalyticsOverviewPage } from "./AnalyticsOverviewPage.js";
 
 const { mockAuth } = vi.hoisted(() => ({
   mockAuth: { user: null as null | Record<string, string | boolean | null> },
+}));
+
+// These cases exercise the explicit refresh and failure controls. Automatic loading
+// is exercised with the real scheduler in AutomaticAnalytics.test.tsx.
+vi.mock("../hooks/useAutomaticAnalytics.js", () => ({
+  useAutomaticAnalytics: () => ({ waiting: false, markRequested: () => {} }),
 }));
 
 vi.mock("../../../auth/AuthContext.js", () => ({
@@ -272,10 +279,8 @@ describe("analytics overview", () => {
 
   it("keeps filter state in the URL and generates a report with the selected filters", async () => {
     show();
-    await screen.findByRole("heading", {
-      name: "Choose filters and generate a report",
-    });
-    expect(screen.getByLabelText("Date range")).toHaveValue("LAST_6_MONTHS");
+    await screen.findByLabelText("Park");
+    expect(screen.getByLabelText("Date range")).toHaveValue("TODAY");
     expect(screen.getByLabelText("Category")).toHaveValue("ALL");
     fireEvent.click(screen.getByRole("button", { name: "More filters" }));
     fireEvent.change(screen.getByLabelText("Category"), {
@@ -294,7 +299,12 @@ describe("analytics overview", () => {
     expect(screen.getByLabelText("Current filters").textContent).toContain(
       "rejected=true",
     );
-    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Refresh analytics" }),
+      ).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Refresh analytics" }));
     expect(await screen.findByText(/n = 42 incidents/)).toBeInTheDocument();
     expect(await screen.findAllByText("RPT-YALA-2026-000042")).toHaveLength(2);
     expect(
@@ -388,16 +398,21 @@ describe("analytics overview", () => {
             })
           : normalFetch(input, init),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Refresh analytics" }),
+      ).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Refresh analytics" }));
     expect(
-      await screen.findByRole("button", { name: "Compiling…" }),
+      await screen.findByRole("button", { name: "Updating…" }),
     ).toBeDisabled();
     expect(screen.getByText(/n = 42 incidents/)).toBeInTheDocument();
     expect(screen.getByText(/Showing the previous report/)).toBeInTheDocument();
     finishGeneration(
       new Response(JSON.stringify(successfulRun), { status: 201 }),
     );
-    await screen.findByRole("button", { name: "Generate report" });
+    await screen.findByRole("button", { name: "Refresh analytics" });
   });
 
   it("shows a retryable failure without dropping the prior report", async () => {
@@ -406,7 +421,12 @@ describe("analytics overview", () => {
     fetchMock.mockImplementationOnce(async () => {
       throw new Error("offline");
     });
-    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Refresh analytics" }),
+      ).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Refresh analytics" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "couldn’t reach the server",
     );
@@ -416,9 +436,7 @@ describe("analytics overview", () => {
 
   it("shows EMPTY suggestions and applies the widened period without changing other filters", async () => {
     show();
-    await screen.findByRole("heading", {
-      name: "Choose filters and generate a report",
-    });
+    await screen.findByLabelText("Park");
     const emptyRun: ReportRunResponse = {
       ...successfulRun,
       runId: "44444444-4444-4444-8444-444444444444",
@@ -436,7 +454,12 @@ describe("analytics overview", () => {
             )
           : normalFetch(input, init),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Refresh analytics" }),
+      ).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Refresh analytics" }));
     expect(
       await screen.findByRole("heading", {
         name: "No records match these filters",
@@ -484,6 +507,11 @@ describe("analytics overview", () => {
   it("shows a timeout with a retry while preserving the URL filters", async () => {
     show(`/analytics?run=${runId}`);
     await screen.findByText(/n = 42 incidents/);
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Refresh analytics" }),
+      ).toBeEnabled(),
+    );
     const timedOut: ReportRunResponse = {
       ...successfulRun,
       runId: "55555555-5555-4555-8555-555555555555",
@@ -500,7 +528,12 @@ describe("analytics overview", () => {
             )
           : normalFetch(input, init),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Refresh analytics" }),
+      ).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Refresh analytics" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "report took too long",
     );
@@ -537,10 +570,13 @@ describe("analytics overview", () => {
   });
   it("focuses the report result after generating and announces its final count", async () => {
     show();
-    await screen.findByRole("heading", {
-      name: "Choose filters and generate a report",
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    await screen.findByLabelText("Park");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Refresh analytics" }),
+      ).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Refresh analytics" }));
     const heading = await screen.findByRole("heading", {
       name: "Report results",
     });
@@ -554,8 +590,13 @@ describe("analytics overview", () => {
 
   it("preserves invalid dates, describes the error and focuses the field to correct", async () => {
     show("/analytics?preset=CUSTOM&from=2026-10-08&to=2026-10-01");
-    await screen.findByRole("button", { name: "Generate report" });
-    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    await screen.findByRole("button", { name: "Refresh analytics" });
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Refresh analytics" }),
+      ).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Refresh analytics" }));
     const end = screen.getByLabelText("To date");
     expect(end).toHaveValue("2026-10-01");
     expect(end).toHaveFocus();
@@ -570,7 +611,12 @@ describe("analytics overview", () => {
       ),
     ).toBe(false);
     fireEvent.change(end, { target: { value: "2026-10-09" } });
-    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Refresh analytics" }),
+      ).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Refresh analytics" }));
     await screen.findByRole("heading", { name: "Report results" });
     expect(
       screen.queryByText("End date must be on or after start date."),
@@ -588,7 +634,12 @@ describe("analytics overview", () => {
       "aria-current",
       "page",
     );
-    fireEvent.click(screen.getByRole("button", { name: "Generate report" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Refresh analytics" }),
+      ).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Refresh analytics" }));
     await waitFor(() =>
       expect(
         screen.getByRole("heading", { name: "Report results" }),
@@ -603,5 +654,231 @@ describe("analytics overview", () => {
         .getAllByRole("status")
         .some((region) => region.textContent?.includes("42 incidents")),
     ).toBe(true);
+  });
+});
+
+describe("M4 P9 filter, summary and subpage failures", () => {
+  it("applies custom dates and advanced filters to the report request", async () => {
+    show();
+    await screen.findByLabelText("Park");
+    fireEvent.change(screen.getByLabelText("Date range"), {
+      target: { value: "CUSTOM" },
+    });
+    fireEvent.change(screen.getByLabelText("From date"), {
+      target: { value: "2026-09-01" },
+    });
+    fireEvent.change(screen.getByLabelText("To date"), {
+      target: { value: "2026-10-01" },
+    });
+    fireEvent.change(screen.getByLabelText("Category"), {
+      target: { value: "OTHER" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /More filters/ }));
+    const types = screen.getByLabelText("Incident types") as HTMLSelectElement;
+    types.options[0].selected = true;
+    fireEvent.change(types);
+    const sources = screen.getByLabelText(
+      "Incident sources",
+    ) as HTMLSelectElement;
+    sources.options[0].selected = true;
+    fireEvent.change(sources);
+    fireEvent.change(screen.getByLabelText("Sector"), {
+      target: { value: sectorId },
+    });
+    fireEvent.click(screen.getByLabelText("Include rejected incidents"));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Refresh analytics" }),
+      ).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Refresh analytics" }));
+    await screen.findByRole("heading", { name: "Report results" });
+    const post = fetchMock.mock.calls.find(
+      ([url, init]) =>
+        String(url) === "/api/reports/runs" && init?.method === "POST",
+    );
+    expect(JSON.parse(String(post?.[1]?.body))).toMatchObject({
+      from: "2026-09-01",
+      to: "2026-10-01",
+      categoryGroup: "OTHER",
+      sources: ["RANGER"],
+      types: ["POACHING"],
+      sectorId,
+      includeRejected: true,
+    });
+  });
+
+  it.each(["NEW_ACTIVITY", "NO_CHANGE", "DOWN"] as const)(
+    "describes %s and unavailable spatial data without misleading totals",
+    (kind) => {
+      render(
+        <ReportOverview
+          report={{
+            ...report,
+            kpis: {
+              ...report.kpis,
+              changeKind: kind,
+              changePercent: kind === "DOWN" ? -50 : null,
+              patrolGapAreaKm2: null,
+              patrolGapSharePercent: null,
+              hotspotSectorNames: [],
+            },
+            trend: [],
+            breakdown: [],
+            priorityCells: [],
+            summarySentences: [],
+          }}
+        />,
+      );
+      expect(
+        screen.getByText("Park coverage analysis unavailable"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          kind === "NEW_ACTIVITY"
+            ? "New activity in this period"
+            : kind === "NO_CHANGE"
+              ? "No change from previous period"
+              : /50% vs previous period/,
+        ),
+      ).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "View data table" }));
+      expect(
+        screen.getByRole("button", { name: "Hide data table" }),
+      ).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "0 rows" }));
+    },
+  );
+
+  it("keeps a subpage pending until park access is granted", () => {
+    mockAuth.user = { role: "RESEARCHER", parkId: null };
+    show(
+      "/analytics/map",
+      <AnalyticsSubpageLayout section="map">
+        {() => <p>Spatial result</p>}
+      </AnalyticsSubpageLayout>,
+    );
+    expect(screen.getByText("Park access pending")).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("retries failed subpage options and saved-run requests", async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Options unavailable" }), {
+        status: 503,
+      }),
+    );
+    show(
+      "/analytics/map",
+      <AnalyticsSubpageLayout section="map">
+        {() => <p>Spatial result</p>}
+      </AnalyticsSubpageLayout>,
+    );
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Please try again",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await screen.findByLabelText("Park");
+    fireEvent.change(screen.getByLabelText("Date range"), {
+      target: { value: "LAST_30_DAYS" },
+    });
+    expect(screen.getByLabelText("Date range")).toHaveValue("LAST_30_DAYS");
+  });
+
+  it.each(["TIMED_OUT", "FAILED"] as const)(
+    "retries a saved %s subpage run",
+    async (status) => {
+      const original = fetchMock.getMockImplementation()!;
+      fetchMock.mockImplementation(async (input, init) =>
+        String(input).includes(`/runs/${runId}`) &&
+        !String(input).includes("exports")
+          ? new Response(
+              JSON.stringify({
+                ...successfulRun,
+                status,
+                report: null,
+                snapshotSha256: null,
+              }),
+              { status: 200 },
+            )
+          : original(input, init),
+      );
+      show(
+        `/analytics/map?run=${runId}`,
+        <AnalyticsSubpageLayout section="map">
+          {() => <p>Spatial result</p>}
+        </AnalyticsSubpageLayout>,
+      );
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "Your filters are kept.",
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+      expect(await screen.findByText("Spatial result")).toBeInTheDocument();
+    },
+  );
+
+  it("retains a successful subpage report after generation failure", async () => {
+    const original = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (input, init) =>
+      init?.method === "POST"
+        ? new Response(JSON.stringify({ message: "Query failed" }), {
+            status: 503,
+          })
+        : original(input, init),
+    );
+    show(
+      `/analytics/map?run=${runId}`,
+      <AnalyticsSubpageLayout section="map">
+        {() => <p>Spatial result</p>}
+      </AnalyticsSubpageLayout>,
+    );
+    await screen.findByText("Spatial result");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Refresh analytics" }),
+      ).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Refresh analytics" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Please try again",
+    );
+    expect(screen.getByText("Spatial result")).toBeInTheDocument();
+  });
+
+  it("applies EMPTY subpage suggestions without discarding unrelated filters", async () => {
+    const original = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (input, init) =>
+      String(input).includes(`/runs/${runId}`)
+        ? new Response(
+            JSON.stringify({
+              ...successfulRun,
+              status: "EMPTY",
+              report: null,
+              snapshotSha256: null,
+              suggestions: [
+                "Choose All categories",
+                "Clear the sector filter",
+                "Clear sources",
+                "Widen the date range",
+              ],
+            }),
+          )
+        : original(input, init),
+    );
+    show(
+      `/analytics/map?run=${runId}&group=OTHER&sector=${sectorId}&sources=COMMUNITY`,
+      <AnalyticsSubpageLayout section="map">
+        {() => <p>Spatial result</p>}
+      </AnalyticsSubpageLayout>,
+    );
+    await screen.findByText("No records match these filters");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Widen the date range" }),
+    );
+    expect(screen.getByLabelText("Category")).toHaveValue("OTHER");
+    expect(screen.getByLabelText("Date range")).toHaveValue("LAST_12_MONTHS");
+    expect(screen.getByLabelText("Current filters")).toHaveTextContent(
+      "sources=COMMUNITY",
+    );
   });
 });

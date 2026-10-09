@@ -1,0 +1,19 @@
+{
+  "checkedDate": "2026-10-09",
+  "databaseInspection": "Neon read-only transaction; aggregate values only",
+  "parkCode": "YALA",
+  "reportCode": "RPT-YALA-2026-000016",
+  "filters": {
+    "from": "2026-09-10",
+    "to": "2026-10-09"
+  },
+  "boundaryPresent": false,
+  "analysisGridCells": 0,
+  "analysisSectors": 0,
+  "totalIncidents": 35,
+  "locatedIncidents": 33,
+  "excludedNoLocation": 2,
+  "legacyOutsideBoundaryValue": 33,
+  "cause": "Missing boundary/grid; legacy outside-boundary calculation used missing grid membership.",
+  "sharedDatabaseWrites": 0
+}

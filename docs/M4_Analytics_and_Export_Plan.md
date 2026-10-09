@@ -4,7 +4,7 @@
 **Use case:** M4 — Analytics and export
 **Preserved use case:** Group 039, "Analyze Conservation Data & Generate Reports" (G39 pp. 4–10)
 **Owner :** Wenura Kavinda
-**Status:** ✅ P0–P8 complete, including P7 isolated spatial/history database checks, safe migration verification, and P8 reduced-motion/browser checks. The Ops bundle-size warning is resolved. P9 coverage/evidence/documentation is next; M4 is not yet complete end to end.
+**Status:** ✅ P0–P9 complete for the M4 academic prototype. All 26 Appendix A flows pass; the 85% coverage gate and isolated database checks pass. [P9 evidence](./evidence/m4/README.md) records results and review limits. Optional Tier 2 enhancements remain deferred.
 **Supersedes:** the short M4 notes in [Implementation plan §7 M4](./Group037_Implementation_Plan.md#m4-analytics-and-export) and the endpoint rows in its §5. Where this plan is more specific, this plan wins; update those sections to link here.
 
 ---
@@ -96,7 +96,7 @@ These five features turn "charts on a page" into a decision tool. Each one is gr
 - **G39 pp. 4–7:** use-case scenario, alternate and exception flows, and the sequence diagram.
 - **G39 p. 8:** storyboard. The manager filters by sector, date range and category, then sees patrol gaps and hotspots over the park map.
 - **G39 pp. 9–10:** wireframes. The layout we preserve:
-  - filter bar with "Generate Report"
+  - filter bar (now automatic updates with optional "Refresh analytics", per 9 Oct user request)
   - Tabular / Spatial Heatmap toggle and an index/audit strip
   - three KPI cards: total incidents, high-risk hotspots, patrol gap area
   - incident frequency trend chart and sector incident breakdown table
@@ -107,7 +107,7 @@ These five features turn "charts on a page" into a decision tool. Each one is gr
 | G39 flow                                                                               | Decision                                                                                                                                                                    | Justification                                                                                                                                                          |
 | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Main: select module, set filters, generate, view stats/charts/tables, export, download | **Retained**                                                                                                                                                                | Core flow                                                                                                                                                              |
-| Main step "system prompts the user to set search filters"                              | **Retained, improved:** sensible defaults (own park, last 6 months, all categories) are pre-filled, and the report is not generated until the user clicks "Generate report" | Matches G39 while avoiding an empty first screen                                                                                                                       |
+| Main step "system prompts the user to set search filters" | **Changed by user request (9 Oct):** own park, Today in Colombo and all categories load automatically; valid edits update after 400 ms; optional Refresh analytics remains | Removes the initial manual Generate step while retaining audited snapshots and exports |
 | Alt: visualize spatial heatmap                                                         | **Retained, improved:** a graded grid map instead of a blurred heat layer, with counts, a legend and a table alternative                                                    | Blurred heat layers can't be read precisely, have no accessible alternative and hide the excluded-location count. A grid lines up exactly with the patrol-gap analysis |
 | Alt: human-wildlife conflict trends                                                    | **Retained, improved:** a separate conflict view with two source series and a boundary-stretch breakdown                                                                    | Implementation plan §7 M4: show the sources separately so they aren't mistaken for deduplicated real-world conflicts                                                   |
 | Alt: export skipped                                                                    | **Retained.** The run is audited with no export                                                                                                                             | Critique C9: download is a conditional postcondition                                                                                                                   |
@@ -410,6 +410,7 @@ export const ReportRunStatusSchema = z.enum([
   "FAILED",
 ]);
 export const DateRangePresetSchema = z.enum([
+  "TODAY",
   "LAST_7_DAYS",
   "LAST_30_DAYS",
   "LAST_90_DAYS",
@@ -639,7 +640,7 @@ All endpoints are under `/api`. Every response sets `Cache-Control: no-store`. P
 
 Why this shape and not the six separate `GET /analytics/*` endpoints sketched in the implementation plan:
 
-- G39's main flow and sequence diagram compile **one report** per "Generate Report" click, and the postcondition audits that query. One POST makes the audit, the snapshot and the export consistent by design.
+- G39's main flow and sequence diagram compile **one report** per settled filter update or explicit refresh, and the postcondition audits that query. One POST makes the audit, the snapshot and the export consistent by design.
 - Six independent GETs could return data from six different moments. The PDF could then disagree with the screen.
 - Tabs and the spatial view read sections from the same snapshot, so switching views never re-queries or re-audits.
 - The section names of the old contract (summary, trend, breakdown, hotspots, patrol-gaps, conflict-trends) survive as sections of `ConservationReport`, so the implementation plan's traceability still holds. Update its §5 row to point here.
@@ -680,7 +681,7 @@ sequenceDiagram
   R->>S: getOptions(user)
   S->>Q: loadOptions(parkId)
   Q-->>UI: parks, types, sectors, data range
-  U->>UI: Set filters, click Generate report
+  U->>UI: Open analytics / change valid filters (or click Refresh analytics)
   UI->>R: POST /reports/runs (filters)
   R->>S: generateReport(user, filters)
   S->>S: assertParkAccess, normalizeFilter (Colombo window, bucket)
@@ -834,7 +835,7 @@ Statistical clustering (Getis-Ord Gi\*, DBSCAN) is **Tier 2**. If added, documen
 1. **Render the snapshot, not live data.** The file matches what the user saw, two exports of the same run are identical, and the audit can prove it.
 2. **Strategy per format:** `ReportExporter { format; mimeType; fileExtension; render(report): Promise<Buffer> }`. `ExporterRegistry` maps a format to its exporter. Adding XLSX later is a new class plus one registry entry, with no change to the service (open/closed principle).
 3. **Deterministic file names:** `wana-rakshaka_RPT-YALA-2026-000042_2026-04-01_to_2026-09-30.pdf`. ASCII only, sanitized.
-4. **Integrity:** the SHA-256 of the file bytes is returned in `X-Report-Sha256`, stored in `report_exports` and printed in the PDF footer, together with the snapshot hash.
+4. **Integrity:** the SHA-256 of the file bytes is returned in `X-Report-Sha256`, stored in `report_exports`. The PDF footer prints the full immutable snapshot SHA-256. A completed file cannot contain its own byte hash without changing that hash.
 5. **Failure is safe:** if the renderer throws, the attempt is audited as FAILED and the user gets `EXPORT_FAILED`. Nothing changes on screen.
 6. **Bounded work:** maximum 5,000 CSV rows (the snapshot is aggregate, so a real report is far below this) and maximum 12 PDF pages. Exceeding either is a FAILED export with code `EXPORT_TOO_LARGE`, never a silent truncation.
 
@@ -848,7 +849,7 @@ Library: **pdfmake** on the server (§12). It uses the standard Helvetica fonts,
 | 2. Incidents         | Trend bar chart (vector SVG from `svg-charts.ts`), sector breakdown table (top 20 rows, then "+ n more rows in the CSV export"), data-quality notes                                                                                                                                     |
 | 3. Spatial           | Grid mini-map as vector SVG (park outline, hotspot cells by class, gap cells hatched, no tiles), legend, top hotspot table, priority cells table                                                                                                                                        |
 | 4. Conflict          | Two-series conflict chart, boundary-stretch table, the "sources are not deduplicated" statement                                                                                                                                                                                         |
-| Every page           | Header with park and report code; footer with "Page n of m", the snapshot SHA-256 (first 16 characters), "Synthetic demo data" when the park contains seeded data, and "Generated by Wana Rakshaka prototype — not an official government document"                                     |
+| Every page           | Header with park and report code; footer with "Page n of m", the full snapshot SHA-256 (64 characters), "Synthetic demo data" when the park contains seeded data, and "Generated by Wana Rakshaka prototype — not an official government document"                                     |
 
 Notes:
 
@@ -1292,38 +1293,37 @@ coverage: {
 
 Add root scripts `test:m4` and `test:m4:coverage`. The SQL repository is tested by opt-in database tests (§14.3) and reported separately, the same way M1 handles `M1_TEST_DATABASE_URL`. State this honestly in the report.
 
-### 14.2 Test inventory
+### 14.2 Verified test inventory (P9)
 
-| File                                         | Type                                                   | Key cases (positive / negative / edge / error)                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| -------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `shared/analytics.test.ts`                   | unit                                                   | Valid filter; `from > to`; range of 731 vs 732 days; unknown type; strict rejects extra keys; config defaults applied; invalid config bounds                                                                                                                                                                                                                                                                                                                                   |
-| `domain/filter.test.ts`                      | unit                                                   | Colombo midnight boundaries (`18:29:59.999Z` belongs to the previous day, `18:30:00Z` to the next); month and week bucket choice at 31/32 and 120/121 days; previous period length; presets resolved from an injected clock; leap day 2028-02-29                                                                                                                                                                                                                               |
-| `domain/metrics.test.ts`                     | unit                                                   | Percent change: up, down, prev=0 → NEW_ACTIVITY, both 0 → NO_CHANGE, rounding; risk class breaks with max 1, 5 or 100; hotspot rule with fewer than 10 vs 10 or more cells; priority score cap at 90 days and never patrolled; shares sum to 100 ± rounding                                                                                                                                                                                                                    |
-| `domain/narrative.test.ts`                   | unit                                                   | Each template triggers only under its rule; no sentence when the sample is under 5; no "rose 0%"                                                                                                                                                                                                                                                                                                                                                                               |
-| `domain/report-code.test.ts`                 | unit                                                   | Format, zero padding, park code sanitizing                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `domain/report-assembler.test.ts`            | unit                                                   | Full assembly from fixture sections; Zod-valid output; deterministic canonical hash (same input → same hash; key order irrelevant)                                                                                                                                                                                                                                                                                                                                             |
-| `export/csv-writer.test.ts`                  | unit                                                   | Quoting of comma, quote, CR, LF; doubled quotes; CRLF; BOM; formula guard for `=`, `+`, `-`, `@`, tab and CR; negative numbers **not** escaped; empty and null cells                                                                                                                                                                                                                                                                                                           |
-| `export/csv-exporter.test.ts`                | unit                                                   | Exact header; one row per KPI, bucket, breakdown, gap and conflict; values match the snapshot; no phone or description field present (privacy); row limit → `EXPORT_TOO_LARGE`                                                                                                                                                                                                                                                                                                 |
-| `export/pdf-exporter.test.ts`                | unit (pdfjs-dist)                                      | Extracted text contains the title, park, period, report code, each KPI value, the filter summary, "Page 1 of N", the sources-not-deduplicated sentence and the synthetic-data notice; page count ≤ 12; renderer error → rejection propagated                                                                                                                                                                                                                                   |
-| `export/svg-charts.test.ts`                  | unit                                                   | Bar heights proportional; zero series draws an axis and a "No data" label; labels escaped (no SVG injection from sector names)                                                                                                                                                                                                                                                                                                                                                 |
-| `service.test.ts`                            | unit with fakes                                        | PM own park OK, other park `PARK_FORBIDDEN`; Researcher without park `PARK_ACCESS_PENDING`; future `to` rejected; empty → EMPTY run audited with suggestions; partial data → SUCCEEDED; park not configured → `configured=false`; timeout → TIMED_OUT audited and 504 thrown; audit write failure → 503; export of EMPTY → 409; exporter failure → FAILED audited; export success audited with hash; Researcher can't read another user's run (404)                            |
-| `routes.test.ts`                             | Fastify inject                                         | 401 without a cookie; 403 for Ranger, Liaison and Super Admin; 400 on invalid body with `VALIDATION_FAILED`; 201 report shape; `Content-Type` and `Content-Disposition` on export; `X-Report-Sha256` present; `Cache-Control: no-store`; foreign origin on POST rejected; rate limit 429 on the 11th export; 503 when no repository                                                                                                                                            |
-| `repository.db.test.ts`                      | integration, `skipIf(!M4_TEST_DATABASE_URL)`, rollback | Fixture park with boundary and 3×3 grid: incident in a known cell counted once; incident at a cell edge counted once; unresolved and NULL excluded from cells but counted in the total; outside-boundary counted; track segment beyond the gap or length limits ignored; buffer covers the adjacent cell; window boundary at Colombo midnight; conflict sources separated; nearest-stretch tie-break; `statement_timeout` raises 57014 (with `pg_sleep` in a fixture function) |
-| `grid/build-grid.db.test.ts`                 | integration                                            | Cell count and clipped area against the analytic area; sliver rule; idempotent rebuild                                                                                                                                                                                                                                                                                                                                                                                         |
-| `ops …/useAnalyticsFilters.test.ts`          | unit                                                   | URL ↔ filter round-trip; invalid URL values fall back to defaults with a message; preset recomputes dates                                                                                                                                                                                                                                                                                                                                                                      |
-| `ops …/FilterBar.test.tsx`                   | UI                                                     | Labels present; invalid range shows a message, focuses the field and **keeps typed values**; Generate disabled while compiling                                                                                                                                                                                                                                                                                                                                                 |
-| `ops …/AnalyticsOverviewPage.test.tsx`       | UI                                                     | Success renders KPIs, stamp code and the trend table toggle; EMPTY shows the empty state and suggestion chips (clicking one updates the filter); 504 shows the timeout banner with filters and the previous report intact, and Retry calls again; export failure shows the toast while the report is still rendered; Researcher pending panel                                                                                                                                  |
-| `ops …/ExportBar.test.tsx`                   | UI                                                     | State machine: idle → exporting → done → idle; failure path; disabled with a reason when there is no report; download helper called with the server's filename                                                                                                                                                                                                                                                                                                                 |
-| `ops …/AnalyticsMapPage.test.tsx`            | UI                                                     | Legend and excluded count shown; `CellTable` alternative lists cells; layer toggles (react-leaflet mocked to plain elements)                                                                                                                                                                                                                                                                                                                                                   |
-| `ops …/ConflictTrendsPage.test.tsx`          | UI                                                     | Two series labelled separately; the not-deduplicated caption present; matrix numbers rendered                                                                                                                                                                                                                                                                                                                                                                                  |
-| `ops …/ReportHistoryPage.test.tsx`           | UI                                                     | Rows, status badges with text, Open link with `run=`, pagination, PM sees the "By" column and Researcher doesn't                                                                                                                                                                                                                                                                                                                                                               |
-| `ops …/format.test.ts`, `useCountUp.test.ts` | unit                                                   | Colombo formatting; reduced motion → final value immediately                                                                                                                                                                                                                                                                                                                                                                                                                   |
+Actual files below replace the preliminary proposed inventory. API paths are relative to `apps/api/src/modules/analytics`; Ops paths are relative to `apps/ops/src/features/analytics`. All 17 files pass when the isolated database URL is supplied (114 cases total).
+
+| File | Verified behavior |
+| --- | --- |
+| `packages/shared/src/analytics.test.ts` | Strict contracts, dates, config defaults/bounds and extra-key rejection |
+| `domain/domain.test.ts` | Colombo boundaries, bucket cutovers, deltas, metrics, narratives, report codes, schema/hash assembly |
+| `exporters/csv-writer.test.ts` | BOM/CRLF, quoting, formula injection and numeric values |
+| `exporters/exporters.test.ts` | Exact snapshot CSV/PDF content, private-field exclusion, full hash, page/row limits, deterministic bytes and rendered page margins |
+| `exporters/svg-charts.test.ts` | SVG escaping, empty charts, spatial aggregation and scaling |
+| `service.test.ts` | Current role/park/ownership, success/EMPTY/timeout, suggestions, audit/export errors, revoked access and concurrent independent runs |
+| `routes.test.ts` | Fastify auth/validation, origins, rate limit, headers/download, config failure and errors |
+| `seed.test.ts` | Deterministic fixture generation, namespace and target guards |
+| `repository.db.test.ts` | Real aggregation, date/history scope, export audit and concurrent distinct codes |
+| `spatial.db.test.ts` | Cell edges/midnight/captured time, GPS filtering, overlap, single point, source/stretch/settlement assignment and real cancellation |
+| `seed.db.test.ts` | Idempotency, park-specific settings, seed removal isolation and restoration |
+| `grid/build-grid.db.test.ts` | Clipped area/slivers, idempotent rebuild and 20k-cell limit |
+| Ops `lib/filters.test.ts` | URL/default/preset state round trip and malformed filters |
+| Ops `hooks/useExport.test.ts` | Download state, duplicate-request prevention, retry/failure |
+| Ops `hooks/motion.test.tsx` | Reduced-motion preferences, count-up cleanup and accessible final value |
+| Ops `pages/AnalyticsOverviewPage.test.tsx` | Generate/export, custom filters, preserved snapshot/filters, EMPTY/retry, focus, pending role access and deltas |
+| Ops `pages/AnalyticsP7.test.tsx` | Accessible maps/tables, layer sorting/highlighting, gaps/conflict matrix, history filters/pagination/status/privacy and skipped exports |
+
+Workspace `apps/ops/src/App.test.tsx` additionally checks the analytics tile and protected routing. CI runs both M4 suites, including the four isolated DB files.
 
 ### 14.3 Database test environment
 
 - Use a **separate** Neon branch or local Docker PostGIS (`postgis/postgis:16-3.5`, as in CI), never the shared team database.
-- Each test runs inside a transaction that is rolled back, like M1's repository tests.
-- Optional: add the M4 database tests to the CI `database` job with `M4_TEST_DATABASE_URL` pointing at its PostGIS service.
+- Grid fixtures use rolled-back transactions; spatial/history fixtures use unique test parks with explicit cleanup. Seed checks restore the deterministic fixture set. Tests require a localhost database whose name ends in `_test`.
+- The CI `database` job now seeds analytics and runs both M4 coverage suites against its isolated `wildlife_test` PostGIS service. Hosted CI execution remains to be observed after pushing.
 
 ### 14.4 Manual checks for the report
 
@@ -1331,7 +1331,7 @@ Add root scripts `test:m4` and `test:m4:coverage`. The SQL repository is tested 
 - 200% browser zoom.
 - Phone width (390px).
 - Reduced-motion on.
-- Open the exported PDF and CSV (Excel and a text editor); verify the hash with `certutil -hashfile file SHA256` and compare it to the PDF footer and the history page.
+- Verify exported file-byte SHA-256 against `X-Report-Sha256` and history audit; compare the PDF footer with the saved snapshot SHA-256. P9 rendered and visually reviewed every PDF page, and parsed the UTF-8 BOM CSV against snapshot totals. Native Excel visual review was not performed. Browser evidence includes visible keyboard focus, 390px/reduced-motion checks and a 200%-equivalent CSS reflow check; a full manual keyboard audit and literal browser-toolbar zoom remain supplemental checks.
 
 ---
 
@@ -1373,8 +1373,8 @@ The implementation plan requires "six months of labeled synthetic analytics data
 7. Generate again, export the PDF and CSV, open both and compare the hash.
 8. Exceptions:
    - Narrow to a sector and category with no data to show the empty state.
-   - Force a timeout with a dev-only `ANALYTICS_STATEMENT_TIMEOUT_MS=1`, only allowed outside production, and show that filters are kept.
-   - Force an export failure with a dev-only `ANALYTICS_FAIL_EXPORT=PDF` flag and show the report stays intact.
+   - Exercise the controlled timeout fixture in service, route and UI tests; verify real SQL cancellation in `spatial.db.test.ts`. No developer timeout flag is implemented.
+   - Exercise the controlled exporter failure in service and UI tests and show the report stays intact. No developer failure flag is implemented.
 9. Sign in as `researcher.yala@example.org`: same analytics, read-only, no other users' runs in the history, no contact details anywhere.
 
 ---
@@ -1396,7 +1396,7 @@ The implementation plan requires "six months of labeled synthetic analytics data
 | P6 UI core                  | Layout, filters, overview page, export bar, all states                                                                                           | 1                   | UI tests green; manual keyboard pass                            | ✅ Done — URL-backed filters, overview states/exports, 14 UI and route tests; keyboard pass verified                                |
 | P7 UI spatial and conflicts | Map page, patrol gaps page, conflict page, history page                                                                                          | 1                   | UI tests green                                                  | ✅ Done — UI tests, isolated PostgreSQL 16/PostGIS spatial/history tests, and repeatable migrations pass                                                               |
 | P8 Polish                   | Motion, count-up, stamp, skeletons, insight sentences, a11y fixes                                                                                | 1 (motion is small) | Reduced-motion check                                            | ✅ Done — motion, accessible KPI count-up, stamp/skeleton/export feedback, insight reuse, filter/result focus; reduced-motion and browser checks pass |
-| P9 Evidence                 | `vitest.m4.config.ts` ≥ 85%, screenshots, traceability rows, docs updates, AI prompt log                                                         | 1                   | Coverage report saved; README status updated                    | ⏳ Not started                                                                                                                     |
+| P9 Evidence                 | `vitest.m4.config.ts` ≥ 85%, screenshots, traceability rows, docs updates, AI prompt log                                                         | 1                   | Coverage report saved; README status updated                    | ✅ Complete — coverage, isolated DB, exports, screenshots and documentation saved |
 | T2 extras                   | Median response time KPI (K5), Getis-Ord clustering, minimum covered-fraction coverage, Sinhala/Tamil PDF fonts, LO read access to conflict view | 2                   | Only if Tier 1 is done and green                                |
 
 ### 16.2 Pull requests
@@ -1415,17 +1415,17 @@ Each PR passes `lint`, `typecheck`, `test` and both builds before merging. If th
 
 ### 16.3 Definition of done (M4)
 
-- [ ] Every G39 p. 4–7 flow in Appendix A works and has a passing test.
+- [x] Every G39 p. 4–7 flow in Appendix A works and has a passing test.
 - ✅ PM and Researcher access rules enforced on the server; Ranger, Liaison and Super Admin denied; cross-park denied.
-- [ ] No contact details in any analytics response, PDF or CSV (asserted by tests).
+- [x] No contact details in any analytics response, PDF or CSV (asserted by tests).
 - ✅ Each report generation is audited (filters, user, time, outcome, duration, hash); each export is audited (format, outcome, size, hash).
 - ✅ PDF and CSV are rendered from the snapshot; their content is asserted by tests.
 - ✅ Empty suggestions preserve filters; timeout/network/export failures retain the available report; UI state tests pass.
-- [ ] `vitest.m4.config.ts` ≥ 85% lines, branches, functions and statements; DB tests pass on an isolated database.
+- [x] `vitest.m4.config.ts` ≥ 85% lines, branches, functions and statements; DB tests pass on an isolated database.
 - ✅ Lint/typecheck pass; migration `0009` and repeat-seed checks were verified in their respective phases.
-- [ ] UI matches the G39 wireframe layout with the justified changes in §2.2; screenshots captured.
-- [ ] README project status, Implementation plan §5/§7 M4, User groups §4.2/§4.5 and the traceability doc are updated to link here.
-- [ ] AI prompts used for M4 are recorded in `docs/ai-prompts.md`.
+- [x] UI matches the G39 wireframe layout with the justified changes in §2.2; screenshots captured.
+- [x] README project status, Implementation plan §5/§7 M4, User groups §4.2/§4.5 and the traceability doc are updated to link here.
+- [x] Available M4 user prompts are recorded in `docs/ai-prompts.md`; unavailable P0–P7 history is explicitly disclosed, not reconstructed.
 
 ---
 
@@ -1465,59 +1465,62 @@ Each PR passes `lint`, `typecheck`, `test` and both builds before merging. If th
 
 | #   | G39 source              | Flow step                                              | Implementation                             | Test                                                      | Status |
 | --- | ----------------------- | ------------------------------------------------------ | ------------------------------------------ | --------------------------------------------------------- | ------ |
-| A1  | p. 4 main               | Select analytics module                                | Workspace tile → `/analytics`; route guard | `App.test.tsx` (tile and route)                            | ✅     |
-| A2  | p. 4 main               | System prompts filters                                 | `FilterBar` with defaults from E1          | `AnalyticsOverviewPage.test.tsx` (initial defaults)        | ✅     |
-| A3  | p. 5 main               | User sets park / timeframe / category, clicks Generate | URL filters → `POST /reports/runs`         | `AnalyticsOverviewPage.test.tsx`, `routes.test.ts`         | ✅     |
-| A4  | p. 5 main               | System validates filters                               | Zod + `normalizeFilter` + clock check      | `domain/domain.test.ts`, `service.test.ts`                 | ✅     |
-| A5  | p. 5 main               | Search incidents and patrol data                       | Repository read-only transaction           | `repository.db.test`                                      | ⏳     |
-| A6  | p. 5 main               | Compute frequency, gaps, hotspots                      | §4 metrics, §8 algorithms                  | `metrics.test`, DB tests                                  | ⏳     |
-| A7  | p. 5 main               | Show report with tables and charts                     | Overview page sections                     | `AnalyticsOverviewPage.test.tsx`                           | ✅     |
-| A8  | p. 5 main               | Click Export, file compiled                            | E4 + exporters                             | `exporters.test`, `routes.test`                           | ✅     |
-| A9  | p. 5 main               | User downloads file                                    | Blob download, server filename             | `AnalyticsOverviewPage.test.tsx` (blob link and requests)  | ✅     |
-| A10 | p. 5 alt                | Toggle spatial heatmap                                 | `/analytics/map` from the same snapshot    | `AnalyticsP7.test.tsx` (map layers and table alternative)    | ✅     |
-| A11 | p. 5 alt                | Hotspots + patrol breadcrumbs on map                   | Hotspot + coverage layers                  | `AnalyticsMapPage.test`, DB tests                         | ⏳     |
-| A12 | p. 5 alt                | Review clusters to reallocate patrols                  | Priority cells list                        | `domain/domain.test.ts` (score), `AnalyticsOverviewPage.test.tsx` | ✅     |
-| A13 | p. 5 alt                | Select HWC category                                    | Conflict page / category group             | `AnalyticsP7.test.tsx` (fixed HWC filter)                   | ✅     |
-| A14 | p. 5 alt                | Aggregate collar alerts + villager reports             | Separate series                            | DB tests (source separation), page test (caption)         | ⏳     |
-| A15 | p. 5 alt                | Plot recurring boundary conflict trends                | Month × stretch matrix                     | `StretchMatrix` test, DB nearest-stretch test             | ⏳     |
-| A16 | p. 6 alt                | Export skipped                                         | Run audited with no export                 | `service.test`, history page test                         | ⏳     |
-| A17 | p. 6 post               | Analysis rendered on dashboard                         | SUCCEEDED state                            | `AnalyticsOverviewPage.test.tsx`                          | ✅     |
-| A18 | p. 6 post               | Query logged in audit history                          | `report_runs` + `/reports`                 | `service.test`, `AnalyticsP7.test.tsx` (history page)       | ✅     |
-| A19 | p. 6 post (changed, C9) | Document downloaded **if requested**                   | Conditional export                         | `service.test`                                            | ✅     |
-| A20 | p. 6 exc                | No records → notify, suggest widening                  | EMPTY + suggestions                        | `service.test`, `AnalyticsOverviewPage.test.tsx`           | ✅     |
-| A21 | p. 6 exc                | Timeout → abort, keep filters, retry                   | 504 + banner + Retry                       | `service.test`, `routes.test`, page test, DB timeout test | ⏳     |
-| A22 | p. 7 exc                | Export failure → notify, keep report                   | FAILED export + toast                      | `service.test`, `AnalyticsOverviewPage.test.tsx`           | ✅     |
-| A23 | p. 7 seq                | `ConservationReport` created                           | Snapshot in `report_runs`                  | `domain/domain.test.ts`                                   | ✅     |
-| A24 | Our critique            | Remove "confidence %"; add sample sizes                | Data-quality strip                         | `AnalyticsOverviewPage.test.tsx`                          | ✅     |
-| A25 | Case study p. 2         | Park flexibility                                       | `config.analytics` per park                | `analytics.test` (config), seed differences shown         | ⏳     |
-| A26 | User groups §4.5        | Researcher read-only, no contact details               | Access matrix §7.7; SQL never selects them | `routes.test`, `csv-exporter.test`                        | ⏳     |
+| A1 | p. 4 main | Select analytics module | Workspace tile → `/analytics`; route guard | `app/App.test.tsx` (tile and route) | ✅ |
+| A2 | p. 4 main | System prompts filters | `FilterBar` with defaults from E1 | `AnalyticsOverviewPage.test.tsx` (initial defaults) | ✅ |
+| A3 | p. 5 main | User changes park / timeframe / category; analytics update automatically | URL filters → `POST /reports/runs` | `AnalyticsOverviewPage.test.tsx`, `routes.test.ts` | ✅ |
+| A4 | p. 5 main | System validates filters | Zod + `normalizeFilter` + clock check | `domain/domain.test.ts`, `service.test.ts` | ✅ |
+| A5 | p. 5 main | Search incidents and patrol data | Repository read-only transaction | `repository.db.test.ts` | ✅ |
+| A6 | p. 5 main | Compute frequency, gaps, hotspots | §4 metrics, §8 algorithms | `domain/domain.test.ts`, `spatial.db.test.ts` | ✅ |
+| A7 | p. 5 main | Show report with tables and charts | Overview page sections | `AnalyticsOverviewPage.test.tsx` | ✅ |
+| A8 | p. 5 main | Click Export, file compiled | E4 + exporters | `exporters/exporters.test.ts`, `routes.test.ts` | ✅ |
+| A9 | p. 5 main | User downloads file | Blob download, server filename | `AnalyticsOverviewPage.test.tsx` (blob link and requests) | ✅ |
+| A10 | p. 5 alt | Toggle spatial heatmap | `/analytics/map` from the same snapshot | `AnalyticsP7.test.tsx` (map layers and table alternative) | ✅ |
+| A11 | p. 5 alt | Hotspots + patrol breadcrumbs on map | Hotspots + aggregated coverage layers; raw breadcrumbs omitted for §8.5 privacy | `AnalyticsP7.test.tsx`, `spatial.db.test.ts` | ✅ |
+| A12 | p. 5 alt | Review clusters to reallocate patrols | Priority cells list | `domain/domain.test.ts` (score), `AnalyticsOverviewPage.test.tsx` | ✅ |
+| A13 | p. 5 alt | Select HWC category | Conflict page / category group | `AnalyticsP7.test.tsx` (fixed HWC filter) | ✅ |
+| A14 | p. 5 alt | Aggregate collar alerts + villager reports | Separate source series | `spatial.db.test.ts`, `AnalyticsP7.test.tsx` | ✅ |
+| A15 | p. 5 alt | Plot recurring boundary conflict trends | Month × stretch matrix; deterministic nearest assignment | `AnalyticsP7.test.tsx`, `spatial.db.test.ts` | ✅ |
+| A16 | p. 6 alt | Export skipped | Run audited with no export | `service.test.ts`, `AnalyticsP7.test.tsx` | ✅ |
+| A17 | p. 6 post | Analysis rendered on dashboard | SUCCEEDED state | `AnalyticsOverviewPage.test.tsx` | ✅ |
+| A18 | p. 6 post | Query logged in audit history | `report_runs` + `/reports` | `service.test.ts`, `AnalyticsP7.test.tsx` (history page) | ✅ |
+| A19 | p. 6 post (changed, C9) | Document downloaded **if requested** | Conditional export | `service.test.ts` | ✅ |
+| A20 | p. 6 exc | No records → notify, suggest widening | EMPTY + suggestions | `service.test.ts`, `AnalyticsOverviewPage.test.tsx` | ✅ |
+| A21 | p. 6 exc | Timeout → abort, keep filters, retry | 504 + preserved filters + Retry | `service.test.ts`, `routes.test.ts`, `AnalyticsOverviewPage.test.tsx`, `spatial.db.test.ts` | ✅ |
+| A22 | p. 7 exc | Export failure → notify, keep report | FAILED export + toast | `service.test.ts`, `AnalyticsOverviewPage.test.tsx` | ✅ |
+| A23 | p. 7 seq | `ConservationReport` created | Snapshot in `report_runs` | `domain/domain.test.ts` | ✅ |
+| A24 | Our critique | Remove "confidence %"; add sample sizes | Data-quality strip | `AnalyticsOverviewPage.test.tsx` | ✅ |
+| A25 | Case study p. 2 | Park flexibility | Per-park config.analytics | `packages/shared/src/analytics.test.ts`, `seed.db.test.ts` | ✅ |
+| A26 | User groups §4.5 | Researcher read-only, no contact details | Server access matrix; aggregate-only snapshots/exports | `routes.test.ts`, `service.test.ts`, `exporters/exporters.test.ts`, `repository.db.test.ts` | ✅ |
 
-Appendix A flows without ✅ remain ⏳. A flow is marked ✅ only after its listed test exists and passes.
+All 26 flows now have passing evidence. A11 uses aggregate coverage instead of individual GPS breadcrumbs under §8.5. [Expanded traceability](./traceability.md) links tests, decisions and screenshots.
 
 ## Appendix B — Edge-case checklist
 
 - [ ] Window entirely before the park's first data → EMPTY with "earliest data: …" suggestion.
 - [ ] `from = to` (one day) → daily bucket, a single bar.
-- [ ] Range exactly 31, 32, 120 and 121 days → bucket switch.
-- [ ] Incident captured at 23:59 Colombo on the last day → included; at 00:00 the next day → excluded.
-- [ ] Offline incident synced later (`reported_at` ≫ `captured_at`) → counted in its `captured_at` period.
+- [x] Range exactly 31, 32, 120 and 121 days → bucket switch.
+- [x] Incident captured at 23:59 Colombo on the last day → included; at 00:00 the next day → excluded.
+- [x] Offline incident synced later (`reported_at` ≫ `captured_at`) → counted in its `captured_at` period.
 - [ ] All incidents unresolved → K1 > 0, map empty with an explanation, K2 = 0.
-- [ ] Incident exactly on a cell edge → counted once.
-- [ ] Located incident outside the boundary → K1 yes, map no, `outsideBoundary` note.
-- [ ] Park with no boundary → gaps "Not configured", rest of the report works.
-- [ ] Session with one GPS point → excluded with the data-quality count.
-- [ ] Long GPS gap (phone in a pocket for 2 hours) → not joined; no false coverage.
-- [ ] Inaccurate point (accuracy 400 m) → dropped and counted.
-- [ ] Overlapping sessions over the same cell → covered once; area not double-counted.
-- [ ] Alert with NULL location → counted in totals, excluded from stretches, noted.
-- [ ] Event on two stretches → nearest stretch only.
-- [ ] Previous period with zero incidents → "New activity", not "∞%".
-- [ ] Sector name containing commas, quotes or `=cmd` → CSV and SVG escaping safe.
-- [ ] Researcher's park access removed after generating a run → their runs return 403 on export.
-- [ ] Double-click on Export → one request in flight (button disabled); rate limit as a backstop.
+- [x] Incident exactly on a cell edge → counted once.
+- [x] Located incident outside the boundary → K1 yes, map no, `outsideBoundary` note.
+- [x] Park with no boundary → gaps "Not configured", rest of the report works.
+- [x] Session with one GPS point → excluded with the data-quality count.
+- [x] Long GPS gap (phone in a pocket for 2 hours) → not joined; no false coverage.
+- [x] Inaccurate point (accuracy 400 m) → dropped and counted.
+- [x] Overlapping sessions over the same cell → covered once; area not double-counted.
+- [x] Alert with NULL location → counted in totals, excluded from stretches, noted.
+- [x] Event on two stretches → nearest stretch only.
+- [x] Previous period with zero incidents → "New activity", not "∞%".
+- [x] Sector name containing commas, quotes or `=cmd` → CSV and SVG escaping safe.
+- [x] Researcher's park access removed after generating a run → their runs return 403 on export.
+- [x] Double-click on Export → one request in flight (button disabled); rate limit as a backstop.
 - [ ] Browser refresh during compile → URL filters restore; no orphan state.
-- [ ] Two tabs generating at once → two independent runs and codes (sequence-backed).
-- [ ] Very large park + 500 m cells → grid stays under 20k cells (check on build; reject the config otherwise).
+- [x] Two tabs generating at once → two independent runs and codes (sequence-backed).
+- [x] Very large park + 500 m cells → grid stays under 20k cells (check on build; reject the config otherwise).
+
+
+Unchecked items above are supplemental exact-scenario checks, not claimed as completed by P9. All required Appendix A exception flows pass. Browser reloading during an in-flight compile was not manually exercised.
 
 ### Continuation log — 2026-10-08
 
@@ -1609,3 +1612,33 @@ Appendix A flows without ✅ remain ⏳. A flow is marked ✅ only after its lis
 - ✅ Workspace lint, typecheck and regression tests pass: 36 files passed, 6 database-gated files skipped; 234 tests passed, 11 skipped. The four M4 database tests above were run separately with the dedicated test URL and passed; their skips in the ordinary workspace run do not indicate an outstanding P7 check.
 - ✅ Production-bundle headless-browser check with synthetic API responses: dashboard starts without map/motion/chart chunks; opening Alerts downloads its map code and renders Leaflet. Home, login, registration, incidents/community inbox, incident detail error handling, and camera review load correctly. A Ranger denied access to Alerts is redirected without downloading the protected map feature. No uncaught browser exceptions; no temporary preview page was added to the repository.
 - P7 database/migration checks and the prior bundle-size warning are now closed. Earlier checkpoint warnings above describe the state at that time. P9 has not started; its coverage/evidence/documentation gate remains outstanding.
+
+
+### P9 completion — 2026-10-09
+
+- ✅ Final M4 scope: 17 files / 114 passing tests. Coverage is 96.60% lines/statements, 91.26% branches and 93.36% functions, above the enforced 85% in every dimension. The SQL repository is excluded only from this primary report and reported separately: 4 files / 6 passing isolated database tests; 98.42% lines/statements, 88.46% branches, 100% functions.
+- ✅ Expanded tests cover source/stretches, equal-distance settlement assignment, GPS quality and overlapping patrols, concurrent independent audit codes, seed removal isolation, grid bounds, history states, retry/filter retention, privacy, and exact export contents. All 26 Appendix A flows are complete.
+- ✅ Real API + production Ops build + isolated synthetic PostGIS fixtures produced desktop/mobile/reduced-motion/reflow screenshots and audited PDF/CSV downloads. Five PDF pages were rendered and reviewed; CSV has 174 data rows and its KPI/trend totals match the 170-incident saved snapshot. File hashes match headers and audit; full snapshot hash matches PDF footer.
+- ✅ Evidence-driven fixes: initial map frames the park boundary, map priority buttons have readable full-width text, gap percentage rounds to one decimal, and the PDF prints the full snapshot hash and allocates enough width for the longest incident type. A rendered-text bounds test prevents the observed PDF table overflow.
+- ✅ Workspace lint, typechecks, tests and Ops/Ranger builds pass. Workspace run has 260 passed / 13 opt-in DB tests skipped; all six M4 DB cases pass separately with the isolated URL. The seven other skipped DB cases belong to other modules. Ops main bundle remains 236.82 kB; largest chunk 383.37 kB; no bundle-size warning.
+- ✅ Root/module READMEs, Implementation plan §5/§7, User groups §4.2/§4.5, [traceability](./traceability.md), [available AI prompt log](./ai-prompts.md) and [versioned evidence](./evidence/m4/README.md) are updated. CI enforces both suites on its dedicated test database; hosted CI has not yet run for this change.
+- Review limits: native Excel visual inspection, a complete manual keyboard traversal and literal browser-toolbar 200% zoom were not performed; parser checks, focus/UI tests and 200%-equivalent reflow are recorded precisely. Earlier P0–P7 prompts are unavailable in this session. Appendix B retains four supplemental exact-scenario checks. Synthetic geometry is approximate; exports are prototype documents.
+- No shared Neon operations were performed. P9 is the final planned M4 phase; optional Tier 2 metrics/features remain deferred. Earlier continuation warnings are historical checkpoints.
+
+
+### Automatic analytics follow-up — 2026-10-09
+
+- ✅ User-requested flow change after P9: analytics opens with Today (Asia/Colombo), and valid filter changes automatically compile a new audited snapshot after a 400 ms edit delay. Overview, map, patrol gaps and conflict views are supported; the manual button becomes optional Refresh analytics.
+- ✅ Saved history runs retain their original snapshot and filters. Navigation between compatible views reuses that snapshot. Conflict analysis creates its own HWC run when needed. Late responses cannot overwrite newer filter selections. Invalid/future dates stay editable without queries; failed updates preserve previous results and allow retry. Automatic results announce without stealing focus. Downloads pause until an update finishes.
+- ✅ M4: 18 files / 128 tests passed including six isolated Docker DB cases. Coverage: 96.93% lines/statements, 92.19% branches, 93.06% functions. Workspace: 274 passed / 13 opt-in DB skips; lint/typecheck and Ops build pass. No bundle warning.
+- ✅ [Updated evidence and screenshots](./evidence/m4/automatic-analytics/README.md), [current coverage](./evidence/m4/automatic-analytics/coverage-summary.json) and the prompt log record this change. The older P9 evidence remains a checkpoint of the original manual flow.
+- QA uses the dedicated local PostGIS database; `.env` remains on Neon. No migration or shared Neon write was required. Empty today data is shown honestly; a wider date range updates automatically.
+
+
+### Hotspot map diagnosis and configuration follow-up — 2026-10-09
+
+- Read-only Neon inspection: the user's Yala run has 35 incidents (33 located, two unresolved), but the park has no boundary, grid or sectors. The background map works; spatial analysis cannot run without those inputs. No shared database writes were performed.
+- ✅ Corrected outside-boundary calculation to use the actual park boundary rather than a missing grid-cell match. Added a local SQL regression for missing boundary and boundary-without-grid cases. Existing snapshot contents remain unchanged.
+- ✅ Added an explicit map setup notice, disabled unavailable layers and suppressed misleading zero-cell/outside-boundary messages in unconfigured saved reports. Fixed missing analytics CSS when opening map, patrol gaps or conflict routes directly.
+- ✅ M4 129 tests pass, including seven local DB cases. Primary coverage 96.93% lines/statements, 92.17% branches, 93.06% functions; SQL coverage 98.68% lines/statements, 89.42% branches, 100% functions. Lint/typecheck and production Ops build pass; no bundle warning. Direct-route desktop/mobile browser checks and visual review pass.
+- [Diagnosis, tests, coverage and screenshots](./evidence/m4/spatial-configuration/README.md) are recorded separately from earlier checkpoints. Neon still needs spatial configuration before it can render overlays; the shared demo seed was not run because its guard requires explicit shared-database confirmation and team agreement.

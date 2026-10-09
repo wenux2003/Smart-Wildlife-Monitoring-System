@@ -5,7 +5,7 @@ import {
 } from "@wr/shared";
 import type { AnalyticsFilter } from "@wr/shared";
 
-function colomboToday(): string {
+export function colomboToday(): string {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Colombo",
     year: "numeric",
@@ -22,26 +22,28 @@ function rangeFor(preset: AnalyticsFilter["preset"]): [string, string] {
   const to = colomboToday();
   const fromDate = new Date(`${to}T12:00:00.000Z`);
   const days =
-    preset === "LAST_7_DAYS"
-      ? 7
-      : preset === "LAST_30_DAYS"
-        ? 30
-        : preset === "LAST_90_DAYS"
-          ? 90
-          : preset === "LAST_12_MONTHS"
-            ? 365
-            : 180;
+    preset === "TODAY"
+      ? 1
+      : preset === "LAST_7_DAYS"
+        ? 7
+        : preset === "LAST_30_DAYS"
+          ? 30
+          : preset === "LAST_90_DAYS"
+            ? 90
+            : preset === "LAST_12_MONTHS"
+              ? 365
+              : 180;
   fromDate.setUTCDate(fromDate.getUTCDate() - (days - 1));
   return [fromDate.toISOString().slice(0, 10), to];
 }
 
 export function defaultAnalyticsFilter(parkId: string): AnalyticsFilter {
-  const [from, to] = rangeFor("LAST_6_MONTHS");
+  const [from, to] = rangeFor("TODAY");
   return AnalyticsFilterSchema.parse({
     parkId,
     from,
     to,
-    preset: "LAST_6_MONTHS",
+    preset: "TODAY",
   });
 }
 
@@ -50,10 +52,14 @@ export function filterFromSearch(
   fallbackParkId: string,
 ): AnalyticsFilter {
   const defaults = defaultAnalyticsFilter(fallbackParkId);
+  const selectedPreset = DateRangePresetSchema.safeParse(params.get("preset"));
+  const [defaultFrom, defaultTo] = rangeFor(
+    selectedPreset.success ? selectedPreset.data : defaults.preset,
+  );
   const candidate = {
     parkId: params.get("park") ?? fallbackParkId,
-    from: params.get("from") ?? defaults.from,
-    to: params.get("to") ?? defaults.to,
+    from: params.get("from") ?? defaultFrom,
+    to: params.get("to") ?? defaultTo,
     preset: params.get("preset") ?? defaults.preset,
     categoryGroup: params.get("group") ?? "ALL",
     types: params.get("types")?.split(",").filter(Boolean) ?? [],

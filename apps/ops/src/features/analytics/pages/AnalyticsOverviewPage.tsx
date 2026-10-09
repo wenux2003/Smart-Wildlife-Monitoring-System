@@ -28,6 +28,7 @@ import {
   patchFilterSearch,
   presetDateRange,
 } from "../lib/filters.js";
+import { useAutomaticAnalytics } from "../hooks/useAutomaticAnalytics.js";
 import "../analytics.css";
 
 function errorMessage(error: unknown): string {
@@ -88,7 +89,23 @@ export function AnalyticsOverviewPage() {
     queryKey: ["analytics", "saved-run", runId],
     queryFn: () => getAnalyticsRun(runId!),
     enabled: Boolean(runId),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
   });
+  useEffect(() => {
+    const savedFilter = savedRunQuery.data?.report?.filters;
+    if (
+      runId &&
+      savedFilter &&
+      !searchParams.has("from") &&
+      !searchParams.has("to") &&
+      !searchParams.has("preset")
+    ) {
+      setSearchParams(patchFilterSearch(searchParams, savedFilter), {
+        replace: true,
+      });
+    }
+  }, [runId, savedRunQuery.data, searchParams, setSearchParams]);
   const generationKey = filter
     ? [
         "analytics",
@@ -132,7 +149,23 @@ export function AnalyticsOverviewPage() {
       setFocusRunId(null);
     }
   }, [focusRunId, run]);
-  const generating = generationQuery.isFetching;
+  const currentFilter = useRef(JSON.stringify(filter));
+  currentFilter.current = JSON.stringify(filter);
+  const automatic = useAutomaticAnalytics({
+    filter,
+    enabled: optionsQuery.isSuccess && !runId,
+    pending: generationQuery.isFetching,
+    onGenerate: () => void generate(true),
+  });
+  const restoringFilters = Boolean(
+    runId &&
+    savedRunQuery.data?.report &&
+    !searchParams.has("from") &&
+    !searchParams.has("to") &&
+    !searchParams.has("preset"),
+  );
+  const generating =
+    generationQuery.isFetching || automatic.waiting || restoringFilters;
   const generateError = generationQuery.error
     ? errorMessage(generationQuery.error)
     : "";
@@ -140,29 +173,31 @@ export function AnalyticsOverviewPage() {
   function updateFilter(patch: Partial<AnalyticsFilter>) {
     if (!filter) return;
     const next = patchFilterSearch(searchParams, patch);
-    if (run?.status !== "SUCCEEDED") {
-      setLocalRun(null);
-      next.delete("run");
-    }
+    next.delete("run");
+    setLocalRun(null);
     setSearchParams(next, { replace: true });
   }
 
-  async function generate() {
+  async function generate(automatically = false) {
     if (!filter) return;
     const parsed = AnalyticsFilterSchema.safeParse(filter);
     if (!parsed.success) return;
-    setAnnouncement("Compiling report…");
+    automatic.markRequested();
+    const requestedFilter = JSON.stringify(filter);
+    setAnnouncement("Updating analytics…");
     const result = await generationQuery.refetch();
-    if (result.data) {
+    if (currentFilter.current !== requestedFilter) return;
+    if (result.data && !result.isError) {
       const nextRun = result.data;
       setLocalRun(nextRun);
       if (nextRun.status === "SUCCEEDED") setLastGoodRun(nextRun);
       const next = patchFilterSearch(searchParams, filter);
       next.set("run", nextRun.runId);
       setSearchParams(next, { replace: true });
-      await queryClient.invalidateQueries({
-        queryKey: ["analytics", "saved-run", nextRun.runId],
-      });
+      queryClient.setQueryData(
+        ["analytics", "saved-run", nextRun.runId],
+        nextRun,
+      );
       if (nextRun.status === "SUCCEEDED" && nextRun.report) {
         const report = nextRun.report;
         setAnnouncement(
@@ -173,7 +208,10 @@ export function AnalyticsOverviewPage() {
           "No records match these filters. Try a wider date range.",
         );
       }
-      if (nextRun.status === "SUCCEEDED" || nextRun.status === "EMPTY") {
+      if (
+        !automatically &&
+        (nextRun.status === "SUCCEEDED" || nextRun.status === "EMPTY")
+      ) {
         setFocusRunId(nextRun.runId);
       }
     }
@@ -296,7 +334,10 @@ export function AnalyticsOverviewPage() {
         </header>
 
         <nav className="an-tabs" aria-label="Analytics sections">
-          <Link to="/analytics" aria-current="page">
+          <Link
+            to={{ pathname: "/analytics", search: searchParams.toString() }}
+            aria-current="page"
+          >
             Overview
           </Link>
           <Link
@@ -361,7 +402,7 @@ export function AnalyticsOverviewPage() {
         )}
         {showingPreviousRun && (
           <p className="an-previous-report-note" role="status">
-            Showing the previous report while these filter changes are pending.
+            Showing the previous report until updated analytics are available.
           </p>
         )}
 
@@ -396,7 +437,10 @@ export function AnalyticsOverviewPage() {
           )}
           {report && <ReportOverview report={report} />}
         </div>
-        <ExportBar run={run?.status === "EMPTY" ? run : displayedRun} />
+        <ExportBar
+          run={run?.status === "EMPTY" ? run : displayedRun}
+          updating={generating}
+        />
       </main>
     </div>
   );

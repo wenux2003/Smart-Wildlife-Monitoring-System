@@ -1,0 +1,32 @@
+{
+  "checkedOn": "2026-10-09",
+  "database": "isolated local PostgreSQL 16.9 / PostGIS 3.5",
+  "source": "production Ops build + real API + deterministic synthetic fixtures",
+  "runId": "4f754ca0-de59-4509-a41f-9953601ed6ed",
+  "conflictRunId": "013de910-de53-4dcf-990b-f6f8f7ba6a61",
+  "snapshotSha256": "c9ee74144a772ca141014bb2445b5432167e87f972f5b1b9f5cf63fd847b61d8",
+  "totalIncidents": 170,
+  "exports": {
+    "PDF": {
+      "sha256": "f447f74263154eff3cf583b5188625006e45bd87966785015cd4c955b1e2b0ba",
+      "bytes": 174070,
+      "contentType": "application/pdf"
+    },
+    "CSV": {
+      "sha256": "1129c6c0caa49de0af60b7242ae2e03e2ae774aceb1fa444d317150266aca872",
+      "bytes": 16634,
+      "contentType": "text/csv; charset=utf-8"
+    }
+  },
+  "skippedExportAudited": true,
+  "fileHashesMatchHeadersAndAudit": true,
+  "researcherCannotReadManagerRuns": true,
+  "keyboardFocusVisible": true,
+  "mobile": {
+    "viewport": 390,
+    "width": 390,
+    "motion": "none"
+  },
+  "zoom200EquivalentReflow": true,
+  "uncaughtExceptions": 0
+}

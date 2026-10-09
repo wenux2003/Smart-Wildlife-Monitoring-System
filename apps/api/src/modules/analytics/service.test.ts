@@ -320,3 +320,33 @@ describe("M4 analytics service", () => {
     );
   });
 });
+
+describe("M4 P9 audit and revoked access", () => {
+  it("audits simultaneous generations independently without requiring an export", async () => {
+    const { service, audit } = create();
+    const runs = await Promise.all([
+      service.generate(manager, baseFilter),
+      service.generate(manager, baseFilter),
+    ]);
+    expect(new Set(runs.map((run) => run.runId)).size).toBe(2);
+    expect(audit.insertedRuns).toHaveLength(2);
+    expect(audit.insertedExports).toHaveLength(0);
+  });
+
+  it("revokes saved-run and export access immediately when a Researcher loses their park", async () => {
+    const { service } = create();
+    const researcher = { ...manager, id: randomUUID(), role: Role.RESEARCHER };
+    const run = await service.generate(researcher, baseFilter);
+    const revoked = { ...researcher, parkId: null };
+    await expectAppError(
+      service.getRun(revoked, run.runId),
+      403,
+      "PARK_ACCESS_PENDING",
+    );
+    await expectAppError(
+      service.exportRun(revoked, run.runId, "CSV"),
+      403,
+      "PARK_ACCESS_PENDING",
+    );
+  });
+});

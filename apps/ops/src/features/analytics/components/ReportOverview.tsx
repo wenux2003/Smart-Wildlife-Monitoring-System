@@ -68,7 +68,7 @@ export function ReportOverview({ report }: { report: ConservationReport }) {
           <span>
             {kpis.patrolGapSharePercent === null
               ? "Park coverage analysis unavailable"
-              : `${kpis.patrolGapSharePercent}% of park`}
+              : `${numberFormat.format(Math.round(kpis.patrolGapSharePercent * 10) / 10)}% of park`}
           </span>
         </article>
         <article className="an-kpi-card">

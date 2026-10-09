@@ -71,6 +71,14 @@ corepack pnpm test
 corepack pnpm build
 ```
 
+## M4 status
+
+**P0–P9 complete** for the analytics/export academic prototype: filters, trends, hotspot/coverage maps, patrol priorities, conflict trends, audited snapshots and PDF/CSV exports. Server checks enforce own-park access and Researcher privacy. Optional Tier 2 enhancements are deferred. See the [M4 plan](docs/M4_Analytics_and_Export_Plan.md), [traceability](docs/traceability.md) and [P9 evidence/checks](docs/evidence/m4/README.md).
+
+Analytics now loads **Today in Colombo automatically** and refreshes after valid filter edits; saved reports retain their original snapshot. See [updated behavior evidence](docs/evidence/m4/automatic-analytics/README.md).
+
+Run `corepack pnpm test:m4:coverage` for the enforced 85% gate. For seeded, isolated localhost PostGIS with a database name ending `_test`, set `M4_TEST_DATABASE_URL` and run `corepack pnpm test:m4:db` for separate SQL coverage. CI runs both suites. Test databases must never use the shared team database.
+
 ## Documentation
 
 - [Project scope and architecture](docs/Group037_Implementation_Plan.md)

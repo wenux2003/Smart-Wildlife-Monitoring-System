@@ -35,6 +35,7 @@ type Row = {
   stretch_id: string | null;
   stretch_name: string | null;
   unlocated: boolean;
+  outside_boundary: boolean;
   count: number;
 };
 type Cell = {
@@ -122,15 +123,16 @@ export function createAnalyticsRepository(
           const rows = await tx<Row[]>`
  SELECT to_char(i.captured_at AT TIME ZONE 'Asia/Colombo','YYYY-MM-DD') AS "day",i.type,i.source,i.status,
  s.id sector_id,COALESCE(s.name,'Unknown sector') sector_name,g.cell_id,b.id stretch_id,b.name stretch_name,
- (i.location IS NULL OR i.location_status='UNRESOLVED') unlocated,count(*)::int count
- FROM incidents i
+ (i.location IS NULL OR i.location_status='UNRESOLVED') unlocated,
+ COALESCE(i.location_status<>'UNRESOLVED' AND NOT ST_Covers(p.boundary,i.location),false) outside_boundary,count(*)::int count
+ FROM incidents i JOIN parks p ON p.id=i.park_id
  LEFT JOIN LATERAL(SELECT id,name FROM analysis_sectors WHERE park_id=i.park_id AND kind='SECTOR' AND i.location_status<>'UNRESOLVED' AND ST_Covers(area,i.location) ORDER BY id LIMIT 1)s ON true
  LEFT JOIN LATERAL(SELECT col::text||':'||row::text cell_id FROM analysis_grid_cells WHERE park_id=i.park_id AND cell_size_m=${config.gridCellMeters} AND i.location_status<>'UNRESOLVED' AND ST_Covers(geom,i.location) ORDER BY col,row LIMIT 1)g ON true
  LEFT JOIN LATERAL(SELECT id,name FROM analysis_sectors WHERE park_id=i.park_id AND kind='BOUNDARY_STRETCH' AND i.location_status<>'UNRESOLVED' AND ST_Covers(area,i.location) ORDER BY ST_Distance(ST_Transform(ST_Centroid(area),32644),ST_Transform(i.location,32644)),id LIMIT 1)b ON true
  WHERE i.park_id=${id} AND i.captured_at>=${f.previousFromUtc} AND i.captured_at<${f.window.toUtcExclusive}
  AND i.type=ANY(${f.effectiveTypes}::text[]) AND (${f.filters.sources.length === 0} OR i.source=ANY(${f.filters.sources}::text[]))
  AND (${sector}::uuid IS NULL OR s.id=${sector})
- GROUP BY "day",i.type,i.source,i.status,s.id,s.name,g.cell_id,b.id,b.name,unlocated`;
+ GROUP BY "day",i.type,i.source,i.status,s.id,s.name,g.cell_id,b.id,b.name,unlocated,outside_boundary`;
           const current = rows.filter((r) => r.day >= f.filters.from),
             accepted = current.filter(
               (r) => f.filters.includeRejected || r.status !== "REJECTED",
@@ -420,7 +422,7 @@ ORDER BY nearest.name,st.name,st.id`;
                   .filter((r) => r.status === "REJECTED")
                   .reduce((n, r) => n + r.count, 0),
                 outsideBoundary: accepted
-                  .filter((r) => !r.unlocated && !r.cell_id)
+                  .filter((r) => r.outside_boundary)
                   .reduce((n, r) => n + r.count, 0),
                 sessionsAnalyzed: quality.sessions,
                 sessionsWithoutTrack: quality.missing,

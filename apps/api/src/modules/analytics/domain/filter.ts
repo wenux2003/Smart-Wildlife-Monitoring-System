@@ -32,6 +32,7 @@ export function presetRange(
   const to = colomboDate(clock.now());
   if (preset === "CUSTOM") return null;
   const days = {
+    TODAY: 1,
     LAST_7_DAYS: 7,
     LAST_30_DAYS: 30,
     LAST_90_DAYS: 90,

@@ -36,7 +36,10 @@ describe("M4 domain", () => {
     expect(f.previousFromUtc).toBe("2025-11-30T18:30:00.000Z");
     expect(f.previousToUtcExclusive).toBe(f.window.fromUtc);
     expect(() =>
-      normalizeFilter({ ...input, from: "2028-01-01", to: "2029-01-01" }, clock),
+      normalizeFilter(
+        { ...input, from: "2028-01-01", to: "2029-01-01" },
+        clock,
+      ),
     ).toThrow("future");
     expect(() => normalizeFilter({ ...input, from: "bad" }, clock)).toThrow();
   });
@@ -55,6 +58,23 @@ describe("M4 domain", () => {
   });
   it("resolves presets and intersects category/type selections", () => {
     expect(presetRange("CUSTOM", clock)).toBeNull();
+    expect(presetRange("TODAY", clock)).toEqual({
+      from: "2028-03-01",
+      to: "2028-03-01",
+    });
+    const today = normalizeFilter(
+      { ...input, ...presetRange("TODAY", clock), preset: "TODAY" },
+      clock,
+    );
+    expect(today.window).toMatchObject({
+      days: 1,
+      bucket: "DAY",
+      fromUtc: "2028-02-29T18:30:00.000Z",
+      toUtcExclusive: "2028-03-01T18:30:00.000Z",
+    });
+    expect(buckets(today)).toEqual([
+      { bucketStart: "2028-03-01", label: "2028-03-01" },
+    ]);
     for (const preset of [
       "LAST_7_DAYS",
       "LAST_30_DAYS",

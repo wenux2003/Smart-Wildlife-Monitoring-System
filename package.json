@@ -25,7 +25,10 @@
     "typecheck": "tsc -b packages/shared packages/ui packages/offline && corepack pnpm -r typecheck",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "db:seed:analytics": "corepack pnpm --filter @wr/api db:seed:analytics"
+    "db:seed:analytics": "corepack pnpm --filter @wr/api db:seed:analytics",
+    "test:m4": "vitest run --config vitest.m4.config.ts",
+    "test:m4:coverage": "vitest run --config vitest.m4.config.ts --coverage",
+    "test:m4:db": "vitest run --config vitest.m4-db.config.ts --coverage"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",

@@ -11,9 +11,11 @@ import {
   isCategoryGroup,
   isDatePreset,
   presetDateRange,
+  colomboToday,
 } from "../lib/filters.js";
 
 const presetLabels: Record<AnalyticsFilter["preset"], string> = {
+  TODAY: "Today",
   LAST_7_DAYS: "Last 7 days",
   LAST_30_DAYS: "Last 30 days",
   LAST_90_DAYS: "Last 90 days",
@@ -42,21 +44,21 @@ export function FilterBar({
   const panelRef = useRef<HTMLElement>(null);
   const errorId = useId();
   const moreId = useId();
-  const [invalidField, setInvalidField] = useState("");
   const [moreOpen, setMoreOpen] = useState(false);
-  const [validationError, setValidationError] = useState("");
+  const parsed = AnalyticsFilterSchema.safeParse(filter);
+  const issue = !parsed.success
+    ? parsed.error.issues[0]
+    : filter.to > colomboToday()
+      ? { path: ["to"], message: "End date cannot be in the future." }
+      : null;
+  const invalidField = issue ? String(issue.path[0] ?? "from") : "";
+  const validationError = issue?.message ?? "";
   const types = filter.types.join(",");
   const sources = filter.sources.join(",");
 
   function generate() {
-    setValidationError("");
-    setInvalidField("");
-    const parsed = AnalyticsFilterSchema.safeParse(filter);
-    if (!parsed.success) {
-      const issue = parsed.error.issues[0];
-      const field = String(issue.path[0] ?? "from");
-      setInvalidField(field);
-      setValidationError(issue.message);
+    if (issue) {
+      const field = invalidField;
       panelRef.current
         ?.querySelector<HTMLElement>(`[name="${field}"]`)
         ?.focus();
@@ -160,13 +162,16 @@ export function FilterBar({
             type="button"
             className="an-button an-button-primary"
             onClick={generate}
-            disabled={pending}
+            disabled={pending && !issue}
           >
             <Sparkles size={16} />
-            {pending ? "Compiling…" : "Generate report"}
+            {pending ? "Updating…" : "Refresh analytics"}
           </button>
         </div>
       </div>
+      <p className="an-filter-note">
+        Updates automatically when filters change.
+      </p>
       {filter.preset === "CUSTOM" && (
         <div className="an-filter-grid an-filter-dates">
           <label>
@@ -195,6 +200,7 @@ export function FilterBar({
               type="date"
               value={filter.to}
               min={filter.from}
+              max={colomboToday()}
               onChange={(event) => {
                 if (event.target.value)
                   onChange({ to: event.target.value, preset: "CUSTOM" });

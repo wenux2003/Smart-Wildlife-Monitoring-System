@@ -56,7 +56,7 @@ jobs:
       postgres:
         image: postgis/postgis:16-3.5
         env:
-          POSTGRES_DB: wildlife
+          POSTGRES_DB: wildlife_test
           POSTGRES_USER: wildlife
           POSTGRES_PASSWORD: wildlife
         ports:
@@ -68,7 +68,8 @@ jobs:
           --health-retries 20
     # Throwaway CI-only database and demo values; not real credentials.
     env:
-      DATABASE_URL: postgres://wildlife:wildlife@localhost:5432/wildlife
+      DATABASE_URL: postgres://wildlife:wildlife@localhost:5432/wildlife_test
+      M4_TEST_DATABASE_URL: postgres://wildlife:wildlife@localhost:5432/wildlife_test
       SUPER_ADMIN_EMAIL: ci-admin@example.org
       SUPER_ADMIN_NAME: CI Super Admin
       SUPER_ADMIN_PASSWORD: ci-only-admin-passphrase
@@ -96,6 +97,21 @@ jobs:
             echo "::error::Re-running the seed created new accounts."
             exit 1
           fi
+      - name: Seed deterministic M4 analytics fixtures
+        run: pnpm db:seed:analytics
+      - name: Enforce M4 coverage and validate isolated spatial SQL
+        run: |
+          pnpm test:m4:coverage
+          pnpm test:m4:db
+      - name: Save M4 coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m4-coverage
+          path: |
+            coverage/m4/
+            coverage/m4-db/
+          if-no-files-found: ignore
       - name: Start the API and sign in as seeded accounts
         run: |
           pnpm --filter @wr/api start > api.log 2>&1 &

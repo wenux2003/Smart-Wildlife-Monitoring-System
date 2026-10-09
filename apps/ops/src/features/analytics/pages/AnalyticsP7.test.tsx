@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
 import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
@@ -45,14 +52,30 @@ vi.mock("../api.js", () => ({
   exportAnalyticsRun: p7.exportAnalyticsRun,
 }));
 vi.mock("react-leaflet", () => ({
-  MapContainer: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="leaflet-map">{children}</div>
+  MapContainer: ({
+    children,
+    bounds,
+  }: {
+    children: React.ReactNode;
+    bounds?: unknown;
+  }) => (
+    <div data-testid="leaflet-map" data-bounds={JSON.stringify(bounds)}>
+      {children}
+    </div>
   ),
   TileLayer: ({ attribution }: { attribution: string }) => (
     <span>{attribution}</span>
   ),
-  Polygon: ({ children }: { children?: React.ReactNode }) => (
-    <div>{children}</div>
+  Polygon: ({
+    children,
+    eventHandlers,
+  }: {
+    children?: React.ReactNode;
+    eventHandlers?: { click: () => void };
+  }) => (
+    <div data-testid="map-polygon" onClick={() => eventHandlers?.click()}>
+      {children}
+    </div>
   ),
   CircleMarker: ({ children }: { children?: React.ReactNode }) => (
     <div>{children}</div>
@@ -330,6 +353,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
 });
 
 describe("M4 P7 analytics views", () => {
@@ -339,6 +363,10 @@ describe("M4 P7 analytics views", () => {
       screen.getByRole("region", { name: /Conservation map/ }),
     ).toBeInTheDocument();
     expect(screen.getByText(/OpenStreetMap/)).toBeInTheDocument();
+    expect(screen.getByTestId("leaflet-map")).toHaveAttribute(
+      "data-bounds",
+      expect.stringContaining("81.4"),
+    );
     expect(screen.getByLabelText("Hotspot cells")).toBeChecked();
     fireEvent.click(screen.getByRole("button", { name: "View as table" }));
     expect(
@@ -440,5 +468,274 @@ describe("M4 P7 analytics views", () => {
     expect(
       screen.getByRole("table", { name: "Sector patrol gap data" }),
     ).toBeInTheDocument();
+  });
+});
+
+describe("M4 P9 spatial and history edge cases", () => {
+  it("sorts cells in both directions, merges coverage-only cells, highlights and toggles layers", () => {
+    const report = reportFixture();
+    const hotspot = report.hotspots.cells[0];
+    const coverage = report.patrolGaps.cells[0];
+    report.hotspots.cells.push(
+      { ...hotspot, cellId: "2:1", count: 2, riskClass: 1, sectorName: null },
+      { ...hotspot, cellId: "3:1", count: 0, riskClass: 2 },
+    );
+    report.patrolGaps.cells.push(
+      {
+        ...coverage,
+        cellId: "2:1",
+        covered: true,
+        lastPatrolledAt: "2026-09-01T00:00:00Z",
+        daysSincePatrol: 30,
+      },
+      { ...coverage, cellId: "4:1" },
+    );
+    report.spatialContext.sectors.push({
+      ...report.spatialContext.sectors[0],
+      id: parkId,
+      kind: "SECTOR",
+    });
+    report.priorityCells.push({
+      ...report.priorityCells[0],
+      cellId: "2:1",
+      sectorName: null,
+      daysSincePatrol: null,
+    });
+    p7.report = report;
+    render(<AnalyticsMapPage />);
+    fireEvent.click(screen.getByRole("button", { name: "View as table" }));
+    const table = screen.getByRole("table");
+    const firstCell = () =>
+      within(table).getAllByRole("row")[1].querySelector("th")?.textContent;
+    expect(within(table).getByText("Unknown")).toBeInTheDocument();
+    for (const [column, first] of [
+      ["Incidents", "1:1"],
+      ["Risk class", "1:1"],
+      ["Patrol status", "2:1"],
+    ]) {
+      fireEvent.click(within(table).getByRole("button", { name: column }));
+      expect(firstCell()).toBe(first);
+      expect(
+        within(table).getByRole("columnheader", { name: column }),
+      ).toHaveAttribute("aria-sort", "descending");
+      fireEvent.click(within(table).getByRole("button", { name: column }));
+      expect(
+        within(table).getByRole("columnheader", { name: column }),
+      ).toHaveAttribute("aria-sort", "ascending");
+    }
+    fireEvent.click(within(table).getByRole("button", { name: "Cell" }));
+    fireEvent.click(within(table).getByRole("button", { name: "Cell" }));
+    expect(firstCell()).toBe("4:1");
+    fireEvent.click(
+      within(table).getAllByRole("button", { name: "Highlight" })[0],
+    );
+    expect(within(table).getAllByRole("row")[1]).toHaveClass("is-selected");
+    fireEvent.click(
+      screen.getByRole("button", { name: /Southern Ridge.*rank 1/ }),
+    );
+    expect(
+      within(table).getByRole("rowheader", { name: "1:1" }).closest("tr"),
+    ).toHaveClass("is-selected");
+    for (const label of [
+      "Park boundary",
+      "Sector outlines",
+      "Priority cells",
+      "Hotspot cells",
+    ]) {
+      fireEvent.click(screen.getByLabelText(label));
+      expect(screen.getByLabelText(label)).not.toBeChecked();
+    }
+    fireEvent.click(screen.getByLabelText("Hotspot cells"));
+    fireEvent.click(screen.getAllByTestId("map-polygon")[1]);
+    expect(
+      within(table).getByRole("rowheader", { name: "2:1" }).closest("tr"),
+    ).toHaveClass("is-selected");
+    fireEvent.click(screen.getByLabelText("Coverage gaps"));
+    fireEvent.click(screen.getByLabelText("Show covered cells"));
+    expect(screen.getByLabelText("Show covered cells")).toBeChecked();
+    fireEvent.click(screen.getAllByTestId("map-polygon")[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Hide data table" }));
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  it("explains missing spatial configuration and legacy session counts", () => {
+    const report = reportFixture();
+    report.hotspots.cells = [];
+    report.patrolGaps = {
+      configured: false,
+      cells: [],
+      coveredAreaKm2: 0,
+      gapAreaKm2: 0,
+      parkAreaKm2: 0,
+      bySector: [],
+    };
+    report.priorityCells = [];
+    report.spatialContext = {
+      parkBoundary: null,
+      sectors: [],
+      settlements: [],
+    };
+    report.dataQuality.outsideBoundary = 33; // Legacy snapshot used missing cell membership.
+    delete report.dataQuality.sessionsAnalyzed;
+    p7.report = report;
+    render(<PatrolGapsPage />);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Spatial analysis is not configured",
+    );
+    expect(
+      screen.queryByText(/33 located incidents are outside/),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/0 hotspot cells/)).not.toBeInTheDocument();
+    for (const label of [
+      "Park boundary",
+      "Sector outlines",
+      "Hotspot cells",
+      "Coverage gaps",
+      "Priority cells",
+      "Show covered cells",
+    ])
+      expect(screen.getByLabelText(label)).toBeDisabled();
+    expect(screen.getByText("No configured analysis area")).toBeInTheDocument();
+    expect(
+      screen.getByText("Not captured in this saved report"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("No sector gap data is available."),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "View as table" }));
+    expect(
+      screen.getByText(
+        "Spatial cells are unavailable because this report has no configured analysis area.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("renders empty conflict sources and unmatched settlements explicitly", () => {
+    const report = reportFixture();
+    report.conflicts = { series: [], byStretch: [] };
+    report.spatialContext.settlements[0].nearestStretchId = null;
+    report.spatialContext.settlements[0].nearestStretchName = null;
+    p7.report = report;
+    render(<ConflictTrendsPage />);
+    expect(
+      screen.getByText("No boundary stretch conflict data."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("No stretch data available.")).toBeInTheDocument();
+    expect(
+      screen.getByText(/no settlement fell within that buffer/),
+    ).toBeInTheDocument();
+  });
+
+  it("compares multiple boundary stretches and displays zero-count months without false intensity", () => {
+    const report = reportFixture();
+    report.conflicts.byStretch.push({
+      ...report.conflicts.byStretch[0],
+      stretchId: parkId,
+      stretchName: "Quiet stretch",
+      communityReports: 0,
+      collarBreaches: 0,
+      byMonth: [
+        { bucketStart: "2026-09-01", communityReports: 0, collarBreaches: 0 },
+      ],
+    });
+    p7.report = report;
+    render(<ConflictTrendsPage />);
+    expect(screen.getByText("0 / 0")).toHaveStyle({
+      backgroundColor: "rgba(180, 83, 9, 0)",
+    });
+    expect(
+      screen.getByRole("rowheader", { name: "Quiet stretch" }),
+    ).toBeInTheDocument();
+  });
+
+  it("does not fetch history before a Researcher receives park access", () => {
+    p7.user = { role: "RESEARCHER" };
+    mountHistory();
+    expect(screen.getByText("Park access pending")).toBeInTheDocument();
+    expect(p7.listReportRuns).not.toHaveBeenCalled();
+  });
+
+  it("recovers history fetch errors and clears date/status filters", async () => {
+    p7.listReportRuns.mockRejectedValueOnce(
+      new Error("History connection failed"),
+    );
+    mountHistory(
+      "/reports?status=FAILED&historyFrom=2026-10-01&historyTo=2026-10-08",
+    );
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "History connection failed",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await screen.findByText("RPT-YALA-2026-000001");
+    fireEvent.change(screen.getByLabelText("History from date"), {
+      target: { value: "2026-09-01" },
+    });
+    fireEvent.change(screen.getByLabelText("History to date"), {
+      target: { value: "2026-10-09" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
+    await waitFor(() =>
+      expect(p7.listReportRuns).toHaveBeenLastCalledWith({
+        page: 1,
+        pageSize: 20,
+        status: undefined,
+        from: undefined,
+        to: undefined,
+      }),
+    );
+    fireEvent.click(await screen.findByRole("button", { name: "Next" }));
+    await screen.findByText("No report runs match these filters.");
+    fireEvent.click(screen.getByRole("button", { name: "Previous" }));
+    await screen.findByText("RPT-YALA-2026-000001");
+  });
+
+  it("records skipped exports as None and prevents exports from failed or empty runs", async () => {
+    const baseline = await p7.listReportRuns({ page: 1 });
+    const row = baseline.items[0];
+    p7.listReportRuns.mockResolvedValue({
+      ...baseline,
+      total: 4,
+      items: [
+        {
+          ...row,
+          exports: [],
+          filters: {
+            ...row.filters,
+            types: ["CROP_DAMAGE"],
+            sources: ["COMMUNITY"],
+          },
+        },
+        ...["EMPTY", "TIMED_OUT", "FAILED"].map((status, index) => ({
+          ...row,
+          id: `run-${index}`,
+          code: `RPT-OTHER-${index}`,
+          status,
+          exports: [{ ...row.exports[0], status: "FAILED" }],
+        })),
+      ],
+    });
+    mountHistory();
+    await screen.findByText("RPT-YALA-2026-000001");
+    expect(screen.getByText("None")).toBeInTheDocument();
+    expect(screen.getAllByText("Empty").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Timed out").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Failed").length).toBeGreaterThan(0);
+    expect(
+      screen
+        .getAllByRole("button", { name: "PDF" })
+        .filter((button) => (button as HTMLButtonElement).disabled),
+    ).toHaveLength(3);
+    p7.exportAnalyticsRun.mockRejectedValueOnce(new Error("PDF failed"));
+    fireEvent.click(screen.getAllByRole("button", { name: "PDF" })[0]);
+    expect(await screen.findByRole("alert")).toHaveTextContent("PDF failed");
+    p7.exportAnalyticsRun.mockRejectedValueOnce("failure");
+    fireEvent.click(screen.getAllByRole("button", { name: "CSV" })[0]);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "The CSV export failed.",
+    );
+    fireEvent.click(screen.getAllByRole("button", { name: "CSV" })[0]);
+    await waitFor(() =>
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument(),
+    );
   });
 });

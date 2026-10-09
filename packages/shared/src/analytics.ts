@@ -22,6 +22,7 @@ export const ReportRunStatusSchema = z.enum([
   "FAILED",
 ]);
 export const DateRangePresetSchema = z.enum([
+  "TODAY",
   "LAST_7_DAYS",
   "LAST_30_DAYS",
   "LAST_90_DAYS",

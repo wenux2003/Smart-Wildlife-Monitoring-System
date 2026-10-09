@@ -292,6 +292,7 @@ describe("M4 analytics routes", () => {
     expect(blocked.json().code).toBe("ORIGIN_FORBIDDEN");
 
     const auth = memoryRepository();
+    vi.stubEnv("DATABASE_URL", "");
     const unavailable = createServer({
       repository: auth.repository,
       clock,

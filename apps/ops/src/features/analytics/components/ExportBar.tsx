@@ -2,7 +2,13 @@ import { Check, Download, FileDown, LoaderCircle } from "lucide-react";
 import type { ReportRunResponse } from "@wr/shared";
 import { useExport } from "../hooks/useExport.js";
 
-export function ExportBar({ run }: { run: ReportRunResponse | null }) {
+export function ExportBar({
+  run,
+  updating = false,
+}: {
+  run: ReportRunResponse | null;
+  updating?: boolean;
+}) {
   const ready = run?.status === "SUCCEEDED" && run.report !== null;
   const { state, download } = useExport(ready && run ? run.runId : null);
   const formats = ["CSV", "PDF"] as const;
@@ -14,13 +20,21 @@ export function ExportBar({ run }: { run: ReportRunResponse | null }) {
           aria-hidden="true"
         />
         <div>
-          <strong>{ready ? "Ready to export" : "Report export"}</strong>
+          <strong>
+            {updating
+              ? "Updating analytics"
+              : ready
+                ? "Ready to export"
+                : "Report export"}
+          </strong>
           <small>
-            {ready
-              ? run.code
-              : run?.status === "EMPTY"
-                ? "Nothing to export"
-                : "Generate a report to enable downloads"}
+            {updating
+              ? "Downloads will be ready when the update finishes"
+              : ready
+                ? run.code
+                : run?.status === "EMPTY"
+                  ? "Nothing to export"
+                  : "Analytics will load automatically"}
           </small>
         </div>
       </div>
@@ -48,7 +62,7 @@ export function ExportBar({ run }: { run: ReportRunResponse | null }) {
               key={format}
               type="button"
               className={`an-button an-export-button ${format === "CSV" ? "an-button-outline" : "an-button-primary"}`}
-              disabled={!ready || status === "exporting"}
+              disabled={updating || !ready || status === "exporting"}
               aria-busy={status === "exporting"}
               onClick={() => void download(format)}
             >

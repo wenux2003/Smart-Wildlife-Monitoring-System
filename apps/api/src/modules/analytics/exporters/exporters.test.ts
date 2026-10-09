@@ -115,9 +115,7 @@ describe("analytics exporters", () => {
       },
     };
     const csv = (await csvExporter.render(csvRun)).toString("utf8");
-    expect(csv).toContain(
-      `breakdown,SNARE_FOUND,"'=cmd,""north""",2026-01-01`,
-    );
+    expect(csv).toContain(`breakdown,SNARE_FOUND,"'=cmd,""north""",2026-01-01`);
   });
 
   it("renders a real PDF with the required text and bounded page count", async () => {
@@ -133,7 +131,7 @@ describe("analytics exporters", () => {
     expect(text).toContain("Category group: ALL");
     expect(text).toContain("Southern Ridge");
     expect(text).toContain("42");
-    expect(text).toContain("Snapshot SHA-256: aaaaaaaaaaaaaaaa");
+    expect(text).toContain(`Snapshot SHA-256: ${"a".repeat(64)}`);
     expect(text).toContain("Synthetic demo data");
     expect(text).toContain("not an official government document");
     expect(text).not.toContain("manager@example.org");
@@ -195,4 +193,194 @@ describe("analytics exporters", () => {
       statusCode: 413,
     });
   });
+});
+
+describe("M4 P9 export completeness and privacy", () => {
+  const ring = [
+    { latitude: 6.5, longitude: 81.4 },
+    { latitude: 6.6, longitude: 81.4 },
+    { latitude: 6.6, longitude: 81.5 },
+    { latitude: 6.5, longitude: 81.4 },
+  ];
+  const rich = {
+    ...run,
+    report: {
+      ...run.report,
+      reporterPhone: "PRIVATE_PHONE_SENTINEL",
+      description: "PRIVATE_DESCRIPTION_SENTINEL",
+      reporterId: "PRIVATE_REPORTER_SENTINEL",
+      filters: {
+        ...run.report.filters,
+        types: ["SNARE_FOUND" as const],
+        sources: ["RANGER" as const],
+        sectorId: TEST_PARK,
+        includeRejected: true,
+      },
+      kpis: {
+        ...run.report.kpis,
+        changePercent: null,
+        changeKind: "NEW_ACTIVITY" as const,
+        patrolGapAreaKm2: null,
+        patrolGapSharePercent: null,
+      },
+      hotspots: {
+        ...run.report.hotspots,
+        cells: [
+          {
+            cellId: "1:1",
+            polygon: ring,
+            sectorName: null,
+            count: 42,
+            riskClass: 5 as const,
+            isHotspot: true,
+          },
+        ],
+      },
+      patrolGaps: {
+        ...run.report.patrolGaps,
+        cells: [
+          {
+            cellId: "1:1",
+            polygon: ring,
+            covered: false,
+            lastPatrolledAt: null,
+            daysSincePatrol: null,
+          },
+        ],
+        bySector: [
+          {
+            sectorName: "Southern Ridge",
+            gapAreaKm2: 1.25,
+            gapSharePercent: 25,
+          },
+        ],
+      },
+      priorityCells: [
+        {
+          cellId: "1:1",
+          centre: ring[0],
+          sectorName: null,
+          incidents: 42,
+          daysSincePatrol: null,
+          score: 3780,
+        },
+      ],
+      conflicts: {
+        series: [
+          {
+            bucketStart: "2026-01-01",
+            label: "Jan 2026",
+            communityReports: 4,
+            collarBreaches: 2,
+            rangerReported: 1,
+          },
+        ],
+        byStretch: [
+          {
+            stretchId: TEST_PARK,
+            stretchName: "Galge Stretch",
+            communityReports: 4,
+            collarBreaches: 2,
+            byMonth: [
+              {
+                bucketStart: "2026-01-01",
+                communityReports: 4,
+                collarBreaches: 2,
+              },
+            ],
+          },
+        ],
+      },
+    },
+  };
+
+  it("exports all spatial, priority and source-separated conflict rows without private input fields", async () => {
+    const csv = (await csvExporter.render(rich)).toString("utf8");
+    expect(csv).toContain(
+      "hotspot,1:1,,2026-01-01,2026-01-31,incidents,42,count",
+    );
+    expect(csv).toContain(
+      "patrol_gap,Southern Ridge,,2026-01-01,2026-01-31,gap_area,1.25,km2",
+    );
+    expect(csv).toContain(
+      "priority_cell,1:1,,2026-01-01,2026-01-31,priority_score,3780,score",
+    );
+    expect(csv).toContain(
+      "conflict,Galge Stretch,community_report,2026-01-01,2026-01-31,events,4,count",
+    );
+    expect(csv).toContain(
+      "conflict,Galge Stretch,collar_breach,2026-01-01,2026-01-31,events,2,count",
+    );
+    expect(csv).toContain(
+      "conflict,,ranger_reported,2026-01-01,2026-01-31,events,1,count",
+    );
+    expect(csv).not.toContain("change_percent");
+    expect(csv).not.toContain("patrol_gap_area");
+    expect(csv).not.toMatch(/PRIVATE_|reporterPhone|reporterId|description/);
+    const { text } = await extractPdfText(await pdfExporter.render(rich));
+    expect(text).toContain("NEW_ACTIVITY");
+    expect(text).toContain("Not configured");
+    expect(text).toContain("Galge Stretch");
+    expect(text).toContain("Sources: RANGER");
+    expect(text).toContain("Types: SNARE_FOUND");
+    expect(text).not.toMatch(/PRIVATE_|reporterPhone|reporterId|description/);
+  });
+
+  it.each([
+    ["DAY", "2026-01-10", "2026-01-10"],
+    ["WEEK", "2026-01-01", "2026-01-07"],
+    ["WEEK", "2026-01-29", "2026-01-31"],
+    ["MONTH", "2026-01-01", "2026-01-31"],
+  ] as const)("uses exact %s CSV period bounds", async (bucket, start, end) => {
+    const snapshot = {
+      ...run.report,
+      window: { ...run.report.window, bucket },
+      trend: [{ bucketStart: start, label: start, count: 42 }],
+    };
+    const csv = (
+      await csvExporter.render({ ...run, report: snapshot })
+    ).toString("utf8");
+    expect(csv).toContain(`trend,,,${start},${end},incidents,42,count`);
+  });
+
+  it("renders empty non-demo sections and rejects a missing snapshot hash", async () => {
+    const snapshot = { ...reportFixture(), syntheticDemo: false };
+    const { text } = await extractPdfText(
+      await pdfExporter.render({ ...run, report: snapshot }),
+    );
+    expect(text).toContain("No incidents were recorded in this period.");
+    expect(text).toContain("No conflict activity was recorded in this period.");
+    expect(text).not.toContain("Synthetic demo data");
+    await expect(
+      pdfExporter.render({ ...run, snapshotSha256: null }),
+    ).rejects.toMatchObject({ code: "REPORT_NOT_EXPORTABLE" });
+  });
+});
+
+it("keeps the longest incident type inside the PDF page margins across table breaks", async () => {
+  const report = {
+    ...run.report,
+    breakdown: Array.from({ length: 21 }, (_, index) => ({
+      ...run.report.breakdown[0],
+      type: "HUMAN_WILDLIFE_CONFLICT" as const,
+      sectorName: `Patanangala Coast ${index + 1}`,
+    })),
+  };
+  const document = await getDocument({
+    data: new Uint8Array(await pdfExporter.render({ ...run, report })),
+    useSystemFonts: true,
+  }).promise;
+  try {
+    for (let number = 1; number <= document.numPages; number++) {
+      const page = await document.getPage(number);
+      const width = page.getViewport({ scale: 1 }).width;
+      for (const item of (await page.getTextContent()).items) {
+        if (!("str" in item) || !item.str.trim()) continue;
+        expect(item.transform[4]).toBeGreaterThanOrEqual(41);
+        expect(item.transform[4] + item.width).toBeLessThanOrEqual(width - 41);
+      }
+    }
+  } finally {
+    await document.destroy();
+  }
 });

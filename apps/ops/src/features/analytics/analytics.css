@@ -780,6 +780,14 @@
   font-size: 10px;
   line-height: 1.5;
 }
+.an-map-side .an-priority-list li {
+  display: block;
+}
+.an-map-side .an-priority-list button {
+  width: 100%;
+  min-height: 44px;
+  line-height: 1.6;
+}
 .an-priority-list li > button {
   padding: 0;
   border: 0;
@@ -1385,4 +1393,17 @@
     .an-map-toggle
   ) {
   min-height: 44px;
+}
+
+.an-spatial-notice {
+  margin: 0 0 20px;
+  padding: 16px 20px;
+  border: 1px solid #d6b668;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #624619;
+}
+.an-spatial-notice p {
+  margin: 8px 0 0;
+  line-height: 1.6;
 }

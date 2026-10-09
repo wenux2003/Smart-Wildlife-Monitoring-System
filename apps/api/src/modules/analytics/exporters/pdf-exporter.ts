@@ -44,11 +44,15 @@ function filterSummary(report: ConservationReport): string {
   return parts.join(" · ");
 }
 
-function table(headers: string[], rows: (string | number)[][]): Content {
+function table(
+  headers: string[],
+  rows: (string | number)[][],
+  widths: (number | "*")[] = headers.map(() => "*"),
+): Content {
   return {
     table: {
       headerRows: 1,
-      widths: headers.map(() => "*"),
+      widths,
       body: [
         headers.map((text) => ({
           text,
@@ -181,7 +185,12 @@ function reportDefinition(
       : [{ text: "No incidents were recorded in this period." }]),
     table(["Period", "Incidents"], trendRows),
     { text: "Sector breakdown (top 20)", style: "section" },
-    table(["Type", "Sector", "Incidents", "Share"], breakdown),
+    table(["Type", "Sector", "Incidents", "Share"], breakdown, [
+      170,
+      "*",
+      65,
+      65,
+    ]),
     { text: "Data quality", style: "section" },
     table(
       ["Measure", "Count"],
@@ -249,11 +258,12 @@ function reportDefinition(
         {
           columns: [
             {
-              text: `Snapshot SHA-256: ${snapshotHash.slice(0, 16)}${report.syntheticDemo === true ? "  ·  Synthetic demo data" : ""}`,
+              text: `Snapshot SHA-256: ${snapshotHash}${report.syntheticDemo === true ? "  ·  Synthetic demo data" : ""}`,
               fontSize: 7,
               color: "#64748b",
             },
             {
+              width: 70,
               text: `Page ${currentPage} of ${pageCount}`,
               alignment: "right",
               fontSize: 7,

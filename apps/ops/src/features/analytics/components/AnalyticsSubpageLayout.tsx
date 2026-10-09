@@ -1,3 +1,4 @@
+import "../analytics.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
@@ -7,6 +8,7 @@ import type {
   AnalyticsFilter,
   AnalyticsOptions,
   ConservationReport,
+  ReportRunResponse,
 } from "@wr/shared";
 import { useAuth } from "../../../auth/AuthContext.js";
 import { AccountHeader } from "../../../components/AccountHeader.js";
@@ -32,6 +34,8 @@ import {
   patchFilterSearch,
   presetDateRange,
 } from "../lib/filters.js";
+
+import { useAutomaticAnalytics } from "../hooks/useAutomaticAnalytics.js";
 
 type Section = "map" | "patrol-gaps" | "conflicts";
 
@@ -66,6 +70,9 @@ export function AnalyticsSubpageLayout({
   const [focusRunId, setFocusRunId] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const [requestError, setRequestError] = useState("");
+  const [lastGoodRun, setLastGoodRun] = useState<ReportRunResponse | null>(
+    null,
+  );
   const parkId = user?.parkId ?? "";
   const filter = useMemo(() => {
     if (!parkId) return null;
@@ -88,7 +95,23 @@ export function AnalyticsSubpageLayout({
     queryKey: ["analytics", "saved-run", runId],
     queryFn: () => getAnalyticsRun(runId!),
     enabled: Boolean(runId),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
   });
+  useEffect(() => {
+    const savedFilter = savedRunQuery.data?.report?.filters;
+    if (
+      runId &&
+      savedFilter &&
+      !searchParams.has("from") &&
+      !searchParams.has("to") &&
+      !searchParams.has("preset")
+    ) {
+      setSearchParams(patchFilterSearch(searchParams, savedFilter), {
+        replace: true,
+      });
+    }
+  }, [runId, savedRunQuery.data, searchParams, setSearchParams]);
   const generation = useMutation({
     mutationKey: filter
       ? [
@@ -105,8 +128,43 @@ export function AnalyticsSubpageLayout({
           filter.includeRejected,
         ]
       : ["analytics", "generate", "no-filter"],
-    mutationFn: generateAnalyticsReport,
+    mutationFn: (value: AnalyticsFilter) => generateAnalyticsReport(value),
   });
+
+  const currentFilter = useRef(JSON.stringify(filter));
+  currentFilter.current = JSON.stringify(filter);
+  const automatic = useAutomaticAnalytics({
+    filter,
+    enabled: optionsQuery.isSuccess && !runId,
+    pending: generation.isPending,
+    onGenerate: () => void generate(true),
+  });
+  const restoringFilters = Boolean(
+    runId &&
+    savedRunQuery.data?.report &&
+    !searchParams.has("from") &&
+    !searchParams.has("to") &&
+    !searchParams.has("preset"),
+  );
+  const updating =
+    generation.isPending || automatic.waiting || restoringFilters;
+  useEffect(() => {
+    if (savedRunQuery.data?.status === "SUCCEEDED")
+      setLastGoodRun(savedRunQuery.data);
+  }, [savedRunQuery.data]);
+  useEffect(() => {
+    if (
+      section === "conflicts" &&
+      runId &&
+      savedRunQuery.data?.report &&
+      savedRunQuery.data.report.filters.categoryGroup !==
+        "HUMAN_WILDLIFE_CONFLICT"
+    ) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("run");
+      setSearchParams(next, { replace: true });
+    }
+  }, [section, runId, savedRunQuery.data, searchParams, setSearchParams]);
 
   useEffect(() => {
     if (section !== "conflicts" || !filter) return;
@@ -171,7 +229,13 @@ export function AnalyticsSubpageLayout({
   }
   if (!filter) return null;
   const run = savedRunQuery.data;
-  const loadedReport = run?.status === "SUCCEEDED" ? run.report : null;
+  const displayedRun =
+    run?.status === "EMPTY"
+      ? null
+      : run?.status === "SUCCEEDED"
+        ? run
+        : lastGoodRun;
+  const loadedReport = displayedRun?.report ?? null;
   const report =
     section === "conflicts" &&
     loadedReport?.filters.categoryGroup !== "HUMAN_WILDLIFE_CONFLICT"
@@ -179,23 +243,36 @@ export function AnalyticsSubpageLayout({
       : loadedReport;
   const historySearch = searchParams.toString();
 
-  async function generate() {
+  async function generate(automatically = false) {
     const parsed = AnalyticsFilterSchema.safeParse(filter);
     if (!parsed.success) return;
+    automatic.markRequested();
+    const requestedFilter = JSON.stringify(filter);
     setRequestError("");
-    setAnnouncement("Compiling report…");
+    setAnnouncement("Updating analytics…");
     try {
       const result = await generation.mutateAsync(parsed.data);
+      if (currentFilter.current !== requestedFilter) return;
+      if (result.status === "SUCCEEDED") setLastGoodRun(result);
+      setAnnouncement(
+        result.status === "EMPTY"
+          ? "No records match these filters. Try a wider date range."
+          : `Report ${result.code} compiled: ${result.report?.kpis.totalIncidents ?? 0} incidents`,
+      );
       queryClient.setQueryData(
         ["analytics", "saved-run", result.runId],
         result,
       );
       const next = patchFilterSearch(searchParams, parsed.data);
       next.set("run", result.runId);
-      if (result.status === "SUCCEEDED" || result.status === "EMPTY")
+      if (
+        !automatically &&
+        (result.status === "SUCCEEDED" || result.status === "EMPTY")
+      )
         setFocusRunId(result.runId);
       setSearchParams(next, { replace: true });
     } catch (error) {
+      if (currentFilter.current !== requestedFilter) return;
       setRequestError(
         error instanceof Error
           ? error.message
@@ -206,6 +283,8 @@ export function AnalyticsSubpageLayout({
 
   function updateFilter(patch: Partial<AnalyticsFilter>) {
     const next = patchFilterSearch(searchParams, patch);
+    next.delete("run");
+    setRequestError("");
     setSearchParams(next, { replace: true });
   }
 
@@ -282,8 +361,8 @@ export function AnalyticsSubpageLayout({
           options={optionsQuery.data}
           onChange={updateFilter}
           onGenerate={() => void generate()}
-          pending={generation.isPending}
-          error={requestError}
+          pending={updating}
+          error=""
           categoryLocked={section === "conflicts"}
         />
         {section === "conflicts" && (
@@ -291,6 +370,12 @@ export function AnalyticsSubpageLayout({
             Conflict analysis is fixed to Human-wildlife conflict events; other
             report filters remain in effect.
           </p>
+        )}
+        {requestError && !updating && (
+          <TimeoutBanner
+            message={requestError}
+            onRetry={() => void generate()}
+          />
         )}
         {savedRunQuery.isError && (
           <TimeoutBanner
@@ -310,12 +395,10 @@ export function AnalyticsSubpageLayout({
           </div>
         )}
         <div
-          aria-busy={generation.isPending || savedRunQuery.isLoading}
-          className={
-            generation.isPending && report ? "an-report-busy" : undefined
-          }
+          aria-busy={updating || savedRunQuery.isLoading}
+          className={updating && report ? "an-report-busy" : undefined}
         >
-          {(savedRunQuery.isLoading || generation.isPending) && !report && (
+          {(savedRunQuery.isLoading || updating) && !report && (
             <SkeletonReport />
           )}
           {(report || run?.status === "EMPTY") && (
@@ -338,7 +421,7 @@ export function AnalyticsSubpageLayout({
           ) : report ? (
             children(report, optionsQuery.data)
           ) : savedRunQuery.isLoading ||
-            generation.isPending ||
+            updating ||
             run?.status === "TIMED_OUT" ||
             run?.status === "FAILED" ? null : (
             <EmptyReport onSuggestion={applySuggestion} />
@@ -349,7 +432,10 @@ export function AnalyticsSubpageLayout({
             </div>
           )}
         </div>
-        <ExportBar run={run ?? null} />
+        <ExportBar
+          run={run?.status === "EMPTY" ? run : displayedRun}
+          updating={updating}
+        />
       </main>
     </div>
   );
