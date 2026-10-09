@@ -142,7 +142,7 @@ export function PatrolGapsPage() {
                           dataKey="gapSharePercent"
                           position="right"
                           formatter={(value: number | string | undefined) =>
-                            `${value ?? 0}%`
+                            `${numberFormat.format(Math.round(Number(value ?? 0) * 10) / 10)}%`
                           }
                         />
                         {gapPercentBySector.map((sector) => (

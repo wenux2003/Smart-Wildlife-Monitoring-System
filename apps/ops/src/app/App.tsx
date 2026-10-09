@@ -197,13 +197,21 @@ export function App() {
       "/staff": "Staff accounts",
       "/change-password": "Change password",
       "/ranger": "Ranger app access",
+      "/incidents": "Wildlife incidents",
+      "/conflicts": "Community conflict inbox",
+      "/camera-traps": "Camera review",
       "/analytics": "Conservation analytics",
       "/analytics/map": "Hotspot map",
       "/analytics/patrol-gaps": "Patrol gaps",
       "/analytics/conflicts": "Conflict trends",
       "/reports": "Report history",
     };
-    document.title = `${titles[location.pathname] ?? "Page not found"} | Wana Rakshaka`;
+    const title =
+      titles[location.pathname] ??
+      (/^\/incidents\/[^/]+$/.test(location.pathname)
+        ? "Incident details"
+        : "Page not found");
+    document.title = `${title} | Wana Rakshaka`;
   }, [location.pathname]);
   return (
     <AuthProvider>

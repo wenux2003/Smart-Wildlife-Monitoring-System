@@ -32,9 +32,6 @@ vi.mock("../hooks/useAutomaticAnalytics.js", () => ({
 vi.mock("../../../auth/AuthContext.js", () => ({
   useAuth: () => ({ user: mockAuth.user }),
 }));
-vi.mock("../../../components/AccountHeader.js", () => ({
-  AccountHeader: () => <header>Account controls</header>,
-}));
 vi.mock("recharts", () => ({
   Bar: () => null,
   BarChart: ({ children }: { children: React.ReactNode }) => (

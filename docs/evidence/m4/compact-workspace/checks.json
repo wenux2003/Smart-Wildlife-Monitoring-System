@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-09",
+  "previousWorkCommit": "e6c1d35",
+  "workspaceTests": {
+    "passed": 309,
+    "skippedOptInDatabaseCases": 14,
+    "filesPassed": 39
+  },
+  "finalRelevantFrontendTests": {
+    "passed": 21,
+    "filesPassed": 2
+  },
+  "lint": "passed",
+  "workspaceTypecheck": "passed",
+  "opsBuild": "passed",
+  "bundleWarning": false,
+  "mainJavaScriptKB": 249.74,
+  "largestJavaScriptKB": 383.37,
+  "patrolImplementation": "Ranger app home/active patrol/waypoint/summary pages; Ranger authorization required",
+  "opsPatrolManagementPagePresent": false,
+  "databaseChanges": false
+}

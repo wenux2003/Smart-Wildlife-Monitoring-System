@@ -1,0 +1,70 @@
+{
+  "source": "Production Ops build with synthetic API fixtures; no shared database access",
+  "viewports": [
+    {
+      "route": "/incidents",
+      "width": 1440,
+      "direct": {
+        "title": "Page not found | Wana Rakshaka",
+        "headingSize": "16px",
+        "headerBackground": "rgba(0, 0, 0, 0)",
+        "cellPadding": "1px",
+        "filterDisplay": "block",
+        "selectHeight": 23,
+        "font": "\"Segoe UI\", Arial, sans-serif"
+      },
+      "afterCamera": {
+        "title": "Page not found | Wana Rakshaka",
+        "headingSize": "34px",
+        "headerBackground": "rgb(20, 53, 43)",
+        "cellPadding": "16px",
+        "filterDisplay": "flex",
+        "selectHeight": 48,
+        "font": "\"Plus Jakarta Sans\", \"Segoe UI\", sans-serif"
+      },
+      "refreshed": {
+        "title": "Page not found | Wana Rakshaka",
+        "headingSize": "16px",
+        "headerBackground": "rgba(0, 0, 0, 0)",
+        "cellPadding": "1px",
+        "filterDisplay": "block",
+        "selectHeight": 23,
+        "font": "\"Segoe UI\", Arial, sans-serif"
+      }
+    },
+    {
+      "route": "/conflicts",
+      "width": 1440,
+      "direct": {
+        "title": "Page not found | Wana Rakshaka",
+        "headingSize": "16px",
+        "headerBackground": "rgba(0, 0, 0, 0)",
+        "cellPadding": "1px",
+        "filterDisplay": "block",
+        "selectHeight": 23,
+        "font": "\"Segoe UI\", Arial, sans-serif"
+      },
+      "afterCamera": {
+        "title": "Page not found | Wana Rakshaka",
+        "headingSize": "34px",
+        "headerBackground": "rgb(20, 53, 43)",
+        "cellPadding": "16px",
+        "filterDisplay": "flex",
+        "selectHeight": 48,
+        "font": "\"Plus Jakarta Sans\", \"Segoe UI\", sans-serif"
+      },
+      "refreshed": {
+        "title": "Page not found | Wana Rakshaka",
+        "headingSize": "16px",
+        "headerBackground": "rgba(0, 0, 0, 0)",
+        "cellPadding": "1px",
+        "filterDisplay": "block",
+        "selectHeight": 23,
+        "font": "\"Segoe UI\", Arial, sans-serif"
+      }
+    }
+  ],
+  "checkedAt": "2026-10-09T08:27:35.866Z",
+  "directNavigationAndRefreshConsistent": false,
+  "uncaughtExceptions": []
+}

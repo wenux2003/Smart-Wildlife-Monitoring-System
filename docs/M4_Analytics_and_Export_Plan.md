@@ -1651,3 +1651,36 @@ Unchecked items above are supplemental exact-scenario checks, not claimed as com
 - ✅ Six new sidebar tests and six existing role-route tests pass. Full workspace: 39 files / 308 tests passed, 14 opt-in DB cases skipped. Lint/typecheck and Ops build pass; main bundle 249.32 kB, largest chunk 383.37 kB, no bundle warning.
 - ✅ Production-browser checks at 390/780/1440/1920 px pass with synthetic fixtures: collapse, active links, snapshot/filter navigation, automatic refresh, mobile keyboard/focus, Researcher visibility, dashboard and Alerts map. Screenshots reviewed; [test evidence](./evidence/m4/sidebar-workspace/README.md) records the checks and artifacts separately.
 - No database changes or new dependencies were required. The existing app servers remain running; this follow-up has not been committed automatically.
+
+
+### Compact dashboard and analytics/report spacing — 2026-10-09
+
+- ✅ Committed the previous sidebar changes first with summary and description: `e6c1d35` — `Add role-aware Ops sidebar and refresh analytics workspace`.
+- ✅ Removed the dashboard account-ready panel and compacted greeting, staff action and workspace launchers. Dashboard fits without page scrolling in verified 1920 × 870 and 1366 × 620 browser viewports. Phone/tablet content stays readable and scrollable; pending park-access guidance is retained.
+- ✅ Checked the patrol implementation before linking it: Ranger app assignment/tracking/waypoint/summary UI exists, with Ranger-only authorization. No Ops patrol-management page exists. Dashboard now opens the existing Ranger app and clearly requires Ranger sign-in; no new patrol feature or permission was added.
+- ✅ Compacted titles, top bar and filters across analytics, map, gaps, conflict and history pages. Primary filters occupy one desktop row; advanced/custom filters, automatic refresh and saved snapshots still work. Removed duplicated conflict space and unused KPI padding; constrained the map legend panel and rounded chart labels.
+- ✅ Workspace: 309 tests passed, 14 opt-in DB skips. Final targeted navigation/analytics checks: 21 passed. Lint/typecheck and Ops build pass; main JS 249.74 kB, largest 383.37 kB, no bundle warning. All analytics/report views and desktop/mobile layouts verified in an isolated production preview. [Evidence, measurements and screenshots](./evidence/m4/compact-workspace/README.md).
+- No database changes were made. Existing live apps remain running. The new compact-layout refinement is separate from the committed sidebar checkpoint and has not been committed automatically.
+
+### Remove legacy analytics/report account header — 2026-10-09
+
+- ✅ Removed the old horizontal brand/account/sign-out header from Overview, Hotspot map, Patrol gaps, Conflict trends and Report history, including loading, error and pending-access states. Account controls remain in the shared sidebar.
+- ✅ Cleaned obsolete header mocks. Existing analytics/report regression tests: 3 files / 51 passed. Ops typecheck and lint of all six changed analytics files pass. No database or report-generation changes were required.
+
+### Six larger dashboard cards — 2026-10-09
+
+- ✅ Removed the Ranger patrol launcher from the Ops dashboard as requested. The remaining six Park Manager workspaces use larger cards, headings and icons in a three-column, two-row desktop layout. Existing role-based visibility is retained; tablet/phone layouts use two/one columns.
+- ✅ Seven existing navigation tests, Ops typecheck, changed-file lint and production build pass. Browser checks confirm all six internal links, no horizontal overflow or runtime exceptions, and no dashboard scrolling at 1920 × 870 or 1366 × 620. [Screenshots and validation evidence](./evidence/m4/dashboard-six-cards/README.md).
+- No database changes were required. These dashboard refinements remain uncommitted.
+
+### Incident and community direct-load stylesheet fix — 2026-10-09
+
+- ✅ Reproduced the reported missing-style issue: Incidents and Community inbox relied on CSS/fonts loaded by Camera review. Added an explicit shared incident-style entry imported by the common incident layout and field components, so direct loads and refreshes no longer depend on navigation history. Corrected misleading incident-route browser titles.
+- ✅ Existing tests: 30 passed across incident workflow, Camera review and App routes. Shared UI/Ops typechecks, changed-file lint and Ops/Ranger builds pass. Cache-disabled browser checks verify equal styling on direct load, Camera review round trip and hard refresh for both routes; desktop/mobile screenshots reviewed. [Before/after evidence](./evidence/m4/incident-route-styles/README.md).
+- No database changes were made. Existing live apps remain running and Vite resolves the new style import successfully. These changes remain uncommitted.
+
+### Workspace refinement commit checkpoint — 2026-10-09
+
+- User requested all pending changes be committed with a summary and description. The workspace refinement commit includes the compact dashboard/analytics layout, six larger dashboard cards without the Ranger launcher, removal of legacy analytics/report account headers, and refresh-stable incident styles with corrected route titles.
+- Earlier uncommitted notes above and in evidence folders describe their validation checkpoints. All those refinements and their evidence are included in this commit. Historical compact-dashboard screenshots show the former Ranger card; the later six-card evidence records the final dashboard.
+- Validation uses the passing checks already recorded for each follow-up; no implementation changed during commit preparation. No database changes were required.

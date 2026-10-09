@@ -3,7 +3,6 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import { CheckCircle2, CircleDashed, CircleX, Clock3 } from "lucide-react";
 import { useAuth } from "../../../auth/AuthContext.js";
-import { AccountHeader } from "../../../components/AccountHeader.js";
 import { exportAnalyticsRun, listReportRuns } from "../api.js";
 import { patchFilterSearch } from "../lib/filters.js";
 import { AccessPending } from "../components/AccessPending.js";
@@ -69,7 +68,6 @@ export function ReportHistoryPage() {
   if (!user?.parkId) {
     return (
       <div className="an-page">
-        <AccountHeader />
         <main id="main-content" className="an-main content-width">
           <AccessPending />
         </main>
@@ -113,7 +111,6 @@ export function ReportHistoryPage() {
 
   return (
     <div className="an-page">
-      <AccountHeader />
       <main id="main-content" className="an-main content-width">
         <header className="an-page-header">
           <div>

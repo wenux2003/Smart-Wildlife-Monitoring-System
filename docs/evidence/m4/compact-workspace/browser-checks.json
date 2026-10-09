@@ -1,0 +1,42 @@
+{
+  "source": "Production Ops build with synthetic API fixtures; no shared database access",
+  "viewports": [
+    {
+      "page": "dashboard",
+      "width": 1920,
+      "height": 870,
+      "scrollHeight": 870,
+      "moduleBottom": 631.6875
+    },
+    {
+      "page": "dashboard",
+      "width": 1366,
+      "height": 620,
+      "scrollHeight": 620,
+      "moduleBottom": 524.03125
+    },
+    {
+      "page": "analytics",
+      "width": 1440,
+      "height": 900,
+      "scrollHeight": 1603,
+      "firstResultTop": 392.28125,
+      "filterHeight": 119.5
+    }
+  ],
+  "checkedAt": "2026-10-09T07:23:13.603Z",
+  "noHorizontalOverflow": true,
+  "dashboardAccountPanelRemoved": true,
+  "rangerLinkPointsToImplementedApp": true,
+  "desktopDashboardFitsViewport": true,
+  "laptopDashboardFitsViewport": true,
+  "primaryDesktopFiltersOnOneRow": true,
+  "advancedAndCustomFiltersWork": true,
+  "preservedKeyboardOrder": true,
+  "mapSidebarHeightBoundedWithoutHidingControls": true,
+  "automaticRefreshAndSnapshotNavigation": true,
+  "conflictCategoryLocked": true,
+  "researcherDashboardShowsOnlyAllowedModules": true,
+  "generationRequests": 3,
+  "uncaughtExceptions": []
+}

@@ -11,7 +11,6 @@ import type {
   ReportRunResponse,
 } from "@wr/shared";
 import { useAuth } from "../../../auth/AuthContext.js";
-import { AccountHeader } from "../../../components/AccountHeader.js";
 import {
   generateAnalyticsReport,
   getAnalyticsOptions,
@@ -194,7 +193,6 @@ export function AnalyticsSubpageLayout({
   if (!user?.parkId) {
     return (
       <div className="an-page">
-        <AccountHeader />
         <main id="main-content" className="an-main content-width">
           <AccessPending />
         </main>
@@ -204,7 +202,6 @@ export function AnalyticsSubpageLayout({
   if (optionsQuery.isLoading || !optionsQuery.data) {
     return (
       <div className="an-page">
-        <AccountHeader />
         <main id="main-content" className="an-main content-width">
           {optionsQuery.isError ? (
             <section className="an-load-error" role="alert">
@@ -315,7 +312,6 @@ export function AnalyticsSubpageLayout({
 
   return (
     <div className="an-page">
-      <AccountHeader />
       <main id="main-content" className="an-main content-width">
         <header className="an-page-header">
           <div>

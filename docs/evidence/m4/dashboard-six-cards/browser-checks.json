@@ -1,0 +1,52 @@
+{
+  "source": "Production Ops build with synthetic API fixtures; no shared database access",
+  "viewports": [
+    {
+      "page": "dashboard",
+      "width": 1920,
+      "height": 870,
+      "scrollHeight": 870,
+      "moduleBottom": 711.6875,
+      "columns": 3,
+      "cardWidth": 506,
+      "cardHeight": 224
+    },
+    {
+      "page": "dashboard",
+      "width": 1366,
+      "height": 620,
+      "scrollHeight": 620,
+      "moduleBottom": 551.6875,
+      "columns": 3,
+      "cardWidth": 326.65625,
+      "cardHeight": 174
+    },
+    {
+      "page": "dashboard",
+      "width": 780,
+      "height": 1000,
+      "scrollHeight": 1000,
+      "moduleBottom": 927.6875,
+      "columns": 2,
+      "cardWidth": 362,
+      "cardHeight": 224
+    },
+    {
+      "page": "dashboard",
+      "width": 390,
+      "height": 844,
+      "scrollHeight": 1581,
+      "moduleBottom": 1523.6875,
+      "columns": 1,
+      "cardWidth": 358,
+      "cardHeight": 198
+    }
+  ],
+  "checkedAt": "2026-10-09T08:22:13.767Z",
+  "sixCards": true,
+  "rangerCardRemoved": true,
+  "allInternalLinksPresent": true,
+  "noHorizontalOverflow": true,
+  "desktopAndLaptopFitViewport": true,
+  "uncaughtExceptions": []
+}

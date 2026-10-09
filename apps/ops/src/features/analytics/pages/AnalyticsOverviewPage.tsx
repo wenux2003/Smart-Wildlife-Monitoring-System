@@ -5,7 +5,6 @@ import { ArrowRight } from "lucide-react";
 import { AnalyticsFilterSchema } from "@wr/shared";
 import type { AnalyticsFilter, ReportRunResponse } from "@wr/shared";
 import { useAuth } from "../../../auth/AuthContext.js";
-import { AccountHeader } from "../../../components/AccountHeader.js";
 import {
   generateAnalyticsReport,
   getAnalyticsOptions,
@@ -247,7 +246,6 @@ export function AnalyticsOverviewPage() {
   if (!user?.parkId) {
     return (
       <div className="an-page">
-        <AccountHeader />
         <main id="main-content" className="an-main content-width">
           <AccessPending />
         </main>
@@ -258,7 +256,6 @@ export function AnalyticsOverviewPage() {
   if (optionsQuery.isLoading) {
     return (
       <div className="an-page">
-        <AccountHeader />
         <main id="main-content" className="an-main content-width">
           <div className="an-page-loading" role="status">
             Loading analytics filters…
@@ -271,7 +268,6 @@ export function AnalyticsOverviewPage() {
   if (optionsQuery.isError || !optionsQuery.data) {
     return (
       <div className="an-page">
-        <AccountHeader />
         <main id="main-content" className="an-main content-width">
           <section className="an-load-error" role="alert">
             <h1>Analytics are temporarily unavailable.</h1>
@@ -307,7 +303,6 @@ export function AnalyticsOverviewPage() {
 
   return (
     <div className="an-page">
-      <AccountHeader />
       <main id="main-content" className="an-main content-width">
         <header className="an-page-header">
           <div>

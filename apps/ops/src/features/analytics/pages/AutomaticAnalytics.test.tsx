@@ -37,9 +37,6 @@ const auth = vi.hoisted(() => ({
   } as Record<string, string | null>,
 }));
 vi.mock("../../../auth/AuthContext.js", () => ({ useAuth: () => auth }));
-vi.mock("../../../components/AccountHeader.js", () => ({
-  AccountHeader: () => <header>Account</header>,
-}));
 vi.mock("../api.js", () => ({
   generateAnalyticsReport: vi.fn(),
   getAnalyticsOptions: vi.fn(),

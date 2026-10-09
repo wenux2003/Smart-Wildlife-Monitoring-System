@@ -30,9 +30,6 @@ const p7 = vi.hoisted(() => ({
 vi.mock("../../../auth/AuthContext.js", () => ({
   useAuth: () => ({ user: p7.user }),
 }));
-vi.mock("../../../components/AccountHeader.js", () => ({
-  AccountHeader: () => <header>Account controls</header>,
-}));
 vi.mock("../components/AnalyticsSubpageLayout.js", () => ({
   AnalyticsSubpageLayout: ({
     children,

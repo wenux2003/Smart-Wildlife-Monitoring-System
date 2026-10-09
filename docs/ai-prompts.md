@@ -93,3 +93,17 @@ Outcome: read-only Neon aggregate diagnosis identified missing boundaries/grid/s
 User prompt (with current analytics and hospitality reference screenshots): “can u add side bar for navigation buddy , i like this kinda design side bar and middle components ss is hotel mangemt system only reffer it and give our one to that kinda look”
 
 Outcome: added a shared role-aware Ops sidebar, desktop collapse, accessible mobile navigation and a refreshed central analytics layout using existing wildlife branding. Filters and snapshots remain intact. Workspace tests, lint/typecheck/build and isolated production-browser checks pass; screenshots and test evidence are recorded under `docs/evidence/m4/sidebar-workspace/`.
+
+
+### 2026-10-09 — Commit sidebar first, then compact dashboard and analytics
+
+User request: “i saw it its good , then commit uncomited thing 1st with summery + description then start below task ,ok buddy”; requested a dashboard that fits the page, removal of the account-ready panel, a patrol link only if already implemented, and less wasted top space on analytics/report pages.
+
+Outcome: committed previous work as `e6c1d35`, inspected existing Ranger-only patrol UI and linked its separate app with a clear role requirement. Compacted dashboard modules and analytics/report headers/filters. Tests, checks, viewport measurements and screenshots are recorded in `docs/evidence/m4/compact-workspace/`. New UI work remains separate from that initial commit.
+
+
+### 2026-10-09 — Dashboard, headers and direct-load styles follow-ups
+
+User requests: remove the old account header from all analytics/report pages; remove the Ranger patrol card and enlarge the remaining six dashboard cards; fix Incidents/Community inbox losing styling on refresh until Camera review is opened; then commit all uncommitted work.
+
+Outcome: removed the legacy header in all analytics/report states, enlarged the six internal dashboard launchers, and made shared incident CSS/fonts explicit dependencies of the incident layout. Corrected incident-route browser titles. Targeted tests, typechecks, lint, Ops/Ranger builds and cache-disabled browser checks pass. Evidence is recorded under `docs/evidence/m4/dashboard-six-cards/` and `docs/evidence/m4/incident-route-styles/`. All pending refinements and evidence are included in the workspace refinement commit.
