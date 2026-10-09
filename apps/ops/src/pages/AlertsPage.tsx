@@ -122,7 +122,7 @@ export function AlertsPage() {
           setNewPolygon={completeDrawing}
           onDeleteZone={(index) => {
             if (!config) return;
-            const newZones = config.geofenceZones.filter((_, i) => i !== index);
+            const newZones = (config.geofenceZones || []).filter((_, i) => i !== index);
             updateConfigMutation.mutate({
               ...config,
               geofenceZones: newZones
