@@ -1,34 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { PatrolAssignmentSummary } from "@wr/shared";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext.js";
 import { fetchMyPatrolAssignments } from "./lib/patrols.js";
 import { startOfflinePatrol } from "@wr/offline";
-
-function BackIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="m15 18-6-6 6-6" />
-    </svg>
-  );
-}
-
-function MenuIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M4 7h16M4 12h16M4 17h16" />
-    </svg>
-  );
-}
-
-function SyncIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M20 7h-5V2M4 17h5v5M18.5 11a7 7 0 0 0-11.9-4.9L4 8M5.5 13a7 7 0 0 0 11.9 4.9L20 16" />
-    </svg>
-  );
-}
+import { RangerPageHeader } from "./components/RangerPageHeader.js";
 
 function MapPinIcon() {
   return (
@@ -135,37 +112,11 @@ function PatrolCard({
 }
 
 export function RangerHomePage() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [online, setOnline] = useState(() => navigator.onLine);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [selectedPatrolId, setSelectedPatrolId] = useState<string>();
   const [error, setError] = useState("");
-  const [signingOut, setSigningOut] = useState(false);
   const [startingPatrol, setStartingPatrol] = useState(false);
-
-  useEffect(() => {
-    const updateConnection = () => setOnline(navigator.onLine);
-    window.addEventListener("online", updateConnection);
-    window.addEventListener("offline", updateConnection);
-    return () => {
-      window.removeEventListener("online", updateConnection);
-      window.removeEventListener("offline", updateConnection);
-    };
-  }, []);
-
-  async function leaveAccount() {
-    setError("");
-    setSigningOut(true);
-    try {
-      await signOut();
-      navigate("/login", { replace: true });
-    } catch (failure) {
-      setError((failure as Error).message);
-    } finally {
-      setSigningOut(false);
-    }
-  }
 
   const patrolQuery = useQuery({
     queryKey: ["patrol-assignments", "mine", user?.id],
@@ -220,69 +171,8 @@ export function RangerHomePage() {
   }
 
   return (
-    <main className="patrol-screen" id="main-content">
-      <header className="patrol-header">
-        <div className="patrol-nav-row">
-          <button
-            className="back-button"
-            type="button"
-            aria-label="Back to home"
-            onClick={() => navigate("/")}
-          >
-            <BackIcon />
-            <span>Home</span>
-          </button>
-          <button
-            className="menu-button"
-            type="button"
-            aria-label="Open account menu"
-            aria-expanded={menuOpen}
-            aria-controls="ranger-account-menu"
-            onClick={() => setMenuOpen((open) => !open)}
-          >
-            <MenuIcon />
-          </button>
-        </div>
-
-        <div className="patrol-title-row">
-          <div>
-            <p className="patrol-kicker">FIELD OPERATIONS</p>
-            <h1>Patrol</h1>
-          </div>
-          <span
-            className={`sync-pill ${online ? "is-online" : "is-offline"}`}
-            role="status"
-          >
-            <SyncIcon />
-            {online ? "Synced just now" : "Saving offline"}
-          </span>
-        </div>
-
-        {menuOpen && (
-          <section
-            className="ranger-menu"
-            id="ranger-account-menu"
-            aria-label="Ranger account"
-          >
-            <div>
-              <strong>{user?.name}</strong>
-              <span>{user?.parkName ?? "No park assigned"}</span>
-            </div>
-            <nav className="patrol-menu-links" aria-label="Ranger tools">
-              <Link to="/incidents/report">Report incident</Link>
-              <Link to="/incidents">My incidents / sync</Link>
-              <Link to="/dispatches">View dispatches</Link>
-            </nav>
-            <button
-              type="button"
-              onClick={() => void leaveAccount()}
-              disabled={signingOut}
-            >
-              {signingOut ? "Signing out…" : "Sign out"}
-            </button>
-          </section>
-        )}
-      </header>
+    <main className="patrol-screen has-patrol-action" id="main-content">
+      <RangerPageHeader title="Patrol" eyebrow="FIELD OPERATIONS" />
 
       <section className="patrol-content" aria-labelledby="today-patrols">
         <div className="patrol-section-heading">
@@ -339,7 +229,9 @@ export function RangerHomePage() {
             ) : (
               <div className="patrol-query-state">
                 <strong>No current patrols</strong>
-                <p>Your completed patrols are available in the history below.</p>
+                <p>
+                  Your completed patrols are available in the history below.
+                </p>
               </div>
             )}
 

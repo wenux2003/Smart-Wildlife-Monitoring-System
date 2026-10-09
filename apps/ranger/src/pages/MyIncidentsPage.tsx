@@ -9,6 +9,7 @@ import {
   incidentRequest,
   syncIncidents,
 } from "../lib/incidents.js";
+import { RangerPageHeader } from "../components/RangerPageHeader.js";
 export function MyIncidentsPage() {
   const { user, captureOnly, refresh } = useAuth();
   const { id } = useParams();
@@ -109,12 +110,7 @@ export function MyIncidentsPage() {
   );
   return (
     <main id="main-content" className="m1-page">
-      <nav className="m1-nav">
-        <Link to="/">Patrol home</Link>
-        <Link to="/incidents/report">Report incident</Link>
-        <Link to="/incidents">My incidents</Link>
-      </nav>
-      <h1>{id ? "Incident details" : "My incidents"}</h1>
+      <RangerPageHeader title={id ? "Incident details" : "My incidents"} />
       {!id && (
         <div className="m1-tabs" role="group" aria-label="Incident view">
           <button

@@ -64,7 +64,15 @@ export function PatrolMap({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       {line.length > 1 && (
-        <Polyline positions={line} pathOptions={{ color: "#173e2b", weight: 6 }} />
+        <Polyline
+          positions={line}
+          pathOptions={{
+            className: "patrol-route-flow",
+            color: "#173e2b",
+            dashArray: "14 10",
+            weight: 6,
+          }}
+        />
       )}
       {trackedPositions.length > 1 && (
         <Polyline
@@ -91,7 +99,13 @@ export function PatrolMap({
         <CircleMarker
           center={toLeafletPosition(currentPosition)}
           radius={8}
-          pathOptions={{ color: "#fff", fillColor: "#2477d4", fillOpacity: 1, weight: 3 }}
+          pathOptions={{
+            className: "patrol-live-position",
+            color: "#fff",
+            fillColor: "#2477d4",
+            fillOpacity: 1,
+            weight: 3,
+          }}
         />
       )}
       <FitPatrolBounds routePath={routePath} currentPosition={currentPosition} />

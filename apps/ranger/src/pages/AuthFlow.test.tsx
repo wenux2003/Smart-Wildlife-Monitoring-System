@@ -266,9 +266,28 @@ describe("Ranger account access", () => {
     expect(
       screen.getByRole("region", { name: "Start selected patrol" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Past patrols").closest("details")).not.toHaveAttribute(
-      "open",
+    expect(
+      screen.getByRole("navigation", { name: "Ranger navigation" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Patrol" })).toHaveAttribute(
+      "aria-current",
+      "page",
     );
+    expect(screen.getByRole("link", { name: "Report" })).toHaveAttribute(
+      "href",
+      "/incidents/report",
+    );
+    expect(screen.getByRole("link", { name: "Incidents" })).toHaveAttribute(
+      "href",
+      "/incidents",
+    );
+    expect(screen.getByRole("link", { name: "Dispatches" })).toHaveAttribute(
+      "href",
+      "/dispatches",
+    );
+    expect(
+      screen.getByText("Past patrols").closest("details"),
+    ).not.toHaveAttribute("open");
     expect(fetch).toHaveBeenCalledWith(
       "/api/auth/login",
       expect.objectContaining({
@@ -280,6 +299,18 @@ describe("Ranger account access", () => {
         }),
       }),
     );
+
+    fireEvent.click(screen.getByRole("link", { name: "Report" }));
+    expect(
+      await screen.findByRole("heading", { name: "Report incident" }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Open account menu" }));
+    expect(
+      screen.getByRole("region", { name: "Ranger account" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Sign out" }),
+    ).toBeInTheDocument();
   });
 
   it("selects an assigned trail and updates the start patrol action", async () => {
@@ -312,6 +343,9 @@ describe("Ranger account access", () => {
       await screen.findByLabelText("Trail 4C patrol map"),
     ).toBeInTheDocument();
     expect(screen.getByText("Trail 4C · 4.7 km")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: "Ranger navigation" }),
+    ).not.toBeInTheDocument();
   });
 
   it("records a GPS waypoint locally and returns it to the patrol map", async () => {
