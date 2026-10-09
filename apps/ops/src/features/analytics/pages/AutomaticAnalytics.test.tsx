@@ -328,6 +328,38 @@ describe("automatic M4 analytics", () => {
     },
   );
 
+  it("offers a refresh when a saved report predates the park's spatial configuration", async () => {
+    const saved = result();
+    vi.mocked(getAnalyticsRun).mockResolvedValue(saved);
+    vi.mocked(getAnalyticsOptions).mockResolvedValue({
+      ...options,
+      config: { ...options.config, configured: true },
+    });
+    show(`/analytics/patrol-gaps?run=${saved.runId}`, "patrol-gaps");
+    const refresh = await screen.findByRole("button", {
+      name: "Rebuild with map data",
+    });
+    expect(
+      screen.getByText(/created before the park's map data was set up/),
+    ).toBeInTheDocument();
+    expect(generateAnalyticsReport).not.toHaveBeenCalled();
+    fireEvent.click(refresh);
+    await waitFor(() => expect(generateAnalyticsReport).toHaveBeenCalledTimes(1));
+    expect(generateAnalyticsReport).toHaveBeenCalledWith(
+      expect.objectContaining({ parkId: TEST_PARK }),
+    );
+  });
+
+  it("does not offer a spatial refresh while the park is still unconfigured", async () => {
+    const saved = result();
+    vi.mocked(getAnalyticsRun).mockResolvedValue(saved);
+    show(`/analytics/patrol-gaps?run=${saved.runId}`, "patrol-gaps");
+    await screen.findByText("Spatial total: 42");
+    expect(
+      screen.queryByText(/created before the park's map data was set up/),
+    ).not.toBeInTheDocument();
+  });
+
   it("ignores a late response for superseded filters", async () => {
     let finishOld!: (run: ReportRunResponse) => void;
     vi.mocked(generateAnalyticsReport).mockImplementationOnce(

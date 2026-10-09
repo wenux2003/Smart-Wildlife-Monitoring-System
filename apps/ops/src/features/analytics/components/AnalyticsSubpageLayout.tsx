@@ -386,6 +386,34 @@ export function AnalyticsSubpageLayout({
         <p className="an-sr-only" role="status" aria-atomic="true">
           {announcement}
         </p>
+        {/* A saved report keeps the data it was created with. When the park's map data was set up
+            afterwards, offer a fresh report instead of leaving an empty map. */}
+        {runId &&
+          report &&
+          !report.patrolGaps.configured &&
+          optionsQuery.data.config.configured && (
+            <section
+              className="an-spatial-notice an-refresh-notice"
+              aria-labelledby="an-refresh-title"
+            >
+              <strong id="an-refresh-title">
+                This saved report was created before the park&apos;s map data
+                was set up.
+              </strong>
+              <p>
+                Rebuild it to include hotspots, patrol gaps and
+                priority cells. The saved report stays in Report history.
+              </p>
+              <button
+                type="button"
+                className="an-button an-button-primary"
+                disabled={updating}
+                onClick={() => void generate()}
+              >
+                {updating ? "Updating…" : "Rebuild with map data"}
+              </button>
+            </section>
+          )}
         {(section === "map" || (run?.status === "SUCCEEDED" && report)) && (
           <div className="an-report-toolbar">
             {section === "map" && (
