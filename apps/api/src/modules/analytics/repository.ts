@@ -181,11 +181,17 @@ export function createAnalyticsRepository(
  WITH points AS (SELECT q.session_id,q.position,q.recorded_at,q.client_record_id FROM patrol_gps_points q JOIN patrol_sessions ps ON ps.id=q.session_id JOIN patrol_assignments pa ON pa.id=ps.assignment_id JOIN patrol_routes pr ON pr.id=pa.route_id
  WHERE pr.park_id=${id} AND q.recorded_at>=${new Date(Date.parse(f.window.fromUtc) - 90 * 86400000)} AND q.recorded_at<${f.window.toUtcExclusive} AND (q.accuracy_m IS NULL OR q.accuracy_m<=${config.maxPointAccuracyMeters})),
  pairs AS(SELECT *,lead(position) OVER w next_position,lead(recorded_at) OVER w next_at FROM points WINDOW w AS(PARTITION BY session_id ORDER BY recorded_at,client_record_id)),
- tracks AS(SELECT recorded_at,next_at,ST_Buffer(ST_MakeLine(ST_Transform(position,32644),ST_Transform(next_position,32644)),${config.trackBufferMeters}) geom FROM pairs WHERE next_at>recorded_at AND extract(epoch FROM next_at-recorded_at)<=${config.maxSegmentGapSeconds} AND ST_Distance(ST_Transform(position,32644),ST_Transform(next_position,32644))<=${config.maxSegmentLengthMeters})
+ tracks AS(SELECT recorded_at,next_at,ST_MakeLine(ST_Transform(position,32644),ST_Transform(next_position,32644)) line FROM pairs WHERE next_at>recorded_at AND extract(epoch FROM next_at-recorded_at)<=${config.maxSegmentGapSeconds} AND ST_Distance(ST_Transform(position,32644),ST_Transform(next_position,32644))<=${config.maxSegmentLengthMeters}),
+ -- A cell is covered when a valid segment passes within the buffer distance. ST_DWithin is the exact form of
+ -- "intersects the buffered segment" and, driven from the segments, uses the GiST index on geom_m instead of
+ -- comparing every buffered polygon with every cell.
+ touched AS(SELECT g.col,g.row,bool_or(t.recorded_at>=${f.window.fromUtc}) covered,max(t.next_at) last_patrolled_at
+ FROM tracks t JOIN analysis_grid_cells g ON g.park_id=${id} AND g.cell_size_m=${config.gridCellMeters} AND ST_DWithin(g.geom_m,t.line,${config.trackBufferMeters})
+ GROUP BY g.col,g.row)
  SELECT g.col::text||':'||g.row::text cell_id,s.name sector_name,ST_AsGeoJSON(g.geom)::json polygon,ST_AsGeoJSON(ST_Centroid(g.geom))::json centre,g.area_m2,
- COALESCE(bool_or(t.recorded_at>=${f.window.fromUtc}),false) covered,max(t.next_at) last_patrolled_at
- FROM analysis_grid_cells g LEFT JOIN analysis_sectors s ON s.id=g.sector_id LEFT JOIN tracks t ON ST_Intersects(g.geom_m,t.geom)
- WHERE g.park_id=${id} AND g.cell_size_m=${config.gridCellMeters} AND (${sector}::uuid IS NULL OR g.sector_id=${sector}) GROUP BY g.park_id,g.cell_size_m,g.col,g.row,s.name ORDER BY g.col,g.row`;
+ COALESCE(c.covered,false) covered,c.last_patrolled_at
+ FROM analysis_grid_cells g LEFT JOIN analysis_sectors s ON s.id=g.sector_id LEFT JOIN touched c ON c.col=g.col AND c.row=g.row
+ WHERE g.park_id=${id} AND g.cell_size_m=${config.gridCellMeters} AND (${sector}::uuid IS NULL OR g.sector_id=${sector}) ORDER BY g.col,g.row`;
           const [quality] = await tx<
             {
               sessions: number;
