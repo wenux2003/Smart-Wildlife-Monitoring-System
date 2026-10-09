@@ -173,6 +173,18 @@ export function RangerHomePage() {
     staleTime: 30_000,
   });
   const patrolAssignments = patrolQuery.data ?? [];
+  const currentPatrols = patrolAssignments.filter(
+    (patrol) =>
+      patrol.status !== "COMPLETED" &&
+      patrol.status !== "PARTIAL" &&
+      patrol.status !== "CANCELLED",
+  );
+  const pastPatrols = patrolAssignments.filter(
+    (patrol) =>
+      patrol.status === "COMPLETED" ||
+      patrol.status === "PARTIAL" ||
+      patrol.status === "CANCELLED",
+  );
   const selectedPatrol =
     patrolAssignments.find(
       (patrol) =>
@@ -281,7 +293,7 @@ export function RangerHomePage() {
           <span className="patrol-route-count">
             {patrolQuery.isLoading
               ? "Loading routes"
-              : `${patrolAssignments.length} ${patrolAssignments.length === 1 ? "route" : "routes"}`}
+              : `${currentPatrols.length} ${currentPatrols.length === 1 ? "current route" : "current routes"}`}
           </span>
         </div>
 
@@ -312,55 +324,104 @@ export function RangerHomePage() {
             </p>
           </div>
         ) : (
-          <div className="patrol-list">
-            {patrolAssignments.map((patrol) => (
-              <PatrolCard
-                key={patrol.id}
-                patrol={patrol}
-                selected={patrol.id === selectedPatrol?.id}
-                onSelect={setSelectedPatrolId}
-              />
-            ))}
-          </div>
-        )}
+          <>
+            {currentPatrols.length > 0 ? (
+              <div className="patrol-list">
+                {currentPatrols.map((patrol) => (
+                  <PatrolCard
+                    key={patrol.id}
+                    patrol={patrol}
+                    selected={patrol.id === selectedPatrol?.id}
+                    onSelect={setSelectedPatrolId}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="patrol-query-state">
+                <strong>No current patrols</strong>
+                <p>Your completed patrols are available in the history below.</p>
+              </div>
+            )}
 
-        {error && (
-          <p className="alert" role="alert">
-            {error}
-          </p>
+            {pastPatrols.length > 0 && (
+              <details className="patrol-history">
+                <summary>
+                  <span>
+                    <strong>Past patrols</strong>
+                    <small>Completed and closed routes</small>
+                  </span>
+                  <span>{pastPatrols.length}</span>
+                </summary>
+                <div className="patrol-list">
+                  {pastPatrols.map((patrol) => (
+                    <PatrolCard
+                      key={patrol.id}
+                      patrol={patrol}
+                      selected={false}
+                      onSelect={setSelectedPatrolId}
+                    />
+                  ))}
+                </div>
+              </details>
+            )}
+          </>
         )}
 
         {!patrolQuery.isLoading &&
           !patrolQuery.isError &&
           patrolAssignments.length > 0 && (
-            <button
-              className="start-patrol-button"
-              type="button"
-              disabled={!selectedPatrol || startingPatrol}
-              onClick={() => void startSelectedPatrol()}
+            <section
+              className="patrol-action-dock"
+              aria-label="Start selected patrol"
             >
-              <span className="start-patrol-icon">
-                <StartIcon />
-              </span>
-              <span className="start-patrol-copy">
-                <strong>
-                  {startingPatrol ? "Preparing patrol…" : "Start patrol"}
-                </strong>
-                <small>
-                  {selectedPatrol
-                    ? `${selectedPatrol.route.name} · ${selectedPatrol.route.estimatedDistanceKm.toFixed(1)} km`
-                    : "No assigned trail available"}
-                </small>
-              </span>
-              <span className="start-patrol-arrow" aria-hidden="true">
-                →
-              </span>
-            </button>
+              {error && (
+                <p className="alert" role="alert">
+                  {error}
+                </p>
+              )}
+              <button
+                className="start-patrol-button"
+                type="button"
+                aria-label={
+                  selectedPatrol
+                    ? `Start patrol: ${selectedPatrol.route.name}, ${selectedPatrol.route.sector}, ${selectedPatrol.route.estimatedDistanceKm.toFixed(1)} kilometres`
+                    : "Start patrol unavailable"
+                }
+                disabled={!selectedPatrol || startingPatrol}
+                onClick={() => void startSelectedPatrol()}
+              >
+                <span className="start-patrol-icon">
+                  <StartIcon />
+                </span>
+                <span className="start-patrol-copy" aria-live="polite">
+                  <strong>
+                    {startingPatrol
+                      ? "Preparing patrol…"
+                      : selectedPatrol
+                        ? `Start ${selectedPatrol.route.name}`
+                        : "Select a patrol"}
+                  </strong>
+                  <small>
+                    {selectedPatrol
+                      ? `${selectedPatrol.route.sector} · ${selectedPatrol.route.estimatedDistanceKm.toFixed(1)} km`
+                      : "Choose an assigned route above"}
+                  </small>
+                </span>
+                <span className="start-patrol-arrow" aria-hidden="true">
+                  →
+                </span>
+              </button>
+              <p className="patrol-footnote">
+                GPS tracking begins only after you start the patrol.
+              </p>
+            </section>
           )}
 
-        <p className="patrol-footnote">
-          GPS tracking begins only after you start the patrol.
-        </p>
+        {error && patrolAssignments.length === 0 && (
+          <p className="alert" role="alert">
+            {error}
+          </p>
+        )}
       </section>
     </main>
   );

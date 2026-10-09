@@ -159,6 +159,14 @@ function patrolAssignments() {
       coveragePercentage: 0,
       completedAt: null,
     },
+    {
+      id: "50000000-0000-4000-8000-000000000003",
+      status: "COMPLETED",
+      assignedAt: "2026-10-06T10:15:00.000Z",
+      route: route("40000000-0000-4000-8000-000000000003", "Trail 3A", 3.8),
+      coveragePercentage: 100,
+      completedAt: "2026-10-06T12:00:00.000Z",
+    },
   ];
 }
 
@@ -255,6 +263,12 @@ describe("Ranger account access", () => {
     expect(
       await screen.findByRole("button", { name: /Start patrol/i }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: "Start selected patrol" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Past patrols").closest("details")).not.toHaveAttribute(
+      "open",
+    );
     expect(fetch).toHaveBeenCalledWith(
       "/api/auth/login",
       expect.objectContaining({
@@ -276,22 +290,24 @@ describe("Ranger account access", () => {
 
     expect(
       await screen.findByRole("button", { name: /Start patrol/i }),
-    ).toHaveTextContent("Trail 4B");
+    ).toHaveTextContent("Start Trail 4B");
 
     fireEvent.click(
       screen.getByRole("button", { name: "Select Trail 4C · Southern Ridge" }),
     );
 
     expect(
-      screen.getByRole("button", { name: /Start patrol/i }),
-    ).toHaveTextContent("Trail 4C");
+      screen.getByRole("button", { name: /Start patrol: Trail 4C/i }),
+    ).toHaveTextContent("Southern Ridge · 4.7 km");
     expect(
       screen.getByRole("button", {
         name: "Selected Trail 4C · Southern Ridge",
       }),
     ).toHaveAttribute("aria-pressed", "true");
 
-    fireEvent.click(screen.getByRole("button", { name: /Start patrol/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /Start patrol: Trail 4C/i }),
+    );
     expect(
       await screen.findByLabelText("Trail 4C patrol map"),
     ).toBeInTheDocument();
