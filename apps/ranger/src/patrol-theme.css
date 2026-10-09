@@ -371,6 +371,9 @@
     border-radius: 18px;
     box-shadow: 0 20px 60px #17372a10;
   }
+  .patrol-screen > .ranger-page-header {
+    top: 24px;
+  }
   .patrol-action-dock {
     bottom: 108px;
   }

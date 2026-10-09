@@ -638,6 +638,7 @@ input:focus-visible {
 }
 
 .m1-page > .ranger-page-header {
+  top: 24px;
   width: calc(100% + 48px);
   margin: -24px -24px 16px;
   border-radius: 28px 28px 0 0;
@@ -665,6 +666,10 @@ input:focus-visible {
 
 .ranger-page-header .patrol-kicker {
   margin: 0 0 0.2rem;
+}
+
+.ranger-page-header .ranger-header-top-row .patrol-kicker {
+  margin-right: auto;
 }
 
 .ranger-page-header h1,
@@ -1027,6 +1032,10 @@ input:focus-visible {
 
 .patrol-select-control:focus-visible {
   outline: 0;
+}
+
+.patrol-select-control.is-active-patrol {
+  border-radius: inherit;
 }
 
 .patrol-select-control > span {

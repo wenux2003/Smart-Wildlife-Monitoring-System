@@ -34,7 +34,8 @@ function PatrolCard({
   onSelect: (id: string) => void;
 }) {
   const complete = patrol.status === "COMPLETED" || patrol.status === "PARTIAL";
-  const selectable = patrol.status === "ASSIGNED";
+  const active = patrol.status === "ACTIVE";
+  const selectable = patrol.status === "ASSIGNED" || active;
   const routeLabel = `${patrol.route.name} · ${patrol.route.sector}`;
   const assignedAt = new Date(patrol.assignedAt);
   const elapsedMinutes = Math.max(
@@ -77,17 +78,25 @@ function PatrolCard({
             aria-label="Completed"
             title="Completed"
           />
-        ) : selectable ? (
+        ) : active ? (
+          <span className="patrol-status-label">Active</span>
+        ) : null}
+        {selectable && (
           <button
-            className="patrol-select-control"
+            className={`patrol-select-control ${active ? "is-active-patrol" : ""}`}
             type="button"
             aria-pressed={selected}
-            aria-label={`${selected ? "Selected" : "Select"} ${routeLabel}`}
+            aria-label={
+              active
+                ? `Resume ${routeLabel}`
+                : `${selected ? "Selected" : "Select"} ${routeLabel}`
+            }
             onClick={() => onSelect(patrol.id)}
           >
-            <span aria-hidden="true">{selected ? "✓" : ""}</span>
+            {!active && <span aria-hidden="true">{selected ? "✓" : ""}</span>}
           </button>
-        ) : (
+        )}
+        {!complete && !selectable && (
           <span className="patrol-status-label">
             {patrol.status.toLowerCase()}
           </span>
@@ -139,8 +148,13 @@ export function RangerHomePage() {
   const selectedPatrol =
     patrolAssignments.find(
       (patrol) =>
-        patrol.id === selectedPatrolId && patrol.status === "ASSIGNED",
-    ) ?? patrolAssignments.find((patrol) => patrol.status === "ASSIGNED");
+        patrol.id === selectedPatrolId &&
+        (patrol.status === "ASSIGNED" || patrol.status === "ACTIVE"),
+    ) ??
+    patrolAssignments.find((patrol) => patrol.status === "ACTIVE") ??
+    patrolAssignments.find((patrol) => patrol.status === "ASSIGNED");
+
+  const resumingPatrol = selectedPatrol?.status === "ACTIVE";
 
   async function startSelectedPatrol() {
     if (!selectedPatrol || !user) return;
@@ -276,7 +290,7 @@ export function RangerHomePage() {
                 type="button"
                 aria-label={
                   selectedPatrol
-                    ? `Start patrol: ${selectedPatrol.route.name}, ${selectedPatrol.route.sector}, ${selectedPatrol.route.estimatedDistanceKm.toFixed(1)} kilometres`
+                    ? `${resumingPatrol ? "Resume" : "Start"} patrol: ${selectedPatrol.route.name}, ${selectedPatrol.route.sector}, ${selectedPatrol.route.estimatedDistanceKm.toFixed(1)} kilometres`
                     : "Start patrol unavailable"
                 }
                 disabled={!selectedPatrol || startingPatrol}
@@ -288,9 +302,11 @@ export function RangerHomePage() {
                 <span className="start-patrol-copy" aria-live="polite">
                   <strong>
                     {startingPatrol
-                      ? "Preparing patrol…"
+                      ? resumingPatrol
+                        ? "Opening patrol…"
+                        : "Preparing patrol…"
                       : selectedPatrol
-                        ? `Start ${selectedPatrol.route.name}`
+                        ? `${resumingPatrol ? "Resume" : "Start"} ${selectedPatrol.route.name}`
                         : "Select a patrol"}
                   </strong>
                   <small>
@@ -304,7 +320,9 @@ export function RangerHomePage() {
                 </span>
               </button>
               <p className="patrol-footnote">
-                GPS tracking begins only after you start the patrol.
+                {resumingPatrol
+                  ? "GPS tracking continues when you return to the patrol."
+                  : "GPS tracking begins only after you start the patrol."}
               </p>
             </section>
           )}

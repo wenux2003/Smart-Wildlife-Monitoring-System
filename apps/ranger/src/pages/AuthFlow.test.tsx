@@ -348,6 +348,35 @@ describe("Ranger account access", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("reopens an active patrol from the patrol list", async () => {
+    const [assignment] = patrolAssignments();
+    const activeAssignment = {
+      ...assignment,
+      id: "50000000-0000-4000-8000-000000000009",
+      status: "ACTIVE",
+    };
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(response({ user: rangerUser() }))
+      .mockResolvedValueOnce(response([activeAssignment]));
+    renderApp("/");
+
+    const resumePatrol = await screen.findByRole("button", {
+      name: /Resume patrol: Trail 4B/i,
+    });
+    expect(resumePatrol).toBeEnabled();
+    expect(resumePatrol).toHaveTextContent("Resume Trail 4B");
+    expect(
+      screen.getByRole("button", {
+        name: "Resume Trail 4B · Southern Ridge",
+      }),
+    ).toHaveAttribute("aria-pressed", "true");
+
+    fireEvent.click(resumePatrol);
+    expect(
+      await screen.findByLabelText("Trail 4B patrol map"),
+    ).toBeInTheDocument();
+  });
+
   it("records a GPS waypoint locally and returns it to the patrol map", async () => {
     const clearWatch = vi.fn();
     Object.defineProperty(navigator, "geolocation", {
