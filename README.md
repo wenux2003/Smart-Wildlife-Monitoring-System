@@ -71,6 +71,20 @@ corepack pnpm test
 corepack pnpm build
 ```
 
+#### M2 Ranger Patrol test coverage
+
+Generate Adeesha's Ranger Patrol coverage dashboard with:
+
+```sh
+corepack pnpm test:m2:coverage
+```
+
+Open `coverage/index.html` in a browser to inspect statement, branch, function,
+and line coverage for only the M2 patrol API, Ranger patrol UI, GPS/network
+support, offline patrol storage, shared patrol contracts, and patrol map. The
+generated `coverage/` directory is ignored by Git. CI integrations can consume
+`coverage/lcov.info` or `coverage/coverage-summary.json`.
+
 ## M4 status
 
 **P0–P9 complete** for the analytics/export academic prototype: filters, trends, hotspot/coverage maps, patrol priorities, conflict trends, audited snapshots and PDF/CSV exports. Server checks enforce own-park access and Researcher privacy. Optional Tier 2 enhancements are deferred. See the [M4 plan](docs/M4_Analytics_and_Export_Plan.md), [traceability](docs/traceability.md) and [P9 evidence/checks](docs/evidence/m4/README.md).
