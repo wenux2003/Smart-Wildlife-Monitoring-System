@@ -159,6 +159,14 @@ function patrolAssignments() {
       coveragePercentage: 0,
       completedAt: null,
     },
+    {
+      id: "50000000-0000-4000-8000-000000000003",
+      status: "COMPLETED",
+      assignedAt: "2026-10-06T10:15:00.000Z",
+      route: route("40000000-0000-4000-8000-000000000003", "Trail 3A", 3.8),
+      coveragePercentage: 100,
+      completedAt: "2026-10-06T12:00:00.000Z",
+    },
   ];
 }
 
@@ -255,6 +263,31 @@ describe("Ranger account access", () => {
     expect(
       await screen.findByRole("button", { name: /Start patrol/i }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: "Start selected patrol" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("navigation", { name: "Ranger navigation" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Patrol" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(screen.getByRole("link", { name: "Report" })).toHaveAttribute(
+      "href",
+      "/incidents/report",
+    );
+    expect(screen.getByRole("link", { name: "Incidents" })).toHaveAttribute(
+      "href",
+      "/incidents",
+    );
+    expect(screen.getByRole("link", { name: "Dispatches" })).toHaveAttribute(
+      "href",
+      "/dispatches",
+    );
+    expect(
+      screen.getByText("Past patrols").closest("details"),
+    ).not.toHaveAttribute("open");
     expect(fetch).toHaveBeenCalledWith(
       "/api/auth/login",
       expect.objectContaining({
@@ -266,6 +299,18 @@ describe("Ranger account access", () => {
         }),
       }),
     );
+
+    fireEvent.click(screen.getByRole("link", { name: "Report" }));
+    expect(
+      await screen.findByRole("heading", { name: "Report incident" }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Open account menu" }));
+    expect(
+      screen.getByRole("region", { name: "Ranger account" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Sign out" }),
+    ).toBeInTheDocument();
   });
 
   it("selects an assigned trail and updates the start patrol action", async () => {
@@ -276,26 +321,60 @@ describe("Ranger account access", () => {
 
     expect(
       await screen.findByRole("button", { name: /Start patrol/i }),
-    ).toHaveTextContent("Trail 4B");
+    ).toHaveTextContent("Start Trail 4B");
 
     fireEvent.click(
       screen.getByRole("button", { name: "Select Trail 4C · Southern Ridge" }),
     );
 
     expect(
-      screen.getByRole("button", { name: /Start patrol/i }),
-    ).toHaveTextContent("Trail 4C");
+      screen.getByRole("button", { name: /Start patrol: Trail 4C/i }),
+    ).toHaveTextContent("Southern Ridge · 4.7 km");
     expect(
       screen.getByRole("button", {
         name: "Selected Trail 4C · Southern Ridge",
       }),
     ).toHaveAttribute("aria-pressed", "true");
 
-    fireEvent.click(screen.getByRole("button", { name: /Start patrol/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /Start patrol: Trail 4C/i }),
+    );
     expect(
       await screen.findByLabelText("Trail 4C patrol map"),
     ).toBeInTheDocument();
     expect(screen.getByText("Trail 4C · 4.7 km")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: "Ranger navigation" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("reopens an active patrol from the patrol list", async () => {
+    const [assignment] = patrolAssignments();
+    const activeAssignment = {
+      ...assignment,
+      id: "50000000-0000-4000-8000-000000000009",
+      status: "ACTIVE",
+    };
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(response({ user: rangerUser() }))
+      .mockResolvedValueOnce(response([activeAssignment]));
+    renderApp("/");
+
+    const resumePatrol = await screen.findByRole("button", {
+      name: /Resume patrol: Trail 4B/i,
+    });
+    expect(resumePatrol).toBeEnabled();
+    expect(resumePatrol).toHaveTextContent("Resume Trail 4B");
+    expect(
+      screen.getByRole("button", {
+        name: "Resume Trail 4B · Southern Ridge",
+      }),
+    ).toHaveAttribute("aria-pressed", "true");
+
+    fireEvent.click(resumePatrol);
+    expect(
+      await screen.findByLabelText("Trail 4B patrol map"),
+    ).toBeInTheDocument();
   });
 
   it("records a GPS waypoint locally and returns it to the patrol map", async () => {

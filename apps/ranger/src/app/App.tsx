@@ -15,6 +15,7 @@ import { MyIncidentsPage } from "../pages/MyIncidentsPage.js";
 import { IncidentSync } from "../components/IncidentSync.js";
 import { CommunityReportPage } from "../pages/CommunityReportPage.js";
 import { PatrolSyncCoordinator } from "./PatrolSyncCoordinator.js";
+import { RangerBottomNav } from "./RangerBottomNav.js";
 
 const PatrolMapPage = lazy(async () => {
   const module = await import("../pages/PatrolMapPage.js");
@@ -150,6 +151,7 @@ function RangerRoutes() {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <RangerBottomNav />
       <PatrolSyncCoordinator />
     </>
   );

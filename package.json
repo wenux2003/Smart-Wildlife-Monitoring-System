@@ -18,6 +18,8 @@
     "dev:all": "corepack pnpm --parallel --filter @wr/api --filter @wr/ranger --filter @wr/ops dev",
     "build": "corepack pnpm -r build",
     "test": "vitest run",
+    "test:m2": "vitest run --config vitest.m2.config.ts",
+    "test:m2:coverage": "vitest run --config vitest.m2.config.ts --coverage",
     "test:m1": "vitest run --config vitest.m1.config.ts",
     "test:m1:coverage": "vitest run --config vitest.m1.config.ts --coverage",
     "preview:ranger": "corepack pnpm --filter @wr/ranger exec vite preview --host 0.0.0.0 --port 5173",

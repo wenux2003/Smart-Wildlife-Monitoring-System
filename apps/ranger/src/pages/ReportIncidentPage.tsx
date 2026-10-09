@@ -11,6 +11,7 @@ import {
 import { saveOfflineIncident, saveOfflineMedia } from "@wr/offline";
 import { useAuth } from "../auth/AuthContext.js";
 import { incidentDb, syncIncidents } from "../lib/incidents.js";
+import { RangerPageHeader } from "../components/RangerPageHeader.js";
 export function ReportIncidentPage() {
   const { user, captureOnly } = useAuth();
   const [type, setType] = useState("POACHING");
@@ -130,12 +131,7 @@ export function ReportIncidentPage() {
   }
   return (
     <main id="main-content" className="m1-page">
-      <nav className="m1-nav">
-        <Link to="/">Patrol home</Link>
-        <Link to="/incidents">My incidents / sync</Link>
-      </nav>
-      <p className="m1-kicker">{user?.parkName ?? "FIELD OPERATIONS"}</p>
-      <h1>Report incident</h1>
+      <RangerPageHeader title="Report incident" />
       {captureOnly && (
         <p role="status">
           Offline capture for {user?.name}. Sign in again before
